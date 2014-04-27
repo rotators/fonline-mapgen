@@ -19,16 +19,13 @@ namespace fonline_mapgen
     public partial class frmMain : Form
     {
         public List<String> GraphicsPaths = new List<string>();
-        public Dictionary<String, Bitmap> Bitmaps = new Dictionary<string, Bitmap>();
-        public Dictionary<String, int> BitHeight = new Dictionary<string,int>();
-        public Dictionary<String, int> BitWidth = new Dictionary<string, int>();
+        //public Dictionary<String, Bitmap> Bitmaps = new Dictionary<string, Bitmap>();
 
-        public Dictionary<String, int> BitShiftX = new Dictionary<string, int>();
-        public Dictionary<String, int> BitShiftY = new Dictionary<string, int>();
-
+        public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
         List<ItemProto> items = new List<ItemProto>();
 
-        FOCommon.Maps.FOHexMap hexmap = new FOCommon.Maps.FOHexMap();
+        FOCommon.Maps.FOHexMap hexmap;
+        FOCommon.Parsers.FOMapParser parser;
 
         ItemProtoParser protoParser = new ItemProtoParser();
 
@@ -51,9 +48,7 @@ namespace fonline_mapgen
             LoadDat(@"H:\FOnline\FOnlineDev\FONLINE.DAT", Color.FromArgb(11, 0, 11));
             //Bitmaps = Bitmaps.OrderBy(x => x.Key).ToDictionary<String, Bitmap>(;
 
-            //string fileName = @"H:\FOnline\Factions\trunk\maps\hq_camp.fomap";
-            string fileName = @"H:\FOnline\Factions\trunk\maps\newr1.fomap";
-            FOCommon.Parsers.FOMapParser parser = new FOCommon.Parsers.FOMapParser(fileName);
+            cmbMaps.Items.AddRange(Directory.GetFiles(@"H:\FOnline\Factions\trunk\maps\", "*.fomap"));
 
             MSGParser FOObj = new MSGParser(@"H:\FOnline\Factions\trunk\text\engl\FOOBJ.MSG");
             FOObj.Parse();
@@ -63,10 +58,17 @@ namespace fonline_mapgen
             protoParser.LoadProtosFromFile(@"H:\FOnline\Factions\trunk\proto\items\generic.fopro", "1.0", FOObj, items, null);
             protoParser.LoadProtosFromFile(@"H:\FOnline\Factions\trunk\proto\items\wall.fopro", "1.0", FOObj, items, null);
 
-            this.Text = "Mapper experiment - " + fileName;
+            //string fileName = @"H:\FOnline\Factions\trunk\maps\hq_camp.fomap";
+            LoadMap(@"H:\FOnline\Factions\trunk\maps\den.fomap");
+        }
 
+        private void LoadMap(string fileName)
+        {
+            parser = new FOCommon.Parsers.FOMapParser(fileName);
             parser.Parse();
             map = parser.Map;
+            hexmap = new FOHexMap(new Size(map.Header.MaxHexX, map.Header.MaxHexY));
+            this.Text = "Mapper Experiment - " + fileName;
         }
 
         public void WriteLog(string str)
@@ -98,13 +100,9 @@ namespace fonline_mapgen
 
                 if (ext == ".frm")
                 {
-                    Bitmap bmapRaw = FalloutFRM.Load(file.GetData())[0];
-
-                    List<Bitmap> bmaps = FalloutFRM.Load(file.GetData(), Transparency);
-
-                    Bitmaps[file.Path.ToLower()] = bmaps[0];
-                    BitShiftX[file.Path.ToLower()] = FalloutFRM.GetPixelShiftX(file.GetData());
-                    BitShiftY[file.Path.ToLower()] = FalloutFRM.GetPixelShiftY(file.GetData());
+                    var frm = FalloutFRMLoader.LoadFRM(file.GetData(), Transparency);
+                    frm.FileName = file.Path.ToLower();
+                    Frms[frm.FileName] = frm; 
                 }
                 else
                 {
@@ -120,8 +118,11 @@ namespace fonline_mapgen
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            if (Bitmaps.Count == 0) return;
+            if (Frms.Count == 0) return;
             var g = e.Graphics;
+            //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
             // Draw normal tiles.
             foreach (var tile in map.Tiles.Where(x => !x.Roof))
@@ -148,12 +149,13 @@ namespace fonline_mapgen
             {
                 DrawTile(g, tile.Path, tile.X, tile.Y, true);
             }
-
+            //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+            //MessageBox.Show("paint_event");
         }
 
         private void DrawScenery(Graphics g, string scenery, int x, int y, int offx2, int offy2)
         {
-            if (!Bitmaps.ContainsKey(scenery))
+            if (!Frms.ContainsKey(scenery))
             {
                 //MessageBox.Show(scenery + " not found");
                 return;
@@ -161,19 +163,18 @@ namespace fonline_mapgen
 
             Font font = new Font(Font.FontFamily, 10.0f, FontStyle.Bold);
 
+            var frm = Frms[scenery];
+
             //g.DrawString("" + BitHeight[scenery], font, Brushes.Red, offset_x - (x % 2 == 0 ? 20 : 0) + xcoord, offset_y + ycoord - 10);
 
-            var coords = hexmap.GetObjectCoords(new Point(x, y), Bitmaps[scenery].Size, new Point(BitShiftX[scenery], BitShiftY[scenery]), new Point(offx2, offy2));
+            var coords = hexmap.GetObjectCoords(new Point(x, y), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(offx2, offy2));
 
-            g.DrawImage(Bitmaps[scenery], coords.X, coords.Y);
-            
-            //g.DrawString(x + "," + y /*+ "(" + Math.Abs(y+(x/2)) + ")"*/, SystemFonts.DefaultFont, Brushes.Green, offset_x + xcoord, offset_y + ycoord - 30);
-            //g.DrawLine(Pens.Pink, offset_x + xcoord, offset_y + ycoord, offset_x + xcoord, offset_y + ycoord);
+            g.DrawImage(frm.Frames[0], coords.X, coords.Y);
         }
 
         private void DrawTile(Graphics g, string tile, int x, int y, bool isRoof)
         {
-            if (!Bitmaps.ContainsKey(tile))
+            if (!Frms.ContainsKey(tile))
             {
                 //MessageBox.Show(tile + " not found");
                 return;
@@ -184,7 +185,7 @@ namespace fonline_mapgen
 
             var tileCoords = hexmap.GetTileCoords(new Point(x,y), isRoof);
 
-            g.DrawImage(Bitmaps[tile], tileCoords.X, tileCoords.Y);
+            g.DrawImage(Frms[tile].Frames[0], tileCoords.X, tileCoords.Y);
             
         }
 
@@ -192,6 +193,47 @@ namespace fonline_mapgen
         {
             panel1.Refresh();
             panel1.Invalidate();
+        }
+
+        private void panel1_MouseMove(object sender, MouseEventArgs e)
+        {
+            var hex = hexmap.GetHex(new PointF(e.X,e.Y + 6.0f));
+            lblMouseCoords.Text = string.Format("Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y);
+
+            //
+
+            if (map.Objects.Count(x => x.MapX == hex.X && x.MapY == hex.Y) == 0)
+                lblProtos.Text = "Proto: ";
+            foreach (var obj in map.Objects.FindAll(x => x.MapX == hex.X && x.MapY == hex.Y))
+            {
+                if (!(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
+                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery)) continue;
+                //MessageBox.Show(""+obj.ProtoId);
+                //if()
+
+                ItemProto prot = items.Where(x => x.ProtoId == obj.ProtoId).FirstOrDefault();
+                if (prot == null)
+                    continue;
+
+                lblProtos.Text = "Proto: " + (obj.ProtoId);
+                lblProtos.Text += string.Format(" ({0} - {1})", prot.Name, prot.PicMap);
+            }
+        }
+
+        private void panel1_MouseClick(object sender, MouseEventArgs e)
+        {
+            var hex = hexmap.GetHex(new PointF(e.X - 12.0f, e.Y - 12.0f));
+
+            /**/
+
+            //MessageBox.Show("HexX = " + .X);
+        }
+
+        private void btnLoadMap_Click(object sender, EventArgs e)
+        {
+            LoadMap((string)cmbMaps.SelectedItem);
+            pnlViewPort.Invalidate();
+            pnlViewPort.Refresh();
         }
     }
 }

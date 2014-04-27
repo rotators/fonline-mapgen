@@ -28,20 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.lblMouseCoords = new System.Windows.Forms.Label();
+            this.lblProtos = new System.Windows.Forms.Label();
+            this.cmbMaps = new System.Windows.Forms.ComboBox();
             this.pnlViewPort.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // btnLoadMap
             // 
-            this.button1.Location = new System.Drawing.Point(13, 13);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(111, 32);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Update";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnLoadMap.Location = new System.Drawing.Point(547, 16);
+            this.btnLoadMap.Name = "btnLoadMap";
+            this.btnLoadMap.Size = new System.Drawing.Size(131, 25);
+            this.btnLoadMap.TabIndex = 1;
+            this.btnLoadMap.Text = "Load Map";
+            this.btnLoadMap.UseVisualStyleBackColor = true;
+            this.btnLoadMap.Click += new System.EventHandler(this.btnLoadMap_Click);
             // 
             // pnlViewPort
             // 
@@ -62,27 +66,65 @@
             this.panel1.Size = new System.Drawing.Size(5003, 5350);
             this.panel1.TabIndex = 0;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            this.panel1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseClick);
+            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
-            // Form1
+            // lblMouseCoords
+            // 
+            this.lblMouseCoords.AutoSize = true;
+            this.lblMouseCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMouseCoords.Location = new System.Drawing.Point(694, 16);
+            this.lblMouseCoords.Name = "lblMouseCoords";
+            this.lblMouseCoords.Size = new System.Drawing.Size(164, 25);
+            this.lblMouseCoords.TabIndex = 8;
+            this.lblMouseCoords.Text = "Mouse Coords: ";
+            // 
+            // lblProtos
+            // 
+            this.lblProtos.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblProtos.Location = new System.Drawing.Point(12, 49);
+            this.lblProtos.Name = "lblProtos";
+            this.lblProtos.Size = new System.Drawing.Size(1279, 25);
+            this.lblProtos.TabIndex = 9;
+            this.lblProtos.Text = "Protos:";
+            // 
+            // cmbMaps
+            // 
+            this.cmbMaps.DropDownWidth = 600;
+            this.cmbMaps.FormattingEnabled = true;
+            this.cmbMaps.Location = new System.Drawing.Point(15, 19);
+            this.cmbMaps.Name = "cmbMaps";
+            this.cmbMaps.Size = new System.Drawing.Size(517, 21);
+            this.cmbMaps.TabIndex = 10;
+            // 
+            // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1303, 638);
+            this.Controls.Add(this.cmbMaps);
+            this.Controls.Add(this.lblProtos);
+            this.Controls.Add(this.lblMouseCoords);
             this.Controls.Add(this.pnlViewPort);
-            this.Controls.Add(this.button1);
-            this.Name = "Form1";
+            this.Controls.Add(this.btnLoadMap);
+            this.DoubleBuffered = true;
+            this.Name = "frmMain";
             this.Text = "Mapper experiment";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.pnlViewPort.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnLoadMap;
         private System.Windows.Forms.Panel pnlViewPort;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label lblMouseCoords;
+        private System.Windows.Forms.Label lblProtos;
+        private System.Windows.Forms.ComboBox cmbMaps;
     }
 }
 
