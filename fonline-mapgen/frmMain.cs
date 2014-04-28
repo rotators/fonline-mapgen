@@ -13,6 +13,7 @@ using FOCommon.Maps;
 using FOCommon.Graphic;
 using FOCommon.Parsers;
 using FOCommon.Items;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace fonline_mapgen
 {
@@ -38,30 +39,7 @@ namespace fonline_mapgen
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            GraphicsPaths.Add("art\\tiles");
-            GraphicsPaths.Add("art\\misc");
-            GraphicsPaths.Add("art\\walls");
-            GraphicsPaths.Add("art\\door");
-            GraphicsPaths.Add("art\\scenery");
 
-            foreach( string dataFile in UGLY.DataFiles )
-            {
-                LoadDat( dataFile, Color.FromArgb( 11, 0, 11 ) );
-            }
-            //Bitmaps = Bitmaps.OrderBy(x => x.Key).ToDictionary<String, Bitmap>(;
-
-            cmbMaps.Items.AddRange(Directory.GetFiles(UGLY.ServerDir+@"maps\", "*.fomap"));
-
-            MSGParser FOObj = new MSGParser(UGLY.ServerDir+@"text\engl\FOOBJ.MSG");
-            FOObj.Parse();
-
-            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null );
-            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null );
-            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null );
-            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null );
-
-            //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
-            LoadMap(UGLY.ServerDir+@"maps\den.fomap");
         }
 
         private void LoadMap(string fileName)
@@ -121,6 +99,8 @@ namespace fonline_mapgen
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
             if (Frms.Count == 0) return;
+            if (hexmap == null) return;
+
             var g = e.Graphics;
             //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
             g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
@@ -199,6 +179,7 @@ namespace fonline_mapgen
 
         private void panel1_MouseMove(object sender, MouseEventArgs e)
         {
+            if (hexmap == null) return;
             var hex = hexmap.GetHex(new PointF(e.X,e.Y + 6.0f));
             lblMouseCoords.Text = string.Format("Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y);
 
@@ -222,15 +203,6 @@ namespace fonline_mapgen
             }
         }
 
-        private void panel1_MouseClick(object sender, MouseEventArgs e)
-        {
-            var hex = hexmap.GetHex(new PointF(e.X - 12.0f, e.Y - 12.0f));
-
-            /**/
-
-            //MessageBox.Show("HexX = " + .X);
-        }
-
         private void btnLoadMap_Click(object sender, EventArgs e)
         {
             LoadMap((string)cmbMaps.SelectedItem);
@@ -248,6 +220,60 @@ namespace fonline_mapgen
 
             frmHeaderEditor formHeaderEditor = new frmHeaderEditor( this.map.Header );
             formHeaderEditor.ShowDialog();
+        }
+
+        private void frmMain_Paint(object sender, PaintEventArgs e)
+        {
+            if (Frms.Count != 0) return;
+
+            GraphicsPaths.Add("art\\tiles");
+            GraphicsPaths.Add("art\\misc");
+            GraphicsPaths.Add("art\\walls");
+            GraphicsPaths.Add("art\\door");
+            GraphicsPaths.Add("art\\scenery");
+
+            Stream stream;
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            if (File.Exists("./graphics.dat"))
+            {
+                stream = File.OpenRead("./graphics.dat");
+                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize(stream);
+            }
+            else
+            {
+                foreach (string dataFile in UGLY.DataFiles)
+                {
+                    LoadDat(dataFile, Color.FromArgb(11, 0, 11));
+                }
+
+                stream = File.Create("./graphics.dat");
+                formatter.Serialize(stream, Frms);
+            }
+
+            if (File.Exists("./items.dat"))
+            {
+                stream = File.OpenRead("./items.dat");
+                items = (List<ItemProto>)formatter.Deserialize(stream);
+            }
+            else
+            {
+                MSGParser FOObj = new MSGParser(UGLY.ServerDir + @"text\engl\FOOBJ.MSG");
+                FOObj.Parse();
+
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null);
+
+                stream = File.Create("./items.dat");
+                formatter.Serialize(stream, items);
+            }
+
+            cmbMaps.Items.AddRange(Directory.GetFiles(UGLY.ServerDir + @"maps\", "*.fomap"));
+
+            //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
+            //LoadMap(UGLY.ServerDir + @"maps\den.fomap");
         }
     }
 }

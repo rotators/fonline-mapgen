@@ -37,58 +37,59 @@
             this.menu = new System.Windows.Forms.MenuStrip();
             this.stuffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.button1 = new System.Windows.Forms.Button();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnLoadMap
             // 
-            this.btnLoadMap.Location = new System.Drawing.Point( 547, 16 );
+            this.btnLoadMap.Location = new System.Drawing.Point(547, 16);
             this.btnLoadMap.Name = "btnLoadMap";
-            this.btnLoadMap.Size = new System.Drawing.Size( 131, 25 );
+            this.btnLoadMap.Size = new System.Drawing.Size(131, 25);
             this.btnLoadMap.TabIndex = 1;
             this.btnLoadMap.Text = "Load Map";
             this.btnLoadMap.UseVisualStyleBackColor = true;
-            this.btnLoadMap.Click += new System.EventHandler( this.btnLoadMap_Click );
+            this.btnLoadMap.Click += new System.EventHandler(this.btnLoadMap_Click);
             // 
             // pnlViewPort
             // 
-            this.pnlViewPort.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlViewPort.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlViewPort.AutoScroll = true;
-            this.pnlViewPort.Controls.Add( this.panel1 );
-            this.pnlViewPort.Location = new System.Drawing.Point( 12, 88 );
+            this.pnlViewPort.Controls.Add(this.panel1);
+            this.pnlViewPort.Location = new System.Drawing.Point(12, 88);
             this.pnlViewPort.Name = "pnlViewPort";
-            this.pnlViewPort.Size = new System.Drawing.Size( 1004, 538 );
+            this.pnlViewPort.Size = new System.Drawing.Size(1004, 538);
             this.pnlViewPort.TabIndex = 7;
             // 
             // panel1
             // 
-            this.panel1.Location = new System.Drawing.Point( 3, 3 );
+            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel1.Location = new System.Drawing.Point(3, 3);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size( 5003, 5350 );
+            this.panel1.Size = new System.Drawing.Size(5003, 5350);
             this.panel1.TabIndex = 0;
-            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler( this.panel1_Paint );
-            this.panel1.MouseClick += new System.Windows.Forms.MouseEventHandler( this.panel1_MouseClick );
-            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler( this.panel1_MouseMove );
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
             // lblMouseCoords
             // 
             this.lblMouseCoords.AutoSize = true;
-            this.lblMouseCoords.Font = new System.Drawing.Font( "Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            this.lblMouseCoords.Location = new System.Drawing.Point( 694, 16 );
+            this.lblMouseCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMouseCoords.Location = new System.Drawing.Point(694, 16);
             this.lblMouseCoords.Name = "lblMouseCoords";
-            this.lblMouseCoords.Size = new System.Drawing.Size( 164, 25 );
+            this.lblMouseCoords.Size = new System.Drawing.Size(164, 25);
             this.lblMouseCoords.TabIndex = 8;
             this.lblMouseCoords.Text = "Mouse Coords: ";
             // 
             // lblProtos
             // 
-            this.lblProtos.Font = new System.Drawing.Font( "Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            this.lblProtos.Location = new System.Drawing.Point( 12, 49 );
+            this.lblProtos.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblProtos.Location = new System.Drawing.Point(12, 49);
             this.lblProtos.Name = "lblProtos";
-            this.lblProtos.Size = new System.Drawing.Size( 1279, 25 );
+            this.lblProtos.Size = new System.Drawing.Size(1279, 25);
             this.lblProtos.TabIndex = 9;
             this.lblProtos.Text = "Protos:";
             // 
@@ -96,57 +97,69 @@
             // 
             this.cmbMaps.DropDownWidth = 600;
             this.cmbMaps.FormattingEnabled = true;
-            this.cmbMaps.Location = new System.Drawing.Point( 15, 19 );
+            this.cmbMaps.Location = new System.Drawing.Point(15, 19);
             this.cmbMaps.Name = "cmbMaps";
-            this.cmbMaps.Size = new System.Drawing.Size( 517, 21 );
+            this.cmbMaps.Size = new System.Drawing.Size(517, 21);
             this.cmbMaps.TabIndex = 10;
             // 
             // menu
             // 
             this.menu.BackColor = System.Drawing.SystemColors.Control;
-            this.menu.Items.AddRange( new System.Windows.Forms.ToolStripItem[] {
-            this.stuffToolStripMenuItem} );
-            this.menu.Location = new System.Drawing.Point( 0, 0 );
+            this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.stuffToolStripMenuItem});
+            this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
-            this.menu.Size = new System.Drawing.Size( 1028, 24 );
+            this.menu.Size = new System.Drawing.Size(1028, 24);
             this.menu.TabIndex = 11;
             this.menu.Text = "menuStrip1";
             // 
             // stuffToolStripMenuItem
             // 
-            this.stuffToolStripMenuItem.DropDownItems.AddRange( new System.Windows.Forms.ToolStripItem[] {
-            this.headerToolStripMenuItem} );
+            this.stuffToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.headerToolStripMenuItem});
             this.stuffToolStripMenuItem.Name = "stuffToolStripMenuItem";
-            this.stuffToolStripMenuItem.Size = new System.Drawing.Size( 43, 20 );
+            this.stuffToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.stuffToolStripMenuItem.Text = "Stuff";
             // 
             // headerToolStripMenuItem
             // 
             this.headerToolStripMenuItem.Name = "headerToolStripMenuItem";
-            this.headerToolStripMenuItem.Size = new System.Drawing.Size( 152, 22 );
+            this.headerToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.headerToolStripMenuItem.Text = "Header";
-            this.headerToolStripMenuItem.Click += new System.EventHandler( this.headerToolStripMenuItem_Click );
+            this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(547, 50);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(131, 23);
+            this.button1.TabIndex = 12;
+            this.button1.Text = "Cache";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // frmMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF( 6F, 13F );
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size( 1028, 638 );
-            this.Controls.Add( this.cmbMaps );
-            this.Controls.Add( this.lblProtos );
-            this.Controls.Add( this.lblMouseCoords );
-            this.Controls.Add( this.pnlViewPort );
-            this.Controls.Add( this.btnLoadMap );
-            this.Controls.Add( this.menu );
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.ClientSize = new System.Drawing.Size(1028, 638);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.cmbMaps);
+            this.Controls.Add(this.lblProtos);
+            this.Controls.Add(this.lblMouseCoords);
+            this.Controls.Add(this.pnlViewPort);
+            this.Controls.Add(this.btnLoadMap);
+            this.Controls.Add(this.menu);
             this.DoubleBuffered = true;
             this.MainMenuStrip = this.menu;
             this.Name = "frmMain";
             this.Text = "Mapper experiment";
-            this.Load += new System.EventHandler( this.Form1_Load );
-            this.pnlViewPort.ResumeLayout( false );
-            this.menu.ResumeLayout( false );
+            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.frmMain_Paint);
+            this.pnlViewPort.ResumeLayout(false);
+            this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
-            this.ResumeLayout( false );
+            this.ResumeLayout(false);
             this.PerformLayout();
 
         }
@@ -162,6 +175,7 @@
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem stuffToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem headerToolStripMenuItem;
+        private System.Windows.Forms.Button button1;
     }
 }
 
