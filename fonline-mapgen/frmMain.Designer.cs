@@ -37,7 +37,6 @@
             this.menu = new System.Windows.Forms.MenuStrip();
             this.stuffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.button1 = new System.Windows.Forms.Button();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.SuspendLayout();
@@ -128,22 +127,12 @@
             this.headerToolStripMenuItem.Text = "Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(547, 50);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(131, 23);
-            this.button1.TabIndex = 12;
-            this.button1.Text = "Cache";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1028, 638);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.cmbMaps);
             this.Controls.Add(this.lblProtos);
             this.Controls.Add(this.lblMouseCoords);
@@ -175,7 +164,6 @@
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem stuffToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem headerToolStripMenuItem;
-        private System.Windows.Forms.Button button1;
     }
 }
 
