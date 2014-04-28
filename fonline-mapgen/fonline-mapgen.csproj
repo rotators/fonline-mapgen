@@ -52,6 +52,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="frmHeaderEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmHeaderEditor.Designer.cs">
+      <DependentUpon>frmHeaderEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -61,6 +67,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UGLY.cs" />
+    <EmbeddedResource Include="frmHeaderEditor.resx">
+      <DependentUpon>frmHeaderEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>

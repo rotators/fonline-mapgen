@@ -237,5 +237,17 @@ namespace fonline_mapgen
             pnlViewPort.Invalidate();
             pnlViewPort.Refresh();
         }
+
+        private void headerToolStripMenuItem_Click( object sender, EventArgs e )
+        {
+            if( this.map == null )
+            {
+                MessageBox.Show("Map not loaded!");
+                return;
+            }
+
+            frmHeaderEditor formHeaderEditor = new frmHeaderEditor( this.map.Header );
+            formHeaderEditor.ShowDialog();
+        }
     }
 }
