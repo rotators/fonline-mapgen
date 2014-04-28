@@ -44,22 +44,24 @@ namespace fonline_mapgen
             GraphicsPaths.Add("art\\door");
             GraphicsPaths.Add("art\\scenery");
 
-            LoadDat(@"H:\FOnline\FOnlineStable\MASTER.DAT", Color.FromArgb(11, 0, 11));
-            LoadDat(@"H:\FOnline\FOnlineDev\FONLINE.DAT", Color.FromArgb(11, 0, 11));
+            foreach( string dataFile in UGLY.DataFiles )
+            {
+                LoadDat( dataFile, Color.FromArgb( 11, 0, 11 ) );
+            }
             //Bitmaps = Bitmaps.OrderBy(x => x.Key).ToDictionary<String, Bitmap>(;
 
-            cmbMaps.Items.AddRange(Directory.GetFiles(@"H:\FOnline\Factions\trunk\maps\", "*.fomap"));
+            cmbMaps.Items.AddRange(Directory.GetFiles(UGLY.ServerDir+@"maps\", "*.fomap"));
 
-            MSGParser FOObj = new MSGParser(@"H:\FOnline\Factions\trunk\text\engl\FOOBJ.MSG");
+            MSGParser FOObj = new MSGParser(UGLY.ServerDir+@"text\engl\FOOBJ.MSG");
             FOObj.Parse();
 
-            protoParser.LoadProtosFromFile(@"H:\FOnline\Factions\trunk\proto\items\door.fopro", "1.0", FOObj, items, null);
-            protoParser.LoadProtosFromFile(@"H:\FOnline\Factions\trunk\proto\items\misc.fopro", "1.0", FOObj, items, null);
-            protoParser.LoadProtosFromFile(@"H:\FOnline\Factions\trunk\proto\items\generic.fopro", "1.0", FOObj, items, null);
-            protoParser.LoadProtosFromFile(@"H:\FOnline\Factions\trunk\proto\items\wall.fopro", "1.0", FOObj, items, null);
+            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null );
+            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null );
+            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null );
+            protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null );
 
-            //string fileName = @"H:\FOnline\Factions\trunk\maps\hq_camp.fomap";
-            LoadMap(@"H:\FOnline\Factions\trunk\maps\den.fomap");
+            //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
+            LoadMap(UGLY.ServerDir+@"maps\den.fomap");
         }
 
         private void LoadMap(string fileName)
