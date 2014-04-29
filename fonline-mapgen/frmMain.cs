@@ -32,62 +32,75 @@ namespace fonline_mapgen
 
         public FOCommon.Maps.FOMap map;
 
+        bool drawTiles = true;
+        bool drawRoofs = true;
+        bool drawCritters = true;
+        bool drawItems = true;
+        bool drawScenery = true;
+        // TODO: drawing walls on/off
+
         public frmMain()
         {
             InitializeComponent();
+
+            menuViewTiles.Checked = this.drawTiles;
+            menuViewRoofs.Checked = this.drawRoofs;
+            menuViewCritters.Checked = this.drawCritters;
+            menuViewItems.Checked = this.drawItems;
+            menuViewScenery.Checked = this.drawScenery;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load( object sender, EventArgs e )
         {
 
         }
 
-        private void LoadMap(string fileName)
+        private void LoadMap( string fileName )
         {
-            parser = new FOCommon.Parsers.FOMapParser(fileName);
+            parser = new FOCommon.Parsers.FOMapParser( fileName );
             parser.Parse();
             map = parser.Map;
-            hexmap = new FOHexMap(new Size(map.Header.MaxHexX, map.Header.MaxHexY));
+            hexmap = new FOHexMap( new Size( map.Header.MaxHexX, map.Header.MaxHexY ) );
             this.Text = "Mapper Experiment - " + fileName;
         }
 
-        public void WriteLog(string str)
+        public void WriteLog( string str )
         {
-            File.AppendAllText("./debug.log", str + Environment.NewLine);
+            File.AppendAllText( "./debug.log", str + Environment.NewLine );
         }
 
-        public bool LoadDat(string DatPath, Color Transparency)
+        public bool LoadDat( string DatPath, Color Transparency )
         {
             DatReaderError status;
-            DAT loadedDat = DATReader.ReadDat(DatPath, out status);
-            if (status.Error != DatError.Success)
+            DAT loadedDat = DATReader.ReadDat( DatPath, out status );
+            if( status.Error != DatError.Success )
             {
-                MessageBox.Show("Error loading " + DatPath + ": " + Environment.NewLine + status.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show( "Error loading " + DatPath + ": " + Environment.NewLine + status.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error );
                 return false;
             }
 
             List<DATFile> files = new List<DATFile>();
-            foreach (string path in this.GraphicsPaths)
+            foreach( string path in this.GraphicsPaths )
             {
-                files.AddRange(loadedDat.GetFilesByPattern(path));
+                files.AddRange( loadedDat.GetFilesByPattern( path ) );
             }
 
-            foreach (DATFile file in files)
+            foreach( DATFile file in files )
             {
-                string ext = Path.GetExtension(file.FileName).ToLower();
-                if (!(ext == ".frm" || ext == ".png"))
+                string ext = Path.GetExtension( file.FileName ).ToLower();
+                if( !(ext == ".frm" || ext == ".png") )
                     continue;
 
-                if (ext == ".frm")
+                if( ext == ".frm" )
                 {
-                    var frm = FalloutFRMLoader.LoadFRM(file.GetData(), Transparency);
+                    var frm = FalloutFRMLoader.LoadFRM( file.GetData(), Transparency );
                     frm.FileName = file.Path.ToLower();
-                    Frms[frm.FileName] = frm; 
+                    Frms[frm.FileName] = frm;
                 }
                 else
                 {
-                    System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter(typeof(Bitmap));
-                    Bitmap bitmap = (Bitmap)tc.ConvertFrom(file.GetData());
+                    System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter( typeof( Bitmap ) );
+                    Bitmap bitmap = (Bitmap)tc.ConvertFrom( file.GetData() );
                 }
             }
 
@@ -96,10 +109,12 @@ namespace fonline_mapgen
             return true;
         }
 
-        private void panel1_Paint(object sender, PaintEventArgs e)
+        private void panel1_Paint( object sender, PaintEventArgs e )
         {
-            if (Frms.Count == 0) return;
-            if (hexmap == null) return;
+            if( Frms.Count == 0 )
+                return;
+            if( hexmap == null )
+                return;
 
             var g = e.Graphics;
             //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
@@ -107,105 +122,123 @@ namespace fonline_mapgen
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
             // Draw normal tiles.
-            foreach (var tile in map.Tiles.Where(x => !x.Roof))
+            if( this.drawTiles )
             {
-                DrawTile(g, tile.Path, tile.X, tile.Y, false);
+                foreach( var tile in map.Tiles.Where( x => !x.Roof ) )
+                {
+                    DrawTile( g, tile.Path, tile.X, tile.Y, false );
+                }
             }
 
-            foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY*2))
+            foreach( var obj in map.Objects.OrderBy( x => x.MapX + x.MapY * 2 ) )
             {
                 // TODO: Draw critters.
-                if (!(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
-                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery)) continue;
-               
-                ItemProto prot = items.Where(x => x.ProtoId == obj.ProtoId).FirstOrDefault();
-                if (prot == null)
+                if( !(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
+                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery) )
                     continue;
 
-               // WriteLog("Drawing " + prot.PicMap);
+                // skip specific object types
+                if( obj.MapObjType == MapObjectType.Critter && !this.drawCritters )
+                    continue;
+                else if( obj.MapObjType == MapObjectType.Item && !this.drawItems )
+                    continue;
+                else if( obj.MapObjType == MapObjectType.Scenery && !this.drawScenery )
+                    continue;
 
-                DrawScenery(g, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY);
+                ItemProto prot = items.Where( x => x.ProtoId == obj.ProtoId ).FirstOrDefault();
+                if( prot == null )
+                    continue;
+
+                // WriteLog("Drawing " + prot.PicMap);
+
+                DrawScenery( g, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY );
             }
 
-            foreach (var tile in map.Tiles.Where(x => x.Roof))
+            // Draw roof tiles
+            if( this.drawRoofs )
             {
-                DrawTile(g, tile.Path, tile.X, tile.Y, true);
+                foreach( var tile in map.Tiles.Where( x => x.Roof ) )
+                {
+                    DrawTile( g, tile.Path, tile.X, tile.Y, true );
+                }
             }
             //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
             //MessageBox.Show("paint_event");
         }
 
-        private void DrawScenery(Graphics g, string scenery, int x, int y, int offx2, int offy2)
+        private void DrawScenery( Graphics g, string scenery, int x, int y, int offx2, int offy2 )
         {
-            if (!Frms.ContainsKey(scenery))
+            if( !Frms.ContainsKey( scenery ) )
             {
                 //MessageBox.Show(scenery + " not found");
                 return;
             }
 
-            Font font = new Font(Font.FontFamily, 10.0f, FontStyle.Bold);
+            Font font = new Font( Font.FontFamily, 10.0f, FontStyle.Bold );
 
             var frm = Frms[scenery];
 
             //g.DrawString("" + BitHeight[scenery], font, Brushes.Red, offset_x - (x % 2 == 0 ? 20 : 0) + xcoord, offset_y + ycoord - 10);
 
-            var coords = hexmap.GetObjectCoords(new Point(x, y), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(offx2, offy2));
+            var coords = hexmap.GetObjectCoords( new Point( x, y ), frm.Frames[0].Size, new Point( frm.PixelShift.X, frm.PixelShift.Y ), new Point( offx2, offy2 ) );
 
-            g.DrawImage(frm.Frames[0], coords.X, coords.Y);
+            g.DrawImage( frm.Frames[0], coords.X, coords.Y );
         }
 
-        private void DrawTile(Graphics g, string tile, int x, int y, bool isRoof)
+        private void DrawTile( Graphics g, string tile, int x, int y, bool isRoof )
         {
-            if (!Frms.ContainsKey(tile))
+            if( !Frms.ContainsKey( tile ) )
             {
                 //MessageBox.Show(tile + " not found");
                 return;
             }
 
-            if (tile.Contains("misc"))
-                MessageBox.Show(tile);
+            if( tile.Contains( "misc" ) )
+                MessageBox.Show( tile );
 
-            var tileCoords = hexmap.GetTileCoords(new Point(x,y), isRoof);
+            var tileCoords = hexmap.GetTileCoords( new Point( x, y ), isRoof );
 
-            g.DrawImage(Frms[tile].Frames[0], tileCoords.X, tileCoords.Y);
-            
+            g.DrawImage( Frms[tile].Frames[0], tileCoords.X, tileCoords.Y );
+
         }
 
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        private void numericUpDown1_ValueChanged( object sender, EventArgs e )
         {
             panel1.Refresh();
             panel1.Invalidate();
         }
 
-        private void panel1_MouseMove(object sender, MouseEventArgs e)
+        private void panel1_MouseMove( object sender, MouseEventArgs e )
         {
-            if (hexmap == null) return;
-            var hex = hexmap.GetHex(new PointF(e.X,e.Y + 6.0f));
-            lblMouseCoords.Text = string.Format("Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y);
+            if( hexmap == null )
+                return;
+            var hex = hexmap.GetHex( new PointF( e.X, e.Y + 6.0f ) );
+            lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
 
             //
 
-            if (map.Objects.Count(x => x.MapX == hex.X && x.MapY == hex.Y) == 0)
+            if( map.Objects.Count( x => x.MapX == hex.X && x.MapY == hex.Y ) == 0 )
                 lblProtos.Text = "Proto: ";
-            foreach (var obj in map.Objects.FindAll(x => x.MapX == hex.X && x.MapY == hex.Y))
+            foreach( var obj in map.Objects.FindAll( x => x.MapX == hex.X && x.MapY == hex.Y ) )
             {
-                if (!(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
-                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery)) continue;
+                if( !(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
+                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery) )
+                    continue;
                 //MessageBox.Show(""+obj.ProtoId);
                 //if()
 
-                ItemProto prot = items.Where(x => x.ProtoId == obj.ProtoId).FirstOrDefault();
-                if (prot == null)
+                ItemProto prot = items.Where( x => x.ProtoId == obj.ProtoId ).FirstOrDefault();
+                if( prot == null )
                     continue;
 
                 lblProtos.Text = "Proto: " + (obj.ProtoId);
-                lblProtos.Text += string.Format(" ({0} - {1})", prot.Name, prot.PicMap);
+                lblProtos.Text += string.Format( " ({0} - {1})", prot.Name, prot.PicMap );
             }
         }
 
-        private void btnLoadMap_Click(object sender, EventArgs e)
+        private void btnLoadMap_Click( object sender, EventArgs e )
         {
-            LoadMap((string)cmbMaps.SelectedItem);
+            LoadMap( (string)cmbMaps.SelectedItem );
             pnlViewPort.Invalidate();
             pnlViewPort.Refresh();
         }
@@ -214,7 +247,7 @@ namespace fonline_mapgen
         {
             if( this.map == null )
             {
-                MessageBox.Show("Map not loaded!");
+                MessageBox.Show( "Map not loaded!" );
                 return;
             }
 
@@ -222,58 +255,102 @@ namespace fonline_mapgen
             formHeaderEditor.ShowDialog();
         }
 
-        private void frmMain_Paint(object sender, PaintEventArgs e)
+        private void frmMain_Paint( object sender, PaintEventArgs e )
         {
-            if (Frms.Count != 0) return;
+            if( Frms.Count != 0 )
+                return;
 
-            GraphicsPaths.Add("art\\tiles");
-            GraphicsPaths.Add("art\\misc");
-            GraphicsPaths.Add("art\\walls");
-            GraphicsPaths.Add("art\\door");
-            GraphicsPaths.Add("art\\scenery");
+            GraphicsPaths.Add( "art\\tiles" );
+            GraphicsPaths.Add( "art\\misc" );
+            GraphicsPaths.Add( "art\\walls" );
+            GraphicsPaths.Add( "art\\door" );
+            GraphicsPaths.Add( "art\\scenery" );
 
             Stream stream;
             BinaryFormatter formatter = new BinaryFormatter();
 
-            if (File.Exists("./graphics.dat"))
+            if( File.Exists( "./graphics.dat" ) )
             {
-                stream = File.OpenRead("./graphics.dat");
-                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize(stream);
+                stream = File.OpenRead( "./graphics.dat" );
+                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize( stream );
             }
             else
             {
-                foreach (string dataFile in UGLY.DataFiles)
+                foreach( string dataFile in UGLY.DataFiles )
                 {
-                    LoadDat(dataFile, Color.FromArgb(11, 0, 11));
+                    LoadDat( dataFile, Color.FromArgb( 11, 0, 11 ) );
                 }
 
-                stream = File.Create("./graphics.dat");
-                formatter.Serialize(stream, Frms);
+                stream = File.Create( "./graphics.dat" );
+                formatter.Serialize( stream, Frms );
             }
 
-            if (File.Exists("./items.dat"))
+            if( File.Exists( "./items.dat" ) )
             {
-                stream = File.OpenRead("./items.dat");
-                items = (List<ItemProto>)formatter.Deserialize(stream);
+                stream = File.OpenRead( "./items.dat" );
+                items = (List<ItemProto>)formatter.Deserialize( stream );
             }
             else
             {
-                MSGParser FOObj = new MSGParser(UGLY.ServerDir + @"text\engl\FOOBJ.MSG");
+                MSGParser FOObj = new MSGParser( UGLY.ServerDir + @"text\engl\FOOBJ.MSG" );
                 FOObj.Parse();
 
-                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null);
-                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null);
-                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null);
-                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null );
+                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null );
+                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null );
+                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null );
 
-                stream = File.Create("./items.dat");
-                formatter.Serialize(stream, items);
+                stream = File.Create( "./items.dat" );
+                formatter.Serialize( stream, items );
             }
 
-            cmbMaps.Items.AddRange(Directory.GetFiles(UGLY.ServerDir + @"maps\", "*.fomap"));
+            cmbMaps.Items.AddRange( Directory.GetFiles( UGLY.ServerDir + @"maps\", "*.fomap" ) );
 
             //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
             //LoadMap(UGLY.ServerDir + @"maps\den.fomap");
         }
+
+        #region Menu functions
+
+        private void menuFileOpen_Click( object sender, EventArgs e )
+        {
+            if( openMapDialog.ShowDialog( this ) == DialogResult.OK && File.Exists( openMapDialog.FileName ) )
+            {
+                LoadMap( openMapDialog.FileName );
+                panel1.Refresh();
+            }
+        }
+
+        private void menuViewTiles_CheckedChanged( object sender, EventArgs e )
+        {
+            this.drawTiles = ((ToolStripMenuItem)sender).Checked;
+            panel1.Refresh();
+        }
+
+        private void menuViewRoofs_CheckedChanged( object sender, EventArgs e )
+        {
+            this.drawRoofs = ((ToolStripMenuItem)sender).Checked;
+            panel1.Refresh();
+        }
+
+        private void menuViewCritters_CheckedChanged( object sender, EventArgs e )
+        {
+            this.drawCritters = ((ToolStripMenuItem)sender).Checked;
+            panel1.Refresh();
+        }
+
+        private void menuViewItems_CheckedChanged( object sender, EventArgs e )
+        {
+            this.drawItems = ((ToolStripMenuItem)sender).Checked;
+            panel1.Refresh();
+        }
+
+        private void menuViewScenery_CheckedChanged( object sender, EventArgs e )
+        {
+            this.drawScenery = ((ToolStripMenuItem)sender).Checked;
+            panel1.Refresh();
+        }
+
+        #endregion // Menu functions
     }
 }

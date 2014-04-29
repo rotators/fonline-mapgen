@@ -34,11 +34,8 @@
             this.labelModule = new System.Windows.Forms.Label();
             this.labelFunction = new System.Windows.Forms.Label();
             this.checkNoLogout = new System.Windows.Forms.CheckBox();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.checkScripted = new System.Windows.Forms.CheckBox();
-            this.btnDayColor1 = new System.Windows.Forms.Button();
-            this.btnDayColor2 = new System.Windows.Forms.Button();
-            this.btnDayColor3 = new System.Windows.Forms.Button();
             this.labelVersion = new System.Windows.Forms.Label();
             this.txtVersion = new System.Windows.Forms.TextBox();
             this.labelSize = new System.Windows.Forms.Label();
@@ -47,6 +44,8 @@
             this.labelSizeX = new System.Windows.Forms.Label();
             this.groupMeta = new System.Windows.Forms.GroupBox();
             this.groupUser = new System.Windows.Forms.GroupBox();
+            this.labelDayColor = new System.Windows.Forms.Label();
+            this.dayColors = new System.Windows.Forms.TableLayoutPanel();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -57,20 +56,19 @@
             // 
             // txtModule
             // 
-            this.txtModule.Location = new System.Drawing.Point( 20, 35 );
+            this.txtModule.Location = new System.Drawing.Point( 9, 35 );
             this.txtModule.Name = "txtModule";
             this.txtModule.Size = new System.Drawing.Size( 100, 20 );
             this.txtModule.TabIndex = 0;
             // 
             // labelAt
             // 
-            this.labelAt.AutoSize = true;
-            this.labelAt.Location = new System.Drawing.Point( 127, 38 );
+            this.labelAt.Location = new System.Drawing.Point( 110, 38 );
             this.labelAt.Name = "labelAt";
-            this.labelAt.Size = new System.Drawing.Size( 18, 13 );
+            this.labelAt.Size = new System.Drawing.Size( 40, 13 );
             this.labelAt.TabIndex = 1;
             this.labelAt.Text = "@";
-            this.labelAt.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.labelAt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // txtFunction
             // 
@@ -82,7 +80,7 @@
             // labelModule
             // 
             this.labelModule.AutoSize = true;
-            this.labelModule.Location = new System.Drawing.Point( 19, 16 );
+            this.labelModule.Location = new System.Drawing.Point( 10, 16 );
             this.labelModule.Name = "labelModule";
             this.labelModule.Size = new System.Drawing.Size( 42, 13 );
             this.labelModule.TabIndex = 3;
@@ -100,51 +98,30 @@
             // checkNoLogout
             // 
             this.checkNoLogout.AutoSize = true;
-            this.checkNoLogout.Location = new System.Drawing.Point( 20, 84 );
+            this.checkNoLogout.Location = new System.Drawing.Point( 9, 84 );
             this.checkNoLogout.Name = "checkNoLogout";
             this.checkNoLogout.Size = new System.Drawing.Size( 72, 17 );
             this.checkNoLogout.TabIndex = 5;
             this.checkNoLogout.Text = "No logout";
             this.checkNoLogout.UseVisualStyleBackColor = true;
             // 
+            // colorDialog
+            // 
+            this.colorDialog.Color = System.Drawing.Color.Pink;
+            this.colorDialog.FullOpen = true;
+            this.colorDialog.ShowHelp = true;
+            this.colorDialog.SolidColorOnly = true;
+            // 
             // checkScripted
             // 
             this.checkScripted.AutoSize = true;
-            this.checkScripted.Location = new System.Drawing.Point( 20, 61 );
+            this.checkScripted.Location = new System.Drawing.Point( 9, 61 );
             this.checkScripted.Name = "checkScripted";
             this.checkScripted.Size = new System.Drawing.Size( 65, 17 );
             this.checkScripted.TabIndex = 6;
             this.checkScripted.Text = "Scripted";
             this.checkScripted.UseVisualStyleBackColor = true;
             this.checkScripted.CheckedChanged += new System.EventHandler( this.checkScripted_CheckedChanged );
-            // 
-            // btnDayColor1
-            // 
-            this.btnDayColor1.Location = new System.Drawing.Point( 20, 108 );
-            this.btnDayColor1.Name = "btnDayColor1";
-            this.btnDayColor1.Size = new System.Drawing.Size( 75, 23 );
-            this.btnDayColor1.TabIndex = 7;
-            this.btnDayColor1.Text = "Day color 1";
-            this.btnDayColor1.UseVisualStyleBackColor = true;
-            this.btnDayColor1.Click += new System.EventHandler( this.btnDayColor1_Click );
-            // 
-            // btnDayColor2
-            // 
-            this.btnDayColor2.Location = new System.Drawing.Point( 101, 108 );
-            this.btnDayColor2.Name = "btnDayColor2";
-            this.btnDayColor2.Size = new System.Drawing.Size( 75, 23 );
-            this.btnDayColor2.TabIndex = 8;
-            this.btnDayColor2.Text = "Day color 2";
-            this.btnDayColor2.UseVisualStyleBackColor = true;
-            // 
-            // btnDayColor3
-            // 
-            this.btnDayColor3.Location = new System.Drawing.Point( 182, 108 );
-            this.btnDayColor3.Name = "btnDayColor3";
-            this.btnDayColor3.Size = new System.Drawing.Size( 75, 23 );
-            this.btnDayColor3.TabIndex = 9;
-            this.btnDayColor3.Text = "Day color 3";
-            this.btnDayColor3.UseVisualStyleBackColor = true;
             // 
             // labelVersion
             // 
@@ -222,13 +199,12 @@
             // 
             // groupUser
             // 
+            this.groupUser.Controls.Add( this.labelDayColor );
+            this.groupUser.Controls.Add( this.dayColors );
             this.groupUser.Controls.Add( this.labelModule );
             this.groupUser.Controls.Add( this.txtModule );
-            this.groupUser.Controls.Add( this.btnDayColor3 );
             this.groupUser.Controls.Add( this.labelAt );
-            this.groupUser.Controls.Add( this.btnDayColor2 );
             this.groupUser.Controls.Add( this.txtFunction );
-            this.groupUser.Controls.Add( this.btnDayColor1 );
             this.groupUser.Controls.Add( this.labelFunction );
             this.groupUser.Controls.Add( this.checkScripted );
             this.groupUser.Controls.Add( this.checkNoLogout );
@@ -238,6 +214,34 @@
             this.groupUser.Size = new System.Drawing.Size( 263, 145 );
             this.groupUser.TabIndex = 17;
             this.groupUser.TabStop = false;
+            // 
+            // labelDayColor
+            // 
+            this.labelDayColor.AutoSize = true;
+            this.labelDayColor.Location = new System.Drawing.Point( 6, 107 );
+            this.labelDayColor.Name = "labelDayColor";
+            this.labelDayColor.Size = new System.Drawing.Size( 52, 13 );
+            this.labelDayColor.TabIndex = 9;
+            this.labelDayColor.Text = "Day color";
+            // 
+            // dayColors
+            // 
+            this.dayColors.ColumnCount = 7;
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 22F ) );
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 4F ) );
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 22F ) );
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 4F ) );
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 22F ) );
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 4F ) );
+            this.dayColors.ColumnStyles.Add( new System.Windows.Forms.ColumnStyle( System.Windows.Forms.SizeType.Absolute, 22F ) );
+            this.dayColors.Location = new System.Drawing.Point( 151, 99 );
+            this.dayColors.Name = "dayColors";
+            this.dayColors.RowCount = 1;
+            this.dayColors.RowStyles.Add( new System.Windows.Forms.RowStyle( System.Windows.Forms.SizeType.Percent, 100F ) );
+            this.dayColors.Size = new System.Drawing.Size( 100, 21 );
+            this.dayColors.TabIndex = 8;
+            this.dayColors.CellPaint += new System.Windows.Forms.TableLayoutCellPaintEventHandler( this.dayColors_CellPaint );
+            this.dayColors.Click += new System.EventHandler( this.dayColors_Click );
             // 
             // btnSave
             // 
@@ -309,11 +313,8 @@
         private System.Windows.Forms.Label labelModule;
         private System.Windows.Forms.Label labelFunction;
         private System.Windows.Forms.CheckBox checkNoLogout;
-        private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.CheckBox checkScripted;
-        private System.Windows.Forms.Button btnDayColor1;
-        private System.Windows.Forms.Button btnDayColor2;
-        private System.Windows.Forms.Button btnDayColor3;
         private System.Windows.Forms.Label labelVersion;
         private System.Windows.Forms.TextBox txtVersion;
         private System.Windows.Forms.Label labelSize;
@@ -325,5 +326,7 @@
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.TableLayoutPanel dayColors;
+        private System.Windows.Forms.Label labelDayColor;
     }
 }

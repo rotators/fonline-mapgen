@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions.cs" />
     <Compile Include="frmHeaderEditor.cs">
       <SubType>Form</SubType>
     </Compile>
