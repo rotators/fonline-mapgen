@@ -46,6 +46,7 @@
             this.menuViewItems = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewScenery = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapDialog = new System.Windows.Forms.OpenFileDialog();
+            this.menuViewSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.SuspendLayout();
@@ -150,7 +151,7 @@
             // 
             this.menuFileOpen.Name = "menuFileOpen";
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size( 140, 22 );
+            this.menuFileOpen.Size = new System.Drawing.Size( 152, 22 );
             this.menuFileOpen.Text = "&Open";
             this.menuFileOpen.Click += new System.EventHandler( this.menuFileOpen_Click );
             // 
@@ -202,6 +203,8 @@
             // menuViewScenery
             // 
             this.menuViewScenery.CheckOnClick = true;
+            this.menuViewScenery.DropDownItems.AddRange( new System.Windows.Forms.ToolStripItem[] {
+            this.menuViewSceneryWalls} );
             this.menuViewScenery.Name = "menuViewScenery";
             this.menuViewScenery.Size = new System.Drawing.Size( 152, 22 );
             this.menuViewScenery.Text = "Scenery";
@@ -214,6 +217,14 @@
             this.openMapDialog.RestoreDirectory = true;
             this.openMapDialog.ShowReadOnly = true;
             this.openMapDialog.SupportMultiDottedExtensions = true;
+            // 
+            // menuViewSceneryWalls
+            // 
+            this.menuViewSceneryWalls.CheckOnClick = true;
+            this.menuViewSceneryWalls.Name = "menuViewSceneryWalls";
+            this.menuViewSceneryWalls.Size = new System.Drawing.Size( 152, 22 );
+            this.menuViewSceneryWalls.Text = "Walls";
+            this.menuViewSceneryWalls.CheckedChanged += new System.EventHandler( this.menuViewSceneryWalls_CheckedChanged );
             // 
             // frmMain
             // 
@@ -261,6 +272,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuViewCritters;
         private System.Windows.Forms.ToolStripMenuItem menuViewItems;
         private System.Windows.Forms.ToolStripMenuItem menuViewScenery;
+        private System.Windows.Forms.ToolStripMenuItem menuViewSceneryWalls;
     }
 }
 

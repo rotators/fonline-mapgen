@@ -37,7 +37,7 @@ namespace fonline_mapgen
         bool drawCritters = true;
         bool drawItems = true;
         bool drawScenery = true;
-        // TODO: drawing walls on/off
+        bool drawSceneryWalls = true;
 
         public frmMain()
         {
@@ -48,6 +48,7 @@ namespace fonline_mapgen
             menuViewCritters.Checked = this.drawCritters;
             menuViewItems.Checked = this.drawItems;
             menuViewScenery.Checked = this.drawScenery;
+            menuViewSceneryWalls.Checked = this.drawSceneryWalls;
         }
 
         private void Form1_Load( object sender, EventArgs e )
@@ -150,6 +151,9 @@ namespace fonline_mapgen
                     continue;
 
                 // WriteLog("Drawing " + prot.PicMap);
+
+                if( prot.Type == (int)ItemTypes.ITEM_WALL && !this.drawSceneryWalls )
+                    continue;
 
                 DrawScenery( g, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY );
             }
@@ -348,6 +352,12 @@ namespace fonline_mapgen
         private void menuViewScenery_CheckedChanged( object sender, EventArgs e )
         {
             this.drawScenery = ((ToolStripMenuItem)sender).Checked;
+            panel1.Refresh();
+        }
+
+        private void menuViewSceneryWalls_CheckedChanged( object sender, EventArgs e )
+        {
+            this.drawSceneryWalls = ((ToolStripMenuItem)sender).Checked;
             panel1.Refresh();
         }
 
