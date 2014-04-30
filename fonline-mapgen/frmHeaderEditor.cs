@@ -13,12 +13,16 @@ using FOCommon.Maps;
 
 namespace fonline_mapgen
 {
+    /// <summary>
+    /// Edits map header.
+    /// After user closes dialog, Header property can be used to update map
+    /// </summary>
     public partial class frmHeaderEditor : Form
     {
         public MapHeader Header;
 
-        Color[] dayColor = new Color[4];
-        SolidBrush[] dayColorBrush = new SolidBrush[4];
+        private Color[] dayColor = new Color[4];
+        private SolidBrush[] dayColorBrush = new SolidBrush[4];
 
         public frmHeaderEditor( MapHeader header )
         {
@@ -73,7 +77,7 @@ namespace fonline_mapgen
             else
                 return;
 
-            e.Graphics.FillRectangle( dayColorBrush[idx], e.CellBounds );
+            e.Graphics.FillRectangle( this.dayColorBrush[idx], e.CellBounds );
         }
 
         private void dayColors_Click( object sender, EventArgs e )
@@ -101,22 +105,31 @@ namespace fonline_mapgen
             }
         }
 
-        private void UpdateHeader()
-        {
-            if( this.checkScripted.Checked )
-            {
-                Header.ScriptModule = this.txtModule.Text;
-                Header.ScriptFunc = this.txtFunction.Text;
-            }
-            else
-                Header.ScriptModule = Header.ScriptFunc = "-";
-
-            Header.NoLogOut = this.checkNoLogout.Checked;
-        }
-
         private void checkScripted_CheckedChanged( object sender, EventArgs e )
         {
             this.txtModule.Enabled = this.txtFunction.Enabled = this.checkScripted.Checked;
+        }
+
+        private void btnSave_Click( object sender, EventArgs e )
+        {
+            if( this.checkScripted.Checked )
+            {
+                this.Header.ScriptModule = this.txtModule.Text;
+                this.Header.ScriptFunc = this.txtFunction.Text;
+            }
+            else
+                this.Header.ScriptModule = this.Header.ScriptFunc = "-";
+
+            // no fancy formatting like in SDK mapper 
+            this.Header.DayColor0 = this.dayColor[0].R + " " + this.dayColor[0].G + " " + this.dayColor[0].B;
+            this.Header.DayColor1 = this.dayColor[1].R + " " + this.dayColor[1].G + " " + this.dayColor[1].B;
+            this.Header.DayColor2 = this.dayColor[2].R + " " + this.dayColor[2].G + " " + this.dayColor[2].B;
+            this.Header.DayColor3 = this.dayColor[3].R + " " + this.dayColor[3].G + " " + this.dayColor[3].B;
+
+            this.Header.NoLogOut = this.checkNoLogout.Checked;
+
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         private void btnCancel_Click( object sender, EventArgs e )
