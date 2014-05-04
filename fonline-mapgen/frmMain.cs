@@ -32,23 +32,28 @@ namespace fonline_mapgen
 
         public FOCommon.Maps.FOMap map;
 
+        /*
         bool drawTiles = true;
         bool drawRoofs = true;
         bool drawCritters = true;
         bool drawItems = true;
         bool drawScenery = true;
         bool drawSceneryWalls = true;
+        */
+        DrawMap.Flags drawFlags;
 
         public frmMain()
         {
             InitializeComponent();
 
-            menuViewTiles.Checked = this.drawTiles;
-            menuViewRoofs.Checked = this.drawRoofs;
-            menuViewCritters.Checked = this.drawCritters;
-            menuViewItems.Checked = this.drawItems;
-            menuViewScenery.Checked = this.drawScenery;
-            menuViewSceneryWalls.Checked = this.drawSceneryWalls;
+            // update drawFlags via form events
+            menuViewTiles.Checked =
+            menuViewRoofs.Checked =
+            //TODO: menuViewCritters.Checked =
+            menuViewItems.Checked =
+            menuViewScenery.Checked =
+            menuViewSceneryWalls.Checked =
+                true;
         }
 
         private void Form1_Load( object sender, EventArgs e )
@@ -117,99 +122,7 @@ namespace fonline_mapgen
             if( hexmap == null )
                 return;
 
-            var g = e.Graphics;
-            //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-
-            // Draw normal tiles.
-            if( this.drawTiles )
-            {
-                foreach( var tile in map.Tiles.Where( x => !x.Roof ) )
-                {
-                    DrawTile( g, tile.Path, tile.X, tile.Y, false );
-                }
-            }
-
-            foreach( var obj in map.Objects.OrderBy( x => x.MapX + x.MapY * 2 ) )
-            {
-                // TODO: Draw critters.
-                if( !(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
-                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery) )
-                    continue;
-
-                // skip specific object types
-                if( obj.MapObjType == MapObjectType.Critter && !this.drawCritters )
-                    continue;
-                else if( obj.MapObjType == MapObjectType.Item && !this.drawItems )
-                    continue;
-                else if( obj.MapObjType == MapObjectType.Scenery && !this.drawScenery )
-                    continue;
-
-                ItemProto prot = items.Where( x => x.ProtoId == obj.ProtoId ).FirstOrDefault();
-                if( prot == null )
-                    continue;
-
-                // WriteLog("Drawing " + prot.PicMap);
-
-                if( prot.Type == (int)ItemTypes.ITEM_WALL && !this.drawSceneryWalls )
-                    continue;
-
-                DrawScenery( g, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY );
-            }
-
-            // Draw roof tiles
-            if( this.drawRoofs )
-            {
-                foreach( var tile in map.Tiles.Where( x => x.Roof ) )
-                {
-                    DrawTile( g, tile.Path, tile.X, tile.Y, true );
-                }
-            }
-            //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-            //MessageBox.Show("paint_event");
-        }
-
-        private void DrawScenery( Graphics g, string scenery, int x, int y, int offx2, int offy2 )
-        {
-            if( !Frms.ContainsKey( scenery ) )
-            {
-                //MessageBox.Show(scenery + " not found");
-                return;
-            }
-
-            Font font = new Font( Font.FontFamily, 10.0f, FontStyle.Bold );
-
-            var frm = Frms[scenery];
-
-            //g.DrawString("" + BitHeight[scenery], font, Brushes.Red, offset_x - (x % 2 == 0 ? 20 : 0) + xcoord, offset_y + ycoord - 10);
-
-            var coords = hexmap.GetObjectCoords( new Point( x, y ), frm.Frames[0].Size, new Point( frm.PixelShift.X, frm.PixelShift.Y ), new Point( offx2, offy2 ) );
-
-            g.DrawImage( frm.Frames[0], coords.X, coords.Y );
-        }
-
-        private void DrawTile( Graphics g, string tile, int x, int y, bool isRoof )
-        {
-            if( !Frms.ContainsKey( tile ) )
-            {
-                //MessageBox.Show(tile + " not found");
-                return;
-            }
-
-            if( tile.Contains( "misc" ) )
-                MessageBox.Show( tile );
-
-            var tileCoords = hexmap.GetTileCoords( new Point( x, y ), isRoof );
-
-            g.DrawImage( Frms[tile].Frames[0], tileCoords.X, tileCoords.Y );
-
-        }
-
-        private void numericUpDown1_ValueChanged( object sender, EventArgs e )
-        {
-            panel1.Refresh();
-            panel1.Invalidate();
+            DrawMap.OnGraphics( e.Graphics, map, hexmap, items, Frms, this.drawFlags );
         }
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
@@ -320,45 +233,61 @@ namespace fonline_mapgen
         {
             if( openMapDialog.ShowDialog( this ) == DialogResult.OK && File.Exists( openMapDialog.FileName ) )
             {
+                menuFileExport.Enabled = true;
                 LoadMap( openMapDialog.FileName );
                 panel1.Refresh();
             }
         }
 
+        private void menuFileExportImage_Click( object sender, EventArgs e )
+        {
+            SaveFileDialog save = new SaveFileDialog();
+            if( save.ShowDialog( this ) == DialogResult.OK )
+            {
+                Bitmap bmp = new Bitmap( panel1.ClientRectangle.Width, panel1.ClientRectangle.Height );
+                panel1.DrawToBitmap( bmp, panel1.ClientRectangle );
+                bmp.Save( save.FileName );
+            }
+        }
+
+        private void UpdateDrawFlags( object sender, DrawMap.Flags flag )
+        {
+            if( ((ToolStripMenuItem)sender).Checked )
+                this.drawFlags = this.drawFlags | flag;
+            else
+                this.drawFlags = this.drawFlags & ~flag;
+
+            panel1.Refresh();
+        }
+
         private void menuViewTiles_CheckedChanged( object sender, EventArgs e )
         {
-            this.drawTiles = ((ToolStripMenuItem)sender).Checked;
-            panel1.Refresh();
+            this.UpdateDrawFlags( sender, DrawMap.Flags.Tiles );
         }
 
         private void menuViewRoofs_CheckedChanged( object sender, EventArgs e )
         {
-            this.drawRoofs = ((ToolStripMenuItem)sender).Checked;
-            panel1.Refresh();
+            this.UpdateDrawFlags( sender, DrawMap.Flags.Roofs );
         }
 
         private void menuViewCritters_CheckedChanged( object sender, EventArgs e )
         {
-            this.drawCritters = ((ToolStripMenuItem)sender).Checked;
-            panel1.Refresh();
+            this.UpdateDrawFlags( sender, DrawMap.Flags.Critters );
         }
 
         private void menuViewItems_CheckedChanged( object sender, EventArgs e )
         {
-            this.drawItems = ((ToolStripMenuItem)sender).Checked;
-            panel1.Refresh();
+            this.UpdateDrawFlags( sender, DrawMap.Flags.Items );
         }
 
         private void menuViewScenery_CheckedChanged( object sender, EventArgs e )
         {
-            this.drawScenery = ((ToolStripMenuItem)sender).Checked;
-            panel1.Refresh();
+            this.UpdateDrawFlags( sender, DrawMap.Flags.Scenery );
         }
 
         private void menuViewSceneryWalls_CheckedChanged( object sender, EventArgs e )
         {
-            this.drawSceneryWalls = ((ToolStripMenuItem)sender).Checked;
-            panel1.Refresh();
+            this.UpdateDrawFlags( sender, DrawMap.Flags.SceneryWalls );
         }
 
         #endregion // Menu functions
