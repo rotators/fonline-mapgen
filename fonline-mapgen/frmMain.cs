@@ -6,14 +6,14 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using DATLib;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
+using DATLib;
 using FOCommon.Maps;
 using FOCommon.Graphic;
 using FOCommon.Parsers;
 using FOCommon.Items;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace fonline_mapgen
 {
@@ -25,12 +25,31 @@ namespace fonline_mapgen
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
         List<ItemProto> items = new List<ItemProto>();
 
-        FOCommon.Maps.FOHexMap hexmap;
         FOCommon.Parsers.FOMapParser parser;
 
         ItemProtoParser protoParser = new ItemProtoParser();
 
-        public FOCommon.Maps.FOMap map;
+        public MapperMap CurrentMap
+        {
+            get
+            {
+                if( this.CurrentMapIdx < 0 || this.CurrentMapIdx >= this.Maps.Count )
+                    return (null);
+
+                return (this.Maps[this.CurrentMapIdx]);
+            }
+            private set
+            {
+                int idx = this.Maps.IndexOf( value );
+                if( idx >= 0 )
+                    this.CurrentMapIdx = idx;
+                else
+                    MessageBox.Show( "Can't set CurrentMapIndex" );
+            }
+        }
+        private int CurrentMapIdx = -1;
+        private List<MapperMap> Maps = new List<MapperMap>();
+        TabPage TabTemplate;
 
         /*
         bool drawTiles = true;
@@ -58,16 +77,20 @@ namespace fonline_mapgen
 
         private void Form1_Load( object sender, EventArgs e )
         {
-
         }
 
         private void LoadMap( string fileName )
         {
-            parser = new FOCommon.Parsers.FOMapParser( fileName );
-            parser.Parse();
-            map = parser.Map;
-            hexmap = new FOHexMap( new Size( map.Header.MaxHexX, map.Header.MaxHexY ) );
-            this.Text = "Mapper Experiment - " + fileName;
+            MapperMap map = MapperMap.Load( fileName );
+            if( map != null )
+            {
+                this.Maps.Add( map );
+                this.CurrentMap = map;
+
+                this.Text = "Mapper Experiment - " + fileName;
+            }
+            else
+                MessageBox.Show( "Error loading map " + fileName );
         }
 
         public void WriteLog( string str )
@@ -115,21 +138,32 @@ namespace fonline_mapgen
             return true;
         }
 
+        // TODO: LoadZip
+        public bool LoadZip( string ZipPath, Color Transparency )
+        {
+            return (false);
+        }
+
         private void panel1_Paint( object sender, PaintEventArgs e )
         {
             if( Frms.Count == 0 )
                 return;
-            if( hexmap == null )
+
+            MapperMap map = this.CurrentMap;
+
+            if( map == null )
                 return;
 
-            DrawMap.OnGraphics( e.Graphics, map, hexmap, items, Frms, this.drawFlags );
+            DrawMap.OnGraphics( e.Graphics, map, map.HexMap, items, Frms, this.drawFlags );
         }
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
         {
-            if( hexmap == null )
+            MapperMap map = this.CurrentMap;
+
+            if( map == null )
                 return;
-            var hex = hexmap.GetHex( new PointF( e.X, e.Y + 6.0f ) );
+            var hex = map.HexMap.GetHex( new PointF( e.X, e.Y + 6.0f ) );
             lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
 
             //
@@ -162,14 +196,19 @@ namespace fonline_mapgen
 
         private void headerToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            if( this.map == null )
+            MapperMap map = this.CurrentMap;
+
+            if( map == null )
             {
                 MessageBox.Show( "Map not loaded!" );
                 return;
             }
 
-            frmHeaderEditor formHeaderEditor = new frmHeaderEditor( this.map.Header );
-            formHeaderEditor.ShowDialog();
+            frmHeaderEditor formHeaderEditor = new frmHeaderEditor( map.Header );
+            if( formHeaderEditor.ShowDialog() == DialogResult.OK )
+            {
+                // TODO: update map header
+            }
         }
 
         private void frmMain_Paint( object sender, PaintEventArgs e )
@@ -193,9 +232,18 @@ namespace fonline_mapgen
             }
             else
             {
+                Color transparency = Color.FromArgb( 11, 0, 11 );
+
                 foreach( string dataFile in UGLY.DataFiles )
                 {
-                    LoadDat( dataFile, Color.FromArgb( 11, 0, 11 ) );
+                    string ext = Path.GetExtension( dataFile ).ToLower();
+
+                    if( ext == ".dat" )
+                        LoadDat( dataFile, transparency );
+                    else if( ext == ".zip" )
+                        LoadZip( dataFile, transparency );
+                    else
+                        MessageBox.Show( "Unknown datafile extension : " + dataFile );
                 }
 
                 stream = File.Create( "./graphics.dat" );

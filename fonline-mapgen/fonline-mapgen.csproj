@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="DrawMap.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="MapperMap.cs" />
     <Compile Include="frmHeaderEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -100,6 +101,7 @@
       <Name>FOCommon</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

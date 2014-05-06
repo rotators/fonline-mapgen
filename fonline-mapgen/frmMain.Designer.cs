@@ -156,14 +156,14 @@
             // 
             this.menuFileOpen.Name = "menuFileOpen";
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size( 152, 22 );
+            this.menuFileOpen.Size = new System.Drawing.Size( 140, 22 );
             this.menuFileOpen.Text = "&Open";
             this.menuFileOpen.Click += new System.EventHandler( this.menuFileOpen_Click );
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size( 149, 6 );
+            this.toolStripSeparator1.Size = new System.Drawing.Size( 137, 6 );
             // 
             // menuFileExport
             // 
@@ -171,13 +171,13 @@
             this.menuFileExportImage} );
             this.menuFileExport.Enabled = false;
             this.menuFileExport.Name = "menuFileExport";
-            this.menuFileExport.Size = new System.Drawing.Size( 152, 22 );
+            this.menuFileExport.Size = new System.Drawing.Size( 140, 22 );
             this.menuFileExport.Text = "Export...";
             // 
             // menuFileExportImage
             // 
             this.menuFileExportImage.Name = "menuFileExportImage";
-            this.menuFileExportImage.Size = new System.Drawing.Size( 152, 22 );
+            this.menuFileExportImage.Size = new System.Drawing.Size( 119, 22 );
             this.menuFileExportImage.Text = "As Image";
             this.menuFileExportImage.Click += new System.EventHandler( this.menuFileExportImage_Click );
             // 
@@ -267,7 +267,9 @@
             this.DoubleBuffered = true;
             this.MainMenuStrip = this.menu;
             this.Name = "frmMain";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Mapper experiment";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler( this.Form1_Load );
             this.Paint += new System.Windows.Forms.PaintEventHandler( this.frmMain_Paint );
             this.pnlViewPort.ResumeLayout( false );

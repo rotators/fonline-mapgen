@@ -7,10 +7,10 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 
+using FOCommon.Graphic;
 using FOCommon.Items;
 using FOCommon.Maps;
 using FOCommon.Parsers;
-using FOCommon.Graphic;
 
 namespace fonline_mapgen
 {

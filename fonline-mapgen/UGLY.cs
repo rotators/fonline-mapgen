@@ -11,8 +11,8 @@ namespace fonline_mapgen
             @"H:\FOnline\FOnlineStable\MASTER.DAT",
             @"H:\FOnline\FOnlineDev\FONLINE.DAT"
 #elif _W
-            @"C:\Users\wipe\Desktop\SDK\Client\data\packs\fallout.dat"
-            //,@"C:\Users\wipe\Desktop\FO2238.client\data\faction.zip"
+            @"C:\Users\wipe\Desktop\SDK\Client\data\packs\fallout.dat",
+            @"C:\Users\wipe\Desktop\FO2238.client\data\faction.zip"
 #endif
         };
         public static string ServerDir =
