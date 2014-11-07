@@ -89,7 +89,10 @@ namespace fonline_mapgen
                 this.CurrentMap = map;
 
                 this.Text = "Mapper Experiment - " + fileName;
-                DrawMap.InvalidateCache(); 
+                DrawMap.InvalidateCache();
+
+                panel1.Width = map.Header.MaxHexX * 35;
+                panel1.Height = map.Header.MaxHexY * 16;
             }
             else
                 MessageBox.Show( "Error loading map " + fileName );

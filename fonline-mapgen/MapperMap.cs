@@ -36,7 +36,7 @@ namespace fonline_mapgen
 
         private void InitHexMap()
         {
-            this.HexMap = new FOHexMap( new Size( this.Header.MaxHexX, this.Header.MaxHexY ) );
+            this.HexMap = new FOHexMap(new PointF(this.Header.MaxHexX * 16, 100.0f), new Size( this.Header.MaxHexX, this.Header.MaxHexY ) );
         }
 
         public void Draw(Graphics g, Dictionary<int, ItemProto> itemsPid, Dictionary<string, FalloutFRM> frms, DrawMap.Flags flags)
