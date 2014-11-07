@@ -30,7 +30,7 @@
         {
             this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel1 = new DoubleBufferPanel();
             this.lblMouseCoords = new System.Windows.Forms.Label();
             this.lblProtos = new System.Windows.Forms.Label();
             this.cmbMaps = new System.Windows.Forms.ComboBox();
@@ -284,7 +284,7 @@
 
         private System.Windows.Forms.Button btnLoadMap;
         private System.Windows.Forms.Panel pnlViewPort;
-        private System.Windows.Forms.Panel panel1;
+        private DoubleBufferPanel panel1;
         private System.Windows.Forms.Label lblMouseCoords;
         private System.Windows.Forms.Label lblProtos;
         private System.Windows.Forms.ComboBox cmbMaps;

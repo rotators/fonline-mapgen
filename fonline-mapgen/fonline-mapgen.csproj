@@ -52,6 +52,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DoubleBufferedPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DrawMap.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MapperMap.cs" />

@@ -39,9 +39,9 @@ namespace fonline_mapgen
             this.HexMap = new FOHexMap( new Size( this.Header.MaxHexX, this.Header.MaxHexY ) );
         }
 
-        public void Draw( Graphics g, List<ItemProto> items, Dictionary<string,FalloutFRM>frms, DrawMap.Flags flags )
+        public void Draw(Graphics g, Dictionary<int, ItemProto> itemsPid, Dictionary<string, FalloutFRM> frms, DrawMap.Flags flags)
         {
-            DrawMap.OnGraphics( g, this, this.HexMap, items, frms, flags );
+            DrawMap.OnGraphics( g, this, this.HexMap, itemsPid, frms, flags );
         }
 
         public static MapperMap Load( string fileName )

@@ -24,6 +24,7 @@ namespace fonline_mapgen
 
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
         List<ItemProto> items = new List<ItemProto>();
+        Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
 
         FOCommon.Parsers.FOMapParser parser;
 
@@ -88,6 +89,7 @@ namespace fonline_mapgen
                 this.CurrentMap = map;
 
                 this.Text = "Mapper Experiment - " + fileName;
+                DrawMap.InvalidateCache(); 
             }
             else
                 MessageBox.Show( "Error loading map " + fileName );
@@ -154,7 +156,7 @@ namespace fonline_mapgen
             if( map == null )
                 return;
 
-            DrawMap.OnGraphics( e.Graphics, map, map.HexMap, items, Frms, this.drawFlags );
+            DrawMap.OnGraphics( e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags );
         }
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
@@ -175,11 +177,9 @@ namespace fonline_mapgen
                 if( !(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
                       obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery) )
                     continue;
-                //MessageBox.Show(""+obj.ProtoId);
-                //if()
 
-                ItemProto prot = items.Where( x => x.ProtoId == obj.ProtoId ).FirstOrDefault();
-                if( prot == null )
+                ItemProto prot;
+                if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
                     continue;
 
                 lblProtos.Text = "Proto: " + (obj.ProtoId);
@@ -269,6 +269,9 @@ namespace fonline_mapgen
                 formatter.Serialize( stream, items );
             }
 
+            foreach (var item in items)
+                itemsPid[item.ProtoId] = item;
+
             cmbMaps.Items.AddRange( Directory.GetFiles( UGLY.ServerDir + @"maps\", "*.fomap" ) );
 
             //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
@@ -305,6 +308,7 @@ namespace fonline_mapgen
             else
                 this.drawFlags = this.drawFlags & ~flag;
 
+            DrawMap.InvalidateCache(); 
             panel1.Refresh();
         }
 
