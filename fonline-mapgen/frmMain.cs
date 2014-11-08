@@ -176,7 +176,7 @@ namespace fonline_mapgen
 
             if( map == null )
                 return;
-            var hex = map.HexMap.GetHex( new PointF( e.X, e.Y + 6.0f ) );
+            var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
             lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
 
             //
