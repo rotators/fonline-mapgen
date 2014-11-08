@@ -26,6 +26,8 @@ namespace fonline_mapgen
         List<ItemProto> items = new List<ItemProto>();
         Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
 
+        float scaleFactor = 1.0f;
+
         FOCommon.Parsers.FOMapParser parser;
 
         ItemProtoParser protoParser = new ItemProtoParser();
@@ -159,7 +161,13 @@ namespace fonline_mapgen
             if( map == null )
                 return;
 
-            DrawMap.OnGraphics( e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags );
+            DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor));
+        }
+
+        private void panel1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta != 0) scaleFactor += ((float)e.Delta / 10000.0f);
+            panel1.Refresh();
         }
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
@@ -276,6 +284,8 @@ namespace fonline_mapgen
                 itemsPid[item.ProtoId] = item;
 
             cmbMaps.Items.AddRange( Directory.GetFiles( UGLY.ServerDir + @"maps\", "*.fomap" ) );
+
+            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
 
             //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
             //LoadMap(UGLY.ServerDir + @"maps\den.fomap");

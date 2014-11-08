@@ -57,11 +57,13 @@ namespace fonline_mapgen
         }
 
         public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, 
-            Dictionary<string, FalloutFRM> frms, Flags flags )
+            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale)
         {
             // should it really be here? maybe callee should set it instead?
             g.CompositingQuality = CompositingQuality.HighSpeed;
-            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            //g.InterpolationMode = InterpolationMode.HighQualityBilinear;
+
+            g.ScaleTransform(scale.Width, scale.Height);
 
             if (!cachedScenery) CachedSceneryDraws = new List<DrawCall>();
             if (!cachedTiles) CachedTileDraws = new List<DrawCall>();

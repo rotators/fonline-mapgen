@@ -41,7 +41,7 @@ namespace fonline_mapgen
 
         public void Draw(Graphics g, Dictionary<int, ItemProto> itemsPid, Dictionary<string, FalloutFRM> frms, DrawMap.Flags flags)
         {
-            DrawMap.OnGraphics( g, this, this.HexMap, itemsPid, frms, flags );
+            DrawMap.OnGraphics( g, this, this.HexMap, itemsPid, frms, flags, new SizeF(1.0f, 1.0f));
         }
 
         public static MapperMap Load( string fileName )
