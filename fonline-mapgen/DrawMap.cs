@@ -63,7 +63,7 @@ namespace fonline_mapgen
             //g.CompositingQuality = CompositingQuality.HighSpeed;
             //g.InterpolationMode = InterpolationMode.HighQualityBilinear;
 
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low; // or NearestNeighbour
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor; // or NearestNeighbour
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
             g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
             g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
@@ -116,11 +116,11 @@ namespace fonline_mapgen
                         string dirS;
                         int dir = 0;
 
-                        if(!obj.Properties.TryGetValue("Dir", out dirS))
-                            System.Windows.Forms.MessageBox.Show("Unable to get dir for " +  obj.MapX + "- " + obj.MapY);
+                        obj.Properties.TryGetValue("Dir", out dirS);
+                           // System.Windows.Forms.MessageBox.Show("Unable to get dir for " +  obj.MapX + "- " + obj.MapY);
 
-                        if (!int.TryParse(dirS, out dir))
-                            System.Windows.Forms.MessageBox.Show("Unable to get dir for " + obj.MapX + "- " + obj.MapY);
+                        int.TryParse(dirS, out dir);
+                           // System.Windows.Forms.MessageBox.Show("Unable to get dir for " + obj.MapX + "- " + obj.MapY);
 
                         string crTypeS = "";
                         critterData.crTypeGraphic.TryGetValue(crType, out crTypeS);

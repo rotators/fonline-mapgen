@@ -50,7 +50,6 @@ namespace fonline_mapgen
             this.HexMap = new FOHexMap(new Size(this.Header.MaxHexX, this.Header.MaxHexY));
             
             Tile rightTile = this.Tiles[0];
-            float coordsX = 0.0f;
 
             List<Point> hexes = new List<Point>();
             foreach (var tile in this.Tiles)
