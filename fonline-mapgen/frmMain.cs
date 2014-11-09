@@ -99,6 +99,9 @@ namespace fonline_mapgen
                 viewPortSize.Y = ((map.GetEdgeCoords(FOHexMap.Direction.Down).Y)  - (map.GetEdgeCoords(FOHexMap.Direction.Up).Y)) + 100.0f;
 
                 resizeViewport();
+                centerViewport();
+
+                panel1.Refresh();
             }
             else
                 MessageBox.Show( "Error loading map " + fileName );
@@ -123,25 +126,29 @@ namespace fonline_mapgen
             foreach( string path in this.GraphicsPaths )
             {
                 files.AddRange( loadedDat.GetFilesByPattern( path ) );
-            }
+            
 
-            foreach( DATFile file in files )
-            {
-                string ext = Path.GetExtension( file.FileName ).ToLower();
-                if( !(ext == ".frm" || ext == ".png") )
-                    continue;
+                foreach( DATFile file in files )
+                {
+                    string ext = Path.GetExtension( file.FileName ).ToLower();
+                    if( !(ext == ".frm" || ext == ".png") )
+                        continue;
 
-                if( ext == ".frm" )
-                {
-                    var frm = FalloutFRMLoader.LoadFRM( file.GetData(), Transparency );
-                    frm.FileName = file.Path.ToLower();
-                    Frms[frm.FileName] = frm;
+                    if( ext == ".frm" )
+                    {
+                        var frm = FalloutFRMLoader.LoadFRM( file.GetData(), Transparency );
+                        frm.FileName = file.Path.ToLower();
+                        Frms[frm.FileName] = frm;
+                    }
+                    else
+                    {
+                        System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter( typeof( Bitmap ) );
+                        Bitmap bitmap = (Bitmap)tc.ConvertFrom( file.GetData() );
+                    }
                 }
-                else
-                {
-                    System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter( typeof( Bitmap ) );
-                    Bitmap bitmap = (Bitmap)tc.ConvertFrom( file.GetData() );
-                }
+
+                files.Clear();
+
             }
 
             loadedDat.Close();
@@ -167,6 +174,16 @@ namespace fonline_mapgen
 
             DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
                 new Point(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value));
+        }
+
+        private void centerViewport()
+        {
+            pnlViewPort.VerticalScroll.Value = pnlViewPort.VerticalScroll.Maximum / 3;
+            pnlViewPort.HorizontalScroll.Value = pnlViewPort.HorizontalScroll.Maximum / 3;
+            // Due to a bug in .NET, appearance of where the control is isn't updated unless do this twice after
+            // changing the position over the vertical scrollbar.
+            pnlViewPort.HorizontalScroll.Value = pnlViewPort.HorizontalScroll.Maximum / 3;    
+            pnlViewPort.Refresh();
         }
 
         private void resizeViewport()
@@ -244,6 +261,7 @@ namespace fonline_mapgen
             GraphicsPaths.Add( "art\\walls" );
             GraphicsPaths.Add( "art\\door" );
             GraphicsPaths.Add( "art\\scenery" );
+            GraphicsPaths.Add("art\\critters");
 
             Stream stream;
             BinaryFormatter formatter = new BinaryFormatter();

@@ -56,7 +56,7 @@
             // 
             // btnLoadMap
             // 
-            this.btnLoadMap.Location = new System.Drawing.Point(547, 16);
+            this.btnLoadMap.Location = new System.Drawing.Point(547, 22);
             this.btnLoadMap.Name = "btnLoadMap";
             this.btnLoadMap.Size = new System.Drawing.Size(78, 25);
             this.btnLoadMap.TabIndex = 1;
@@ -80,7 +80,7 @@
             // 
             this.lblMouseCoords.AutoSize = true;
             this.lblMouseCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMouseCoords.Location = new System.Drawing.Point(690, 16);
+            this.lblMouseCoords.Location = new System.Drawing.Point(690, 22);
             this.lblMouseCoords.Name = "lblMouseCoords";
             this.lblMouseCoords.Size = new System.Drawing.Size(164, 25);
             this.lblMouseCoords.TabIndex = 8;
@@ -89,7 +89,7 @@
             // lblProtos
             // 
             this.lblProtos.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProtos.Location = new System.Drawing.Point(12, 49);
+            this.lblProtos.Location = new System.Drawing.Point(12, 56);
             this.lblProtos.Name = "lblProtos";
             this.lblProtos.Size = new System.Drawing.Size(1279, 25);
             this.lblProtos.TabIndex = 9;
@@ -99,7 +99,7 @@
             // 
             this.cmbMaps.DropDownWidth = 600;
             this.cmbMaps.FormattingEnabled = true;
-            this.cmbMaps.Location = new System.Drawing.Point(15, 19);
+            this.cmbMaps.Location = new System.Drawing.Point(15, 25);
             this.cmbMaps.Name = "cmbMaps";
             this.cmbMaps.Size = new System.Drawing.Size(517, 21);
             this.cmbMaps.TabIndex = 10;
@@ -108,8 +108,8 @@
             // 
             this.menu.BackColor = System.Drawing.SystemColors.Control;
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.stuffToolStripMenuItem,
             this.menuFile,
+            this.stuffToolStripMenuItem,
             this.menuView});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
@@ -146,22 +146,21 @@
             // 
             this.menuFileOpen.Name = "menuFileOpen";
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size(146, 22);
+            this.menuFileOpen.Size = new System.Drawing.Size(152, 22);
             this.menuFileOpen.Text = "&Open";
             this.menuFileOpen.Click += new System.EventHandler(this.menuFileOpen_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(143, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
             // 
             // menuFileExport
             // 
             this.menuFileExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuFileExportImage});
-            this.menuFileExport.Enabled = false;
             this.menuFileExport.Name = "menuFileExport";
-            this.menuFileExport.Size = new System.Drawing.Size(146, 22);
+            this.menuFileExport.Size = new System.Drawing.Size(152, 22);
             this.menuFileExport.Text = "Export...";
             // 
             // menuFileExportImage
