@@ -30,7 +30,7 @@ namespace fonline_mapgen
 
         private void button2_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -110,6 +110,11 @@ namespace fonline_mapgen
         private void button7_Click(object sender, EventArgs e)
         {
             SetFile(txtCritterTypes);
+        }
+
+        private void btnRemove_Click(object sender, EventArgs e)
+        {
+            lstDataFiles.Items.Remove(lstDataFiles.SelectedItem);
         }
     }
 }
