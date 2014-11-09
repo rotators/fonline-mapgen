@@ -42,6 +42,7 @@ namespace fonline_mapgen
         ItemProtoParser protoParser = new ItemProtoParser();
 
         frmPaths frmPaths;
+        frmPerformance frmPerformance;
 
 
         public MapperMap CurrentMap
@@ -203,7 +204,24 @@ namespace fonline_mapgen
             if( map == null )
                 return;
 
-            DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
+            var g = e.Graphics;
+
+            if (mapperSettings.Performance.FastRendering)
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+            }
+            else
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+            }
+
+            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
                 new Point(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value));
         }
 
@@ -251,16 +269,22 @@ namespace fonline_mapgen
                 lblProtos.Text = "Proto: ";
             foreach( var obj in map.Objects.FindAll( x => x.MapX == hex.X && x.MapY == hex.Y ) )
             {
-                if( !(obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
-                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery) )
-                    continue;
+                if ((obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
+                      obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery))
+                {
+                    ItemProto prot;
+                    if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
+                        continue;
 
-                ItemProto prot;
-                if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
-                    continue;
+                    lblProtos.Text = "Proto: " + (obj.ProtoId);
+                    lblProtos.Text += string.Format(" ({0} - {1})", prot.Name, prot.PicMap);
+                }
 
-                lblProtos.Text = "Proto: " + (obj.ProtoId);
-                lblProtos.Text += string.Format( " ({0} - {1})", prot.Name, prot.PicMap );
+                if (obj.MapObjType == FOCommon.Maps.MapObjectType.Critter)
+                {
+                    lblProtos.Text = "Critter: " + obj.ProtoId;
+                }
+
             }
         }
 
@@ -313,6 +337,9 @@ namespace fonline_mapgen
                 mapperSettings.View.Items =
                 mapperSettings.View.Scenery =
                 mapperSettings.View.Walls = true;
+
+                mapperSettings.Performance.CacheResources = true;
+                mapperSettings.Performance.FastRendering = true;
             }
 
             menuViewTiles.Checked = mapperSettings.View.Tiles;
@@ -322,14 +349,17 @@ namespace fonline_mapgen
             menuViewScenery.Checked = mapperSettings.View.Scenery;
             menuViewSceneryWalls.Checked = mapperSettings.View.Walls;
 
+            stream = null;
+
             if (File.Exists("./critters.dat"))
             {
                 stream = File.OpenRead("./critters.dat");
                 critterData = (CritterData)formatter.Deserialize(stream);
+                stream.Close();
             }
             else
             {
-                foreach (string file in Directory.GetFiles(mapperSettings.Paths.ItemProtos))
+                foreach (string file in Directory.GetFiles(mapperSettings.Paths.CritterProtos))
                 {
                     int pid = 0;
                     int crType = 0;
@@ -355,15 +385,18 @@ namespace fonline_mapgen
                     var toks = line.Split(delim, StringSplitOptions.RemoveEmptyEntries);
                     critterData.crTypeGraphic[int.Parse(toks[1])] = toks[2];
                 }
-
-                stream = File.Create("./critters.dat");
-                formatter.Serialize(stream, critterData);
+                if (mapperSettings.Performance.CacheResources)
+                {
+                    stream = File.Create("./critters.dat");
+                    formatter.Serialize(stream, critterData);
+                }
             }
 
             if (File.Exists("./items.dat"))
             {
                 stream = File.OpenRead("./items.dat");
                 items = (List<ItemProto>)formatter.Deserialize(stream);
+                stream.Close();
             }
             else
             {
@@ -383,14 +416,18 @@ namespace fonline_mapgen
                         protoParser.LoadProtosFromFile(mapperSettings.Paths.ItemProtos + file, "1.0", FOObj, items, null);
                     }
                 }
-                stream = File.Create("./items.dat");
-                formatter.Serialize(stream, items);
+                if (mapperSettings.Performance.CacheResources)
+                {
+                    stream = File.Create("./items.dat");
+                    formatter.Serialize(stream, items);
+                }
             }
 
             if (File.Exists("./graphics.dat"))
             {
                 stream = File.OpenRead("./graphics.dat");
                 Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize(stream);
+                stream.Close();
             }
             else
             {
@@ -417,8 +454,11 @@ namespace fonline_mapgen
                             LoadZip(dataFile, transparency);
                     }
 
-                    stream = File.Create("./graphics.dat");
-                    formatter.Serialize(stream, Frms);
+                    if (mapperSettings.Performance.CacheResources)
+                    {
+                        stream = File.Create("./graphics.dat");
+                        formatter.Serialize(stream, Frms);
+                    }
                 }
             }
 
@@ -429,7 +469,7 @@ namespace fonline_mapgen
 
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
 
-            stream.Close();
+            if(stream != null) stream.Close();
         }
 
         private void frmMain_Paint( object sender, PaintEventArgs e )
@@ -520,6 +560,12 @@ namespace fonline_mapgen
         {
             if (frmPaths == null || frmPaths.IsDisposed) frmPaths = new frmPaths(mapperSettings);
             frmPaths.Show();
+        }
+
+        private void performanceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (frmPerformance == null || frmPerformance.IsDisposed) frmPerformance = new frmPerformance(mapperSettings);
+            frmPerformance.Show();
         }
     }
 }

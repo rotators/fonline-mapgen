@@ -68,6 +68,12 @@
     <Compile Include="frmPaths.Designer.cs">
       <DependentUpon>frmPaths.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmPerformance.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPerformance.Designer.cs">
+      <DependentUpon>frmPerformance.cs</DependentUpon>
+    </Compile>
     <Compile Include="MapperMap.cs" />
     <Compile Include="frmHeaderEditor.cs">
       <SubType>Form</SubType>
@@ -92,6 +98,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmPaths.resx">
       <DependentUpon>frmPaths.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPerformance.resx">
+      <DependentUpon>frmPerformance.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

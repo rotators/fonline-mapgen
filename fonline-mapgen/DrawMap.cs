@@ -34,6 +34,8 @@ namespace fonline_mapgen
         public static bool cachedTiles;
         public static bool cachedRoofTiles;
 
+        private static List<string> MissingNotified = new List<string>();
+
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
         private static List<DrawCall> CachedRoofTileDraws = new List<DrawCall>();
@@ -62,11 +64,6 @@ namespace fonline_mapgen
             // should it really be here? maybe callee should set it instead?
             //g.CompositingQuality = CompositingQuality.HighSpeed;
             //g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor; // or NearestNeighbour
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
-            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
 
             g.ScaleTransform(scale.Width, scale.Height);
 
@@ -173,12 +170,19 @@ namespace fonline_mapgen
         private static void DrawCritter( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string critter, int x, int y, int dir)
         {
             FalloutFRM frm;
-            if (!frms.TryGetValue("art\\critters\\" + critter + "aa.frm", out frm))
-                System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm missing");
+            string cr = "art\\critters\\" + critter + "aa.frm";
+            if (!frms.TryGetValue(cr, out frm))
+            {
+                if (!MissingNotified.Contains(cr))
+                {
+                    System.Windows.Forms.MessageBox.Show(cr + " is missing.");
+                    MissingNotified.Add(cr);
+                }
+            }
 
             if (frm == null)
             {
-                System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm");
+                //System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm");
                 return;
             }
 

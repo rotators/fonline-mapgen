@@ -9,12 +9,14 @@ public class MapperSettings
     public PathSettings Paths { get; set; }
     public UISettings UI { get; set; }
     public ViewSettings View { get; set; }
+    public PerformanceSettings Performance { get; set; }
 
     public MapperSettings()
     {
         Paths = new PathSettings();
         UI = new UISettings();
         View = new ViewSettings();
+        Performance = new PerformanceSettings();
     }
 }
 
@@ -36,6 +38,12 @@ public class UISettings
     public int Width { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
+}
+
+public class PerformanceSettings
+{
+    public bool CacheResources { get; set; }
+    public bool FastRendering  { get; set; }
 }
 
 public class ViewSettings
