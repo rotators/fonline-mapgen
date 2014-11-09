@@ -56,7 +56,7 @@ namespace fonline_mapgen
             cachedRoofTiles = false;
         }
 
-        public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, 
+        public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
             Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, Point scrollPoint)
         {
             // should it really be here? maybe callee should set it instead?
@@ -95,10 +95,10 @@ namespace fonline_mapgen
                 foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY * 2))
                 {
                     // TODO: Draw critters.
-                    if (!(obj.MapObjType == MapObjectType.Item ||
-                          obj.MapObjType == MapObjectType.Scenery))
+                    /*if (!(obj.MapObjType == MapObjectType.Item ||
+                          obj.MapObjType == MapObjectType.Scenery ||))
                         continue;
-
+                    */
                     // skip specific object types
                     if (obj.MapObjType == MapObjectType.Critter && !DrawFlag(flags, Flags.Critters))
                         continue;
@@ -107,16 +107,41 @@ namespace fonline_mapgen
                     else if (obj.MapObjType == MapObjectType.Scenery && !DrawFlag(flags, Flags.Scenery))
                         continue;
 
-                    ItemProto prot;
-                    if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
-                        continue;
+                    if (obj.MapObjType == MapObjectType.Critter)
+                    {
+
+                        int crType = 0;
+                        critterData.crProtos.TryGetValue(obj.ProtoId, out crType);
+
+                        string dirS;
+                        int dir = 0;
+
+                        if(!obj.Properties.TryGetValue("Dir", out dirS))
+                            System.Windows.Forms.MessageBox.Show("Unable to get dir for " +  obj.MapX + "- " + obj.MapY);
+
+                        if (!int.TryParse(dirS, out dir))
+                            System.Windows.Forms.MessageBox.Show("Unable to get dir for " + obj.MapX + "- " + obj.MapY);
+
+                        string crTypeS = "";
+                        critterData.crTypeGraphic.TryGetValue(crType, out crTypeS);
+
+
+                        DrawCritter(g, hexMap, frms, crTypeS, obj.MapX, obj.MapY, dir);
+                    }
+                    else
+                    {
+                        ItemProto prot;
+                        if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
+                            continue;
+
+                        if (prot.Type == (int)ItemTypes.ITEM_WALL && !DrawFlag(flags, Flags.SceneryWalls))
+                            continue;
+                        DrawScenery(g, hexMap, frms, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY);
+                    }
 
                     // WriteLog("Drawing " + prot.PicMap);
 
-                    if (prot.Type == (int)ItemTypes.ITEM_WALL && !DrawFlag(flags, Flags.SceneryWalls))
-                        continue;
 
-                    DrawScenery(g, hexMap, frms, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY);
                 }
             }
 
@@ -143,6 +168,26 @@ namespace fonline_mapgen
             
             //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
             //MessageBox.Show("paint_event");
+        }
+
+        private static void DrawCritter( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string critter, int x, int y, int dir)
+        {
+            FalloutFRM frm;
+            if (!frms.TryGetValue("art\\critters\\" + critter + "aa.frm", out frm))
+                System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm missing");
+
+            if (frm == null)
+            {
+                System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm");
+                return;
+            }
+
+            var coords = hexMap.GetObjectCoords(new Point(x, y), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(0, 0));
+
+            var idleFrame = frm.GetAnimFrameByDir(dir, 1);
+
+            g.DrawImage(idleFrame, coords.X, coords.Y);
+            CachedSceneryDraws.Add(new DrawCall(idleFrame, coords.X, coords.Y));
         }
 
         private static void DrawScenery( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string scenery, int x, int y, int offx2, int offy2 )

@@ -24,6 +24,11 @@ namespace fonline_mapgen
 
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
         List<ItemProto> items = new List<ItemProto>();
+
+        Color transparency = Color.FromArgb(11, 0, 11);
+
+        CritterData critterData = new CritterData();
+
         Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
 
         float scaleFactor = 1.0f;
@@ -74,6 +79,7 @@ namespace fonline_mapgen
             menuViewTiles.Checked =
             menuViewRoofs.Checked =
             //TODO: menuViewCritters.Checked =
+            menuViewCritters.Checked = 
             menuViewItems.Checked =
             menuViewScenery.Checked =
             menuViewSceneryWalls.Checked =
@@ -127,28 +133,36 @@ namespace fonline_mapgen
             {
                 files.AddRange( loadedDat.GetFilesByPattern( path ) );
             
-
                 foreach( DATFile file in files )
                 {
                     string ext = Path.GetExtension( file.FileName ).ToLower();
                     if( !(ext == ".frm" || ext == ".png") )
                         continue;
 
+                    WriteLog("Adding " + file.Path.ToLower());
+
+                    byte[] data = file.GetData();
+                    if (data == null)
+                    {
+                        WriteLog("Erroring opening " + file.FileName + ": " + file.ErrorMsg);
+                        continue;
+                    }
+
                     if( ext == ".frm" )
                     {
-                        var frm = FalloutFRMLoader.LoadFRM( file.GetData(), Transparency );
+                        var frm = FalloutFRMLoader.LoadFRM(data, Transparency );
                         frm.FileName = file.Path.ToLower();
                         Frms[frm.FileName] = frm;
                     }
                     else
                     {
                         System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter( typeof( Bitmap ) );
-                        Bitmap bitmap = (Bitmap)tc.ConvertFrom( file.GetData() );
+                        Bitmap bitmap = (Bitmap)tc.ConvertFrom( data );
                     }
+                    //GC.Collect();
                 }
 
                 files.Clear();
-
             }
 
             loadedDat.Close();
@@ -172,7 +186,7 @@ namespace fonline_mapgen
             if( map == null )
                 return;
 
-            DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
+            DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
                 new Point(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value));
         }
 
@@ -206,8 +220,7 @@ namespace fonline_mapgen
             if( map == null )
                 return;
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
-            //lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
-            lblMouseCoords.Text = string.Format("Panel Scroll: {0},{1} - Hex: {2},{3}", pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height);
+            lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
             //
 
             if( map.Objects.Count( x => x.MapX == hex.X && x.MapY == hex.Y ) == 0 )
@@ -251,76 +264,144 @@ namespace fonline_mapgen
             }
         }
 
-        private void frmMain_Paint( object sender, PaintEventArgs e )
+        private void LoadResources()
         {
-            if( Frms.Count != 0 )
-                return;
-
-            GraphicsPaths.Add( "art\\tiles" );
-            GraphicsPaths.Add( "art\\misc" );
-            GraphicsPaths.Add( "art\\walls" );
-            GraphicsPaths.Add( "art\\door" );
-            GraphicsPaths.Add( "art\\scenery" );
-            GraphicsPaths.Add("art\\critters");
+            GraphicsPaths.Add("art\\tiles");
+            GraphicsPaths.Add("art\\misc");
+            GraphicsPaths.Add("art\\walls");
+            GraphicsPaths.Add("art\\door");
+            GraphicsPaths.Add("art\\scenery");
+            //GraphicsPaths.Add("art\\critters");
 
             Stream stream;
             BinaryFormatter formatter = new BinaryFormatter();
 
-            if( File.Exists( "./graphics.dat" ) )
+            if (File.Exists("./graphics.dat"))
             {
-                stream = File.OpenRead( "./graphics.dat" );
-                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize( stream );
+                stream = File.OpenRead("./graphics.dat");
+                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize(stream);
             }
             else
             {
-                Color transparency = Color.FromArgb( 11, 0, 11 );
-
-                foreach( string dataFile in UGLY.DataFiles )
+                foreach (string dataFile in UGLY.DataFiles)
                 {
-                    string ext = Path.GetExtension( dataFile ).ToLower();
+                    string ext = Path.GetExtension(dataFile).ToLower();
 
-                    if( ext == ".dat" )
-                        LoadDat( dataFile, transparency );
-                    else if( ext == ".zip" )
-                        LoadZip( dataFile, transparency );
+                    if (ext == ".dat")
+                        LoadDat(dataFile, transparency);
+                    else if (ext == ".zip")
+                        LoadZip(dataFile, transparency);
                     else
-                        MessageBox.Show( "Unknown datafile extension : " + dataFile );
+                        MessageBox.Show("Unknown datafile extension : " + dataFile);
                 }
 
-                stream = File.Create( "./graphics.dat" );
-                formatter.Serialize( stream, Frms );
+                stream = File.Create("./graphics.dat");
+                formatter.Serialize(stream, Frms);
             }
 
-            if( File.Exists( "./items.dat" ) )
+            if (File.Exists("./items.dat"))
             {
-                stream = File.OpenRead( "./items.dat" );
-                items = (List<ItemProto>)formatter.Deserialize( stream );
+                stream = File.OpenRead("./items.dat");
+                items = (List<ItemProto>)formatter.Deserialize(stream);
             }
             else
             {
-                MSGParser FOObj = new MSGParser( UGLY.ServerDir + @"text\engl\FOOBJ.MSG" );
+                MSGParser FOObj = new MSGParser(UGLY.ServerDir + @"text\engl\FOOBJ.MSG");
                 FOObj.Parse();
 
-                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null );
-                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null );
-                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null );
-                protoParser.LoadProtosFromFile( UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null );
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\door.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\misc.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\generic.fopro", "1.0", FOObj, items, null);
+                protoParser.LoadProtosFromFile(UGLY.ServerDir + @"proto\items\wall.fopro", "1.0", FOObj, items, null);
 
-                stream = File.Create( "./items.dat" );
-                formatter.Serialize( stream, items );
+                stream = File.Create("./items.dat");
+                formatter.Serialize(stream, items);
+            }
+
+            if (File.Exists("./critters.dat"))
+            {
+                stream = File.OpenRead("./critters.dat");
+                critterData = (CritterData)formatter.Deserialize(stream);
+            }
+            else
+            {
+                foreach (string file in Directory.GetFiles(UGLY.ServerDir + @"proto\critters"))
+                {
+                    int pid = 0;
+                    int crType = 0;
+                    bool parse = false;
+                    foreach (var line in File.ReadAllLines(file))
+                    {
+                        if (line == "[Critter proto]")
+                            if (parse)
+                                critterData.crProtos[pid] = crType;
+                        parse = true;
+                        if (!parse) continue;
+                        if (line.StartsWith("Pid="))
+                            pid = int.Parse(line.Split('=')[1]);
+                        if (line.StartsWith("ST_BASE_CRTYPE="))
+                            crType = int.Parse(line.Split('=')[1]);
+                    }
+                }
+
+                char[] delim = {'\t', ' '};
+                foreach (var line in File.ReadAllLines(UGLY.ServerDir + @"data\CritterTypes.cfg"))
+                {
+                    if (!line.StartsWith("@")) continue;
+                    var toks = line.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+                    critterData.crTypeGraphic[int.Parse(toks[1])] = toks[2];
+                }
+
+                stream = File.Create("./critters.dat");
+                formatter.Serialize(stream, critterData);
+            }
+
+            if (File.Exists("./graphics_critters.dat"))
+            {
+                stream = File.OpenRead("./critters.dat");
+                critterData = (CritterData)formatter.Deserialize(stream);
+            }
+            else
+            {
+                string crPath = @"H:\FOnline\FOnlineStable\CRITTER.DAT";
+                DatReaderError status;
+                DAT loadedDat = DATReader.ReadDat(crPath, out status);
+                Dictionary<String, FalloutFRM> CrFrms = new Dictionary<string, FalloutFRM>();
+
+                if (status.Error == DatError.Success)
+                {
+                    foreach (var crType in critterData.crTypeGraphic.Values)
+                    {
+                        var file = loadedDat.GetFileByName("art\\critters\\" + crType.ToUpper() + "AA.FRM"); // Idle anim
+                        if (file == null) continue;
+                        var frm = FalloutFRMLoader.LoadFRM(file.GetData(), this.transparency);
+                        frm.FileName = file.Path.ToLower();
+                        CrFrms[frm.FileName] = frm;
+                        Frms[frm.FileName] = frm;
+                    }
+                }
+                else
+                    MessageBox.Show("Error loading " + crPath + ": " + Environment.NewLine + status.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                
             }
 
             foreach (var item in items)
                 itemsPid[item.ProtoId] = item;
 
-            cmbMaps.Items.AddRange( Directory.GetFiles( UGLY.ServerDir + @"maps\", "*.fomap" ) );
+            cmbMaps.Items.AddRange(Directory.GetFiles(UGLY.ServerDir + @"maps\", "*.fomap"));
 
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
 
             stream.Close();
+        }
 
-            //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
-            //LoadMap(UGLY.ServerDir + @"maps\den.fomap");
+        private void frmMain_Paint( object sender, PaintEventArgs e )
+        {
+            if( Frms.Count != 0 )
+                return;
+
+            LoadResources();
         }
 
         #region Menu functions

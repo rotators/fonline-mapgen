@@ -34,9 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DatLib">
-      <HintPath>lib\DatLib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -52,6 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CritterData.cs" />
     <Compile Include="DoubleBufferedPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -102,6 +100,10 @@
     <ProjectReference Include="..\..\FOCommon\FOCommon.csproj">
       <Project>{D53538FB-D9E6-4FE7-9E19-E2EF4330D81E}</Project>
       <Name>FOCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\tools\DATLib\DATLib.csproj">
+      <Project>{CAD53BCA-DC4B-4BDD-8199-5CD640C47CC1}</Project>
+      <Name>DATLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

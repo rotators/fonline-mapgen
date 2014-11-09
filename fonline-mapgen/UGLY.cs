@@ -9,7 +9,7 @@ namespace fonline_mapgen
         {
 #if _G
             @"H:\FOnline\FOnlineStable\MASTER.DAT",
-            @"H:\FOnline\FOnlineDev\FONLINE.DAT",
+            @"H:\FOnline\FOnlineDev\FONLINE.DAT"
 
 #elif _W
             @"C:\Users\wipe\Desktop\SDK\Client\data\packs\fallout.dat",
