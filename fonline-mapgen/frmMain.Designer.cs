@@ -30,7 +30,6 @@
         {
             this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
-            this.panel1 = new fonline_mapgen.DoubleBufferPanel();
             this.lblMouseCoords = new System.Windows.Forms.Label();
             this.lblProtos = new System.Windows.Forms.Label();
             this.cmbMaps = new System.Windows.Forms.ComboBox();
@@ -50,6 +49,7 @@
             this.menuViewScenery = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapDialog = new System.Windows.Forms.OpenFileDialog();
+            this.panel1 = new fonline_mapgen.DoubleBufferPanel();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.SuspendLayout();
@@ -58,7 +58,7 @@
             // 
             this.btnLoadMap.Location = new System.Drawing.Point(547, 16);
             this.btnLoadMap.Name = "btnLoadMap";
-            this.btnLoadMap.Size = new System.Drawing.Size(131, 25);
+            this.btnLoadMap.Size = new System.Drawing.Size(78, 25);
             this.btnLoadMap.TabIndex = 1;
             this.btnLoadMap.Text = "Load Map";
             this.btnLoadMap.UseVisualStyleBackColor = true;
@@ -76,21 +76,11 @@
             this.pnlViewPort.Size = new System.Drawing.Size(1004, 538);
             this.pnlViewPort.TabIndex = 7;
             // 
-            // panel1
-            // 
-            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel1.Location = new System.Drawing.Point(3, 3);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(8003, 8350);
-            this.panel1.TabIndex = 0;
-            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
-            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
-            // 
             // lblMouseCoords
             // 
             this.lblMouseCoords.AutoSize = true;
             this.lblMouseCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMouseCoords.Location = new System.Drawing.Point(694, 16);
+            this.lblMouseCoords.Location = new System.Drawing.Point(690, 16);
             this.lblMouseCoords.Name = "lblMouseCoords";
             this.lblMouseCoords.Size = new System.Drawing.Size(164, 25);
             this.lblMouseCoords.TabIndex = 8;
@@ -197,7 +187,7 @@
             // 
             this.menuViewTiles.CheckOnClick = true;
             this.menuViewTiles.Name = "menuViewTiles";
-            this.menuViewTiles.Size = new System.Drawing.Size(152, 22);
+            this.menuViewTiles.Size = new System.Drawing.Size(115, 22);
             this.menuViewTiles.Text = "Tiles";
             this.menuViewTiles.CheckedChanged += new System.EventHandler(this.menuViewTiles_CheckedChanged);
             // 
@@ -205,7 +195,7 @@
             // 
             this.menuViewRoofs.CheckOnClick = true;
             this.menuViewRoofs.Name = "menuViewRoofs";
-            this.menuViewRoofs.Size = new System.Drawing.Size(152, 22);
+            this.menuViewRoofs.Size = new System.Drawing.Size(115, 22);
             this.menuViewRoofs.Text = "Roofs";
             this.menuViewRoofs.CheckedChanged += new System.EventHandler(this.menuViewRoofs_CheckedChanged);
             // 
@@ -214,7 +204,7 @@
             this.menuViewCritters.CheckOnClick = true;
             this.menuViewCritters.Enabled = false;
             this.menuViewCritters.Name = "menuViewCritters";
-            this.menuViewCritters.Size = new System.Drawing.Size(152, 22);
+            this.menuViewCritters.Size = new System.Drawing.Size(115, 22);
             this.menuViewCritters.Text = "Critters";
             this.menuViewCritters.CheckedChanged += new System.EventHandler(this.menuViewCritters_CheckedChanged);
             // 
@@ -222,7 +212,7 @@
             // 
             this.menuViewItems.CheckOnClick = true;
             this.menuViewItems.Name = "menuViewItems";
-            this.menuViewItems.Size = new System.Drawing.Size(152, 22);
+            this.menuViewItems.Size = new System.Drawing.Size(115, 22);
             this.menuViewItems.Text = "Items";
             this.menuViewItems.CheckedChanged += new System.EventHandler(this.menuViewItems_CheckedChanged);
             // 
@@ -232,7 +222,7 @@
             this.menuViewScenery.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuViewSceneryWalls});
             this.menuViewScenery.Name = "menuViewScenery";
-            this.menuViewScenery.Size = new System.Drawing.Size(152, 22);
+            this.menuViewScenery.Size = new System.Drawing.Size(115, 22);
             this.menuViewScenery.Text = "Scenery";
             this.menuViewScenery.CheckedChanged += new System.EventHandler(this.menuViewScenery_CheckedChanged);
             // 
@@ -240,7 +230,7 @@
             // 
             this.menuViewSceneryWalls.CheckOnClick = true;
             this.menuViewSceneryWalls.Name = "menuViewSceneryWalls";
-            this.menuViewSceneryWalls.Size = new System.Drawing.Size(152, 22);
+            this.menuViewSceneryWalls.Size = new System.Drawing.Size(102, 22);
             this.menuViewSceneryWalls.Text = "Walls";
             this.menuViewSceneryWalls.CheckedChanged += new System.EventHandler(this.menuViewSceneryWalls_CheckedChanged);
             // 
@@ -251,6 +241,16 @@
             this.openMapDialog.RestoreDirectory = true;
             this.openMapDialog.ShowReadOnly = true;
             this.openMapDialog.SupportMultiDottedExtensions = true;
+            // 
+            // panel1
+            // 
+            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel1.Location = new System.Drawing.Point(3, 3);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(300, 300);
+            this.panel1.TabIndex = 0;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
             // frmMain
             // 

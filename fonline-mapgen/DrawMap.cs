@@ -57,11 +57,16 @@ namespace fonline_mapgen
         }
 
         public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, 
-            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale)
+            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, Point scrollPoint)
         {
             // should it really be here? maybe callee should set it instead?
-            g.CompositingQuality = CompositingQuality.HighSpeed;
+            //g.CompositingQuality = CompositingQuality.HighSpeed;
             //g.InterpolationMode = InterpolationMode.HighQualityBilinear;
+
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low; // or NearestNeighbour
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
 
             g.ScaleTransform(scale.Width, scale.Height);
 
@@ -133,6 +138,7 @@ namespace fonline_mapgen
             }
 
             foreach (var call in CachedRoofTileDraws)
+                //System.Windows.Forms.MessageBox.Show(call.Bitmap.PixelFormat.ToString());
                 g.DrawImage(call.Bitmap, call.X, call.Y);
             
             //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;

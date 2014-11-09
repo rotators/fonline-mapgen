@@ -28,6 +28,8 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
 
+        PointF viewPortSize = new PointF();
+
         FOCommon.Parsers.FOMapParser parser;
 
         ItemProtoParser protoParser = new ItemProtoParser();
@@ -93,8 +95,10 @@ namespace fonline_mapgen
                 this.Text = "Mapper Experiment - " + fileName;
                 DrawMap.InvalidateCache();
 
-                panel1.Width = map.Header.MaxHexX * 35;
-                panel1.Height = map.Header.MaxHexY * 16;
+                viewPortSize.X = ((map.GetEdgeCoords(FOHexMap.Direction.Right).X) - (map.GetEdgeCoords(FOHexMap.Direction.Left).X)) + 100.0f;
+                viewPortSize.Y = ((map.GetEdgeCoords(FOHexMap.Direction.Down).Y)  - (map.GetEdgeCoords(FOHexMap.Direction.Up).Y)) + 100.0f;
+
+                resizeViewport();
             }
             else
                 MessageBox.Show( "Error loading map " + fileName );
@@ -161,12 +165,20 @@ namespace fonline_mapgen
             if( map == null )
                 return;
 
-            DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor));
+            DrawMap.OnGraphics(e.Graphics, map, map.HexMap, itemsPid, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
+                new Point(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value));
+        }
+
+        private void resizeViewport()
+        {
+            panel1.Width = (int)(viewPortSize.X * scaleFactor);
+            panel1.Height = (int)(viewPortSize.Y * scaleFactor);
         }
 
         private void panel1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (e.Delta != 0) scaleFactor += ((float)e.Delta / 10000.0f);
+            resizeViewport();
             panel1.Refresh();
         }
 
@@ -177,8 +189,8 @@ namespace fonline_mapgen
             if( map == null )
                 return;
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
-            lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
-
+            //lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
+            lblMouseCoords.Text = string.Format("Panel Scroll: {0},{1} - Hex: {2},{3}", pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height);
             //
 
             if( map.Objects.Count( x => x.MapX == hex.X && x.MapY == hex.Y ) == 0 )
@@ -286,6 +298,8 @@ namespace fonline_mapgen
             cmbMaps.Items.AddRange( Directory.GetFiles( UGLY.ServerDir + @"maps\", "*.fomap" ) );
 
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
+
+            stream.Close();
 
             //string fileName = UGLY.ServerDir+@"maps\hq_camp.fomap";
             //LoadMap(UGLY.ServerDir + @"maps\den.fomap");
