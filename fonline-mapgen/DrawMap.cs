@@ -11,6 +11,11 @@ using FOCommon.Graphic;
 using FOCommon.Items;
 using FOCommon.Maps;
 using FOCommon.Parsers;
+using System.Runtime.InteropServices;
+using System;
+using System.Drawing.Imaging;
+
+
 
 namespace fonline_mapgen
 {
@@ -30,9 +35,24 @@ namespace fonline_mapgen
 
     public static class DrawMap
     {
+        [DllImport("Gdi32.dll")]
+        public static extern int GetPixel(
+        System.IntPtr hdc,    // handle to DC
+        int nXPos,  // x-coordinate of pixel
+        int nYPos   // y-coordinate of pixel
+        );
+
+        [DllImport("User32.dll")]
+        public static extern IntPtr GetDC(IntPtr wnd);
+
+        [DllImport("User32.dll")]
+        public static extern void ReleaseDC(IntPtr dc);
+
         public static bool cachedScenery;
         public static bool cachedTiles;
         public static bool cachedRoofTiles;
+
+        public static object ClickedObject;
 
         private static List<string> MissingNotified = new List<string>();
 
@@ -59,12 +79,8 @@ namespace fonline_mapgen
         }
 
         public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, Point scrollPoint)
+            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, Point clickPos)
         {
-            // should it really be here? maybe callee should set it instead?
-            //g.CompositingQuality = CompositingQuality.HighSpeed;
-            //g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-
             g.ScaleTransform(scale.Width, scale.Height);
 
             if (!cachedScenery) CachedSceneryDraws = new List<DrawCall>();
@@ -122,8 +138,8 @@ namespace fonline_mapgen
                         string crTypeS = "";
                         critterData.crTypeGraphic.TryGetValue(crType, out crTypeS);
 
-
-                        DrawCritter(g, hexMap, frms, crTypeS, obj.MapX, obj.MapY, dir);
+                        if (DrawCritter(g, hexMap, frms, crTypeS, obj.MapX, obj.MapY, dir, clickPos))
+                            ClickedObject = obj;
                     }
                     else
                     {
@@ -167,7 +183,57 @@ namespace fonline_mapgen
             //MessageBox.Show("paint_event");
         }
 
-        private static void DrawCritter( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string critter, int x, int y, int dir)
+        private static Bitmap MakeOpaque(Bitmap original, double opacity)
+        {
+            Bitmap bmp = (Bitmap)original.Clone();
+
+            // Specify a pixel format.
+            PixelFormat pxf = PixelFormat.Format32bppArgb;
+
+            // Lock the bitmap's bits.
+            Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadWrite, pxf);
+
+            // Get the address of the first line.
+            IntPtr ptr = bmpData.Scan0;
+
+            // Declare an array to hold the bytes of the bitmap.
+            // This code is specific to a bitmap with 32 bits per pixels 
+            // (32 bits = 4 bytes, 3 for RGB and 1 byte for alpha).
+            int numBytes = bmp.Width * bmp.Height * 4;
+            byte[] argbValues = new byte[numBytes];
+
+            // Copy the ARGB values into the array.
+            System.Runtime.InteropServices.Marshal.Copy(ptr, argbValues, 0, numBytes);
+
+            // Manipulate the bitmap, such as changing the
+            // RGB values for all pixels in the the bitmap.
+            for (int counter = 0; counter < argbValues.Length; counter += 4)
+            {
+                // argbValues is in format BGRA (Blue, Green, Red, Alpha)
+
+                // If 100% transparent, skip pixel
+                if (argbValues[counter + 4 - 1] == 0)
+                    continue;
+
+                int pos = 0;
+                pos++; // B value
+                pos++; // G value
+                pos++; // R value
+
+                argbValues[counter + pos] = (byte)(argbValues[counter + pos] * opacity);
+            }
+
+            // Copy the ARGB values back to the bitmap
+            System.Runtime.InteropServices.Marshal.Copy(argbValues, 0, ptr, numBytes);
+
+            // Unlock the bits.
+            bmp.UnlockBits(bmpData);
+            return bmp;
+        }
+
+        // returns true if clicked.
+        private static bool DrawCritter( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string critter, int x, int y, int dir, Point clickPos)
         {
             FalloutFRM frm;
             string cr = "art\\critters\\" + critter + "aa.frm";
@@ -183,15 +249,31 @@ namespace fonline_mapgen
             if (frm == null)
             {
                 //System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm");
-                return;
+                return false;
             }
 
             var coords = hexMap.GetObjectCoords(new Point(x, y), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(0, 0));
 
             var idleFrame = frm.GetAnimFrameByDir(dir, 1);
 
+            //System.IntPtr myDC = g.GetHdc();
+            //Color cFirst = ColorTranslator.FromWin32(GetPixel(myDC, clickPos.X, clickPos.Y));
+
+            if ((clickPos.X > coords.X && clickPos.X < coords.X + idleFrame.Width) &&
+                (clickPos.Y > coords.Y && clickPos.Y < coords.Y + idleFrame.Height))
+            {
+                System.Windows.Forms.MessageBox.Show("clicked!");
+                var opaque = MakeOpaque(idleFrame, 0.3f);
+                g.DrawImage(opaque, coords.X, coords.Y);
+                CachedSceneryDraws.Add(new DrawCall(opaque, coords.X, coords.Y));
+                return true;
+            }
+            else
+            {
             g.DrawImage(idleFrame, coords.X, coords.Y);
             CachedSceneryDraws.Add(new DrawCall(idleFrame, coords.X, coords.Y));
+            }
+            return false;
         }
 
         private static void DrawScenery( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string scenery, int x, int y, int offx2, int offy2 )

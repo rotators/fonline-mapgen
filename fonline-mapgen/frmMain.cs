@@ -32,6 +32,7 @@ namespace fonline_mapgen
         Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
 
         float scaleFactor = 1.0f;
+        Point clickedPos = new Point(0,0);
 
         PointF viewPortSize = new PointF();
 
@@ -43,6 +44,7 @@ namespace fonline_mapgen
 
         frmPaths frmPaths;
         frmPerformance frmPerformance;
+        frmMapTree frmMapTree;
 
 
         public MapperMap CurrentMap
@@ -221,8 +223,9 @@ namespace fonline_mapgen
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             }
 
-            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), 
-                new Point(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value));
+            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), clickedPos);
+            Font font = new System.Drawing.Font(FontFamily.GenericSansSerif, 17.0f, FontStyle.Bold);
+            g.DrawString("Selected", font, Brushes.OrangeRed, new PointF(clickedPos.X - 30.0f, clickedPos.Y - 40.0f));
         }
 
         private void centerViewport()
@@ -566,6 +569,29 @@ namespace fonline_mapgen
         {
             if (frmPerformance == null || frmPerformance.IsDisposed) frmPerformance = new frmPerformance(mapperSettings);
             frmPerformance.Show();
+        }
+
+        private void viewMapTreeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (frmMapTree == null || frmMapTree.IsDisposed) frmMapTree = new frmMapTree(CurrentMap);
+            frmMapTree.Show();
+            frmMapTree.TopMost = true;
+        }
+
+        private void panel1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                clickedPos.X = (int)((float)e.X / scaleFactor);
+                clickedPos.Y = (int)((float)e.Y / scaleFactor);
+                DrawMap.InvalidateCache();
+                panel1.Refresh();
+            }
         }
     }
 }

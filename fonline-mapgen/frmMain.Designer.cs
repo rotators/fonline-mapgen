@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
-            this.panel1 = new fonline_mapgen.DoubleBufferPanel();
             this.lblMouseCoords = new System.Windows.Forms.Label();
             this.lblProtos = new System.Windows.Forms.Label();
             this.cmbMaps = new System.Windows.Forms.ComboBox();
@@ -55,8 +54,10 @@
             this.menuViewScenery = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapDialog = new System.Windows.Forms.OpenFileDialog();
-            this.settingsDatasource = new System.Windows.Forms.BindingSource(this.components);
             this.performanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewMapTreeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.panel1 = new fonline_mapgen.DoubleBufferPanel();
+            this.settingsDatasource = new System.Windows.Forms.BindingSource(this.components);
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.settingsDatasource)).BeginInit();
@@ -83,16 +84,6 @@
             this.pnlViewPort.Name = "pnlViewPort";
             this.pnlViewPort.Size = new System.Drawing.Size(1004, 538);
             this.pnlViewPort.TabIndex = 7;
-            // 
-            // panel1
-            // 
-            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel1.Location = new System.Drawing.Point(3, 3);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(300, 300);
-            this.panel1.TabIndex = 0;
-            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
-            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
             // lblMouseCoords
             // 
@@ -191,7 +182,8 @@
             // stuffToolStripMenuItem
             // 
             this.stuffToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.headerToolStripMenuItem});
+            this.headerToolStripMenuItem,
+            this.viewMapTreeToolStripMenuItem});
             this.stuffToolStripMenuItem.Name = "stuffToolStripMenuItem";
             this.stuffToolStripMenuItem.Size = new System.Drawing.Size(70, 20);
             this.stuffToolStripMenuItem.Text = "Map Data";
@@ -215,7 +207,7 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
@@ -289,16 +281,36 @@
             this.openMapDialog.ShowReadOnly = true;
             this.openMapDialog.SupportMultiDottedExtensions = true;
             // 
-            // settingsDatasource
-            // 
-            this.settingsDatasource.DataSource = typeof(MapperSettings);
-            // 
             // performanceToolStripMenuItem
             // 
             this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
             this.performanceToolStripMenuItem.Text = "Performance";
             this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
+            // 
+            // viewMapTreeToolStripMenuItem
+            // 
+            this.viewMapTreeToolStripMenuItem.CheckOnClick = true;
+            this.viewMapTreeToolStripMenuItem.Name = "viewMapTreeToolStripMenuItem";
+            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.viewMapTreeToolStripMenuItem.Text = "View Tree";
+            this.viewMapTreeToolStripMenuItem.Click += new System.EventHandler(this.viewMapTreeToolStripMenuItem_Click);
+            // 
+            // panel1
+            // 
+            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel1.Location = new System.Drawing.Point(3, 3);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(300, 300);
+            this.panel1.TabIndex = 0;
+            this.panel1.Click += new System.EventHandler(this.panel1_Click);
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
+            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
+            // 
+            // settingsDatasource
+            // 
+            this.settingsDatasource.DataSource = typeof(MapperSettings);
             // 
             // frmMain
             // 
@@ -360,6 +372,7 @@
         private System.Windows.Forms.ToolStripMenuItem pathsToolStripMenuItem;
         private System.Windows.Forms.BindingSource settingsDatasource;
         private System.Windows.Forms.ToolStripMenuItem performanceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewMapTreeToolStripMenuItem;
     }
 }
 
