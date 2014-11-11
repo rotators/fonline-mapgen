@@ -61,6 +61,8 @@
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new fonline_mapgen.DoubleBufferPanel();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findMapsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -104,6 +106,7 @@
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuFile,
             this.stuffToolStripMenuItem,
+            this.toolsToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.menuView});
             this.menu.Location = new System.Drawing.Point(0, 0);
@@ -339,6 +342,22 @@
             this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
             this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
+            // toolsToolStripMenuItem
+            // 
+            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.findMapsToolStripMenuItem});
+            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.toolsToolStripMenuItem.Text = "Tools";
+            this.toolsToolStripMenuItem.Click += new System.EventHandler(this.toolsToolStripMenuItem_Click);
+            // 
+            // findMapsToolStripMenuItem
+            // 
+            this.findMapsToolStripMenuItem.Name = "findMapsToolStripMenuItem";
+            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.findMapsToolStripMenuItem.Text = "Find Maps";
+            this.findMapsToolStripMenuItem.Click += new System.EventHandler(this.findMapsToolStripMenuItem_Click);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -402,6 +421,8 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatus;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusHex;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusProto;
+        private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findMapsToolStripMenuItem;
     }
 }
 

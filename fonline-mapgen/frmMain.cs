@@ -14,6 +14,7 @@ using FOCommon.Maps;
 using FOCommon.Graphic;
 using FOCommon.Parsers;
 using FOCommon.Items;
+using System.IO.Compression;
 
 namespace fonline_mapgen
 {
@@ -29,6 +30,7 @@ namespace fonline_mapgen
 
         CritterData critterData = new CritterData();
 
+        List<string> maps = new List<string>();
         Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
 
         float scaleFactor = 1.0f;
@@ -199,10 +201,60 @@ namespace fonline_mapgen
             return true;
         }
 
-        // TODO: LoadZip
         public bool LoadZip( string ZipPath, Color Transparency )
         {
-            return (false);
+            if (!File.Exists(ZipPath))
+            {
+                MessageBox.Show("Unable to load " + ZipPath, "Mapper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+
+            var zip = ZipStorer.Open(ZipPath, FileAccess.Read);
+            var entries = zip.ReadCentralDir();
+            foreach (var entry in entries)
+            {
+                foreach(var path in this.GraphicsPaths)
+                {
+                    if (!entry.FilenameInZip.Replace('/', '\\').Contains(path))
+                        continue;
+                    if (entry.CompressedSize == 0) continue;
+
+                    string filename = entry.FilenameInZip.ToLower().Replace('/', '\\');
+                    string ext = Path.GetExtension( filename ).ToLower();
+                    
+                    if( !(ext == ".frm" || ext == ".png") )
+                        continue;
+
+                    byte[] bytes;
+
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        zip.ExtractFile(entry, stream);
+                        /*using (BinaryReader br = new BinaryReader(stream))
+                        {
+                            bytes = br.ReadBytes((int)br.Length);
+                        }*/
+                        bytes = stream.ToArray();
+                    }
+                    if (ext == ".frm")
+                    {
+                        var frm = FalloutFRMLoader.LoadFRM(bytes, Transparency);
+                        Frms[filename] = frm;
+                    }
+                    else
+                    {
+                        System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter(typeof(Bitmap));
+                        Bitmap bitmap = (Bitmap)tc.ConvertFrom(bytes);
+                        Frms[filename] = new FalloutFRM();
+                        Frms[filename].Frames = new List<Bitmap>();
+                        Frms[filename].Frames.Add(bitmap);
+                        Frms[filename].FileName = entry.FilenameInZip;
+                    }
+
+                }
+            }
+            return true;
         }
 
         private void panel1_Paint( object sender, PaintEventArgs e )
@@ -483,7 +535,11 @@ namespace fonline_mapgen
                 itemsPid[item.ProtoId] = item;
 
             if (mapperSettings.Paths.MapsDir != null)
-                cmbMaps.Items.AddRange(Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap"));
+            {
+                maps = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
+                cmbMaps.Items.AddRange(maps.ToArray());
+            }
+                
 
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
 
@@ -624,6 +680,17 @@ namespace fonline_mapgen
         private void pnlViewPort_Scroll(object sender, ScrollEventArgs e)
         {
             //panel1.Refresh();
+        }
+
+        private void toolsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void findMapsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            frmFindMaps frmFindMaps = new frmFindMaps(maps, Frms.Keys.ToList<string>());
+            frmFindMaps.Show();
         }
     }
 }

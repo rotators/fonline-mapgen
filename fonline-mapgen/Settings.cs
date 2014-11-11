@@ -17,6 +17,9 @@ public class MapperSettings
         UI = new UISettings();
         View = new ViewSettings();
         Performance = new PerformanceSettings();
+
+        Paths.DataDirs = new List<string>();
+        Paths.DataFiles = new List<string>();
     }
 }
 
@@ -29,6 +32,7 @@ public class PathSettings
     public string CritterProtos { get; set; }
     public string ItemProtos { get; set; }
     public List<String> DataFiles { get; set; }
+    public List<String> DataDirs { get; set; }
 }
 
 public class UISettings

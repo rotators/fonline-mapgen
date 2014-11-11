@@ -68,6 +68,12 @@
     <Compile Include="frmDebugInfo.Designer.cs">
       <DependentUpon>frmDebugInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmFindMaps.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmFindMaps.Designer.cs">
+      <DependentUpon>frmFindMaps.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMapTree.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,8 +108,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="ZipStorer.cs" />
     <EmbeddedResource Include="frmDebugInfo.resx">
       <DependentUpon>frmDebugInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmFindMaps.resx">
+      <DependentUpon>frmFindMaps.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmHeaderEditor.resx">
       <DependentUpon>frmHeaderEditor.cs</DependentUpon>

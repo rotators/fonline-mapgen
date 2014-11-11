@@ -13,6 +13,8 @@ namespace fonline_mapgen
     {
         MapperSettings settings;
 
+        const string dirSuffix = "[Directory]";
+
         public frmPaths(MapperSettings settings)
         {
             InitializeComponent();
@@ -26,6 +28,8 @@ namespace fonline_mapgen
             if (settings.Paths.DataFiles == null) settings.Paths.DataFiles = new List<string>();
             foreach (var file in settings.Paths.DataFiles)
                 lstDataFiles.Items.Add(file);
+            foreach (var dir in settings.Paths.DataDirs)
+                lstDataFiles.Items.Add(dir + " " + dirSuffix);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -48,8 +52,16 @@ namespace fonline_mapgen
             settings.Paths.MapsDir = txtMapsDir.Text;
 
             settings.Paths.DataFiles.Clear();
-            foreach (var file in lstDataFiles.Items)
-                settings.Paths.DataFiles.Add((string)file);
+            foreach (string entry in lstDataFiles.Items)
+            {
+                if (entry.Contains(dirSuffix))
+                {
+                    string trimmed = entry.Remove(entry.IndexOf(dirSuffix[0]) - 1, dirSuffix.Length + 1);
+                    settings.Paths.DataDirs.Add((string)trimmed);
+                }
+                else
+                    settings.Paths.DataFiles.Add((string)entry);
+            }
 
             SettingsManager.SaveSettings(settings);
             this.Close();
@@ -115,6 +127,14 @@ namespace fonline_mapgen
         private void btnRemove_Click(object sender, EventArgs e)
         {
             lstDataFiles.Items.Remove(lstDataFiles.SelectedItem);
+        }
+
+        private void btnAddDir_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog1.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return;
+
+            lstDataFiles.Items.Add(folderBrowserDialog1.SelectedPath + " " + dirSuffix);
         }
     }
 }

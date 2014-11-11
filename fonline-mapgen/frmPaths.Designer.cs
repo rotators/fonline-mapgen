@@ -31,6 +31,7 @@
             this.txtBasePath = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.lstDataFiles = new System.Windows.Forms.ListBox();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
@@ -53,7 +54,7 @@
             this.txtMapsDir = new System.Windows.Forms.TextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.lstDataFiles = new System.Windows.Forms.ListBox();
+            this.btnAddDir = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -76,6 +77,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btnAddDir);
             this.groupBox1.Controls.Add(this.lstDataFiles);
             this.groupBox1.Controls.Add(this.btnRemove);
             this.groupBox1.Controls.Add(this.btnAdd);
@@ -86,11 +88,19 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Data Files (MASTER.DAT ...)";
             // 
+            // lstDataFiles
+            // 
+            this.lstDataFiles.FormattingEnabled = true;
+            this.lstDataFiles.Location = new System.Drawing.Point(8, 20);
+            this.lstDataFiles.Name = "lstDataFiles";
+            this.lstDataFiles.Size = new System.Drawing.Size(471, 56);
+            this.lstDataFiles.TabIndex = 3;
+            // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(97, 88);
+            this.btnRemove.Location = new System.Drawing.Point(199, 88);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(146, 23);
+            this.btnRemove.Size = new System.Drawing.Size(132, 23);
             this.btnRemove.TabIndex = 2;
             this.btnRemove.Text = "Remove Selected";
             this.btnRemove.UseVisualStyleBackColor = true;
@@ -269,13 +279,15 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // lstDataFiles
+            // btnAddDir
             // 
-            this.lstDataFiles.FormattingEnabled = true;
-            this.lstDataFiles.Location = new System.Drawing.Point(8, 20);
-            this.lstDataFiles.Name = "lstDataFiles";
-            this.lstDataFiles.Size = new System.Drawing.Size(471, 56);
-            this.lstDataFiles.TabIndex = 3;
+            this.btnAddDir.Location = new System.Drawing.Point(97, 88);
+            this.btnAddDir.Name = "btnAddDir";
+            this.btnAddDir.Size = new System.Drawing.Size(96, 23);
+            this.btnAddDir.TabIndex = 4;
+            this.btnAddDir.Text = "Add Directory";
+            this.btnAddDir.UseVisualStyleBackColor = true;
+            this.btnAddDir.Click += new System.EventHandler(this.btnAddDir_Click);
             // 
             // frmPaths
             // 
@@ -343,5 +355,6 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.ListBox lstDataFiles;
+        private System.Windows.Forms.Button btnAddDir;
     }
 }
