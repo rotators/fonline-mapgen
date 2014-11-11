@@ -78,10 +78,16 @@ namespace fonline_mapgen
             cachedRoofTiles = false;
         }
 
+        public static int GetNumCachedObjects()
+        {
+            return CachedSceneryDraws.Count + CachedTileDraws.Count + CachedRoofTileDraws.Count;
+        }
+
         public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
             Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, Point clickPos)
         {
-            g.ScaleTransform(scale.Width, scale.Height);
+            if (scale.Width != 1.0f)
+                g.ScaleTransform(scale.Width, scale.Height);
 
             if (!cachedScenery) CachedSceneryDraws = new List<DrawCall>();
             if (!cachedTiles) CachedTileDraws = new List<DrawCall>();
@@ -107,11 +113,6 @@ namespace fonline_mapgen
             {
                 foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY * 2))
                 {
-                    // TODO: Draw critters.
-                    /*if (!(obj.MapObjType == MapObjectType.Item ||
-                          obj.MapObjType == MapObjectType.Scenery ||))
-                        continue;
-                    */
                     // skip specific object types
                     if (obj.MapObjType == MapObjectType.Critter && !DrawFlag(flags, Flags.Critters))
                         continue;
@@ -130,10 +131,8 @@ namespace fonline_mapgen
                         int dir = 0;
 
                         obj.Properties.TryGetValue("Dir", out dirS);
-                           // System.Windows.Forms.MessageBox.Show("Unable to get dir for " +  obj.MapX + "- " + obj.MapY);
 
                         int.TryParse(dirS, out dir);
-                           // System.Windows.Forms.MessageBox.Show("Unable to get dir for " + obj.MapX + "- " + obj.MapY);
 
                         string crTypeS = "";
                         critterData.crTypeGraphic.TryGetValue(crType, out crTypeS);
@@ -151,10 +150,6 @@ namespace fonline_mapgen
                             continue;
                         DrawScenery(g, hexMap, frms, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY);
                     }
-
-                    // WriteLog("Drawing " + prot.PicMap);
-
-
                 }
             }
 
@@ -176,11 +171,7 @@ namespace fonline_mapgen
             }
 
             foreach (var call in CachedRoofTileDraws)
-                //System.Windows.Forms.MessageBox.Show(call.Bitmap.PixelFormat.ToString());
                 g.DrawImage(call.Bitmap, call.X, call.Y);
-            
-            //g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-            //MessageBox.Show("paint_event");
         }
 
         private static Bitmap MakeOpaque(Bitmap original, double opacity)
@@ -241,37 +232,32 @@ namespace fonline_mapgen
             {
                 if (!MissingNotified.Contains(cr))
                 {
-                    System.Windows.Forms.MessageBox.Show(cr + " is missing.");
+                    System.Windows.Forms.MessageBox.Show("critter " + cr + " is missing.");
                     MissingNotified.Add(cr);
                 }
+                return false;
             }
 
             if (frm == null)
             {
-                //System.Windows.Forms.MessageBox.Show("art\\critters\\" + critter + "aa.frm");
                 return false;
             }
 
             var coords = hexMap.GetObjectCoords(new Point(x, y), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(0, 0));
-
             var idleFrame = frm.GetAnimFrameByDir(dir, 1);
 
-            //System.IntPtr myDC = g.GetHdc();
-            //Color cFirst = ColorTranslator.FromWin32(GetPixel(myDC, clickPos.X, clickPos.Y));
 
             if ((clickPos.X > coords.X && clickPos.X < coords.X + idleFrame.Width) &&
                 (clickPos.Y > coords.Y && clickPos.Y < coords.Y + idleFrame.Height))
             {
                 System.Windows.Forms.MessageBox.Show("clicked!");
                 var opaque = MakeOpaque(idleFrame, 0.3f);
-                g.DrawImage(opaque, coords.X, coords.Y);
                 CachedSceneryDraws.Add(new DrawCall(opaque, coords.X, coords.Y));
                 return true;
             }
             else
             {
-            g.DrawImage(idleFrame, coords.X, coords.Y);
-            CachedSceneryDraws.Add(new DrawCall(idleFrame, coords.X, coords.Y));
+                CachedSceneryDraws.Add(new DrawCall(idleFrame, coords.X, coords.Y));
             }
             return false;
         }
@@ -284,15 +270,9 @@ namespace fonline_mapgen
                 return;
             }
 
-            //Font font = new Font( Font.FontFamily, 10.0f, FontStyle.Bold );
-
             var frm = frms[scenery];
-
-            //g.DrawString("" + BitHeight[scenery], font, Brushes.Red, offset_x - (x % 2 == 0 ? 20 : 0) + xcoord, offset_y + ycoord - 10);
-
             var coords = hexMap.GetObjectCoords( new Point( x, y ), frm.Frames[0].Size, new Point( frm.PixelShift.X, frm.PixelShift.Y ), new Point( offx2, offy2 ) );
 
-            g.DrawImage( frm.Frames[0], coords.X, coords.Y );
             CachedSceneryDraws.Add(new DrawCall(frm.Frames[0], coords.X, coords.Y));
         }
 
@@ -300,19 +280,18 @@ namespace fonline_mapgen
         {
             if( !frms.ContainsKey( tile ) )
             {
-                //MessageBox.Show(tile + " not found");
+                if (!MissingNotified.Contains(tile))
+                {
+                    MissingNotified.Add(tile); 
+                    System.Windows.Forms.MessageBox.Show("tile " + tile + " not loaded.");
+                }
                 return;
             }
-
-            //if( tile.Contains( "misc" ) )
-            //    MessageBox.Show( tile );
 
             var tileCoords = hexMap.GetTileCoords( new Point( x, y ), isRoof );
 
             if (isRoof) CachedRoofTileDraws.Add(new DrawCall(frms[tile].Frames[0], tileCoords.X, tileCoords.Y));
             else CachedTileDraws.Add(new DrawCall(frms[tile].Frames[0], tileCoords.X, tileCoords.Y));
-
-            g.DrawImage( frms[tile].Frames[0], tileCoords.X, tileCoords.Y );
         }
 
         private static bool DrawFlag( Flags flags, Flags flag )
