@@ -33,6 +33,7 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
         Point clickedPos = new Point(0,0);
+        int framesPerSecond = 0; // only updated when repainting.
 
         PointF viewPortSize = new PointF();
 
@@ -45,6 +46,9 @@ namespace fonline_mapgen
         frmPaths frmPaths;
         frmPerformance frmPerformance;
         frmMapTree frmMapTree;
+        frmDebugInfo frmDebugInfo;
+
+        string title = "Mapper experiment [ALPHA]";
 
 
         public MapperMap CurrentMap
@@ -111,7 +115,12 @@ namespace fonline_mapgen
                 this.Maps.Add( map );
                 this.CurrentMap = map;
 
-                this.Text = "Mapper Experiment - " + fileName;
+                this.Text = title + fileName;
+
+                headerToolStripMenuItem.Enabled =
+                menuFileExport.Enabled =
+                viewMapTreeToolStripMenuItem.Enabled = true;
+
                 DrawMap.InvalidateCache();
 
                 viewPortSize.X = ((map.GetEdgeCoords(FOHexMap.Direction.Right).X) - (map.GetEdgeCoords(FOHexMap.Direction.Left).X)) + 100.0f;
@@ -224,8 +233,15 @@ namespace fonline_mapgen
             }
 
             DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), clickedPos);
+            // new Rectangle(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height)
+
             Font font = new System.Drawing.Font(FontFamily.GenericSansSerif, 17.0f, FontStyle.Bold);
             g.DrawString("Selected", font, Brushes.OrangeRed, new PointF(clickedPos.X - 30.0f, clickedPos.Y - 40.0f));
+           // 
+            if (frmDebugInfo != null && !frmDebugInfo.IsDisposed)
+            {
+                frmDebugInfo.setText("Objects rendered: " + DrawMap.GetNumCachedObjects());
+            }
         }
 
         private void centerViewport()
@@ -265,11 +281,12 @@ namespace fonline_mapgen
             if( map == null )
                 return;
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
-            lblMouseCoords.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
+            toolStripStatusHex.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
             //
 
             if( map.Objects.Count( x => x.MapX == hex.X && x.MapY == hex.Y ) == 0 )
-                lblProtos.Text = "Proto: ";
+                toolStripStatusProto.Text = "";
+
             foreach( var obj in map.Objects.FindAll( x => x.MapX == hex.X && x.MapY == hex.Y ) )
             {
                 if ((obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
@@ -279,23 +296,20 @@ namespace fonline_mapgen
                     if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
                         continue;
 
-                    lblProtos.Text = "Proto: " + (obj.ProtoId);
-                    lblProtos.Text += string.Format(" ({0} - {1})", prot.Name, prot.PicMap);
+                    toolStripStatusProto.Text = "Proto: " + (obj.ProtoId);
+                    toolStripStatusProto.Text += string.Format(" ({0} - {1})", prot.Name, prot.PicMap);
                 }
 
                 if (obj.MapObjType == FOCommon.Maps.MapObjectType.Critter)
                 {
-                    lblProtos.Text = "Critter: " + obj.ProtoId;
+                    toolStripStatusProto.Text = "Critter: " + obj.ProtoId;
                 }
-
             }
         }
 
         private void btnLoadMap_Click( object sender, EventArgs e )
         {
             LoadMap( (string)cmbMaps.SelectedItem );
-            pnlViewPort.Invalidate();
-            pnlViewPort.Refresh();
         }
 
         private void headerToolStripMenuItem_Click( object sender, EventArgs e )
@@ -468,7 +482,8 @@ namespace fonline_mapgen
             foreach (var item in items)
                 itemsPid[item.ProtoId] = item;
 
-            cmbMaps.Items.AddRange(Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap"));
+            if (mapperSettings.Paths.MapsDir != null)
+                cmbMaps.Items.AddRange(Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap"));
 
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
 
@@ -479,8 +494,6 @@ namespace fonline_mapgen
         {
             if( Frms.Count != 0 )
                 return;
-
-            
         }
 
         #region Menu functions
@@ -491,7 +504,6 @@ namespace fonline_mapgen
             {
                 menuFileExport.Enabled = true;
                 LoadMap( openMapDialog.FileName );
-                panel1.Refresh();
             }
         }
 
@@ -578,11 +590,6 @@ namespace fonline_mapgen
             frmMapTree.TopMost = true;
         }
 
-        private void panel1_Click(object sender, EventArgs e)
-        {
-            
-        }
-
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
@@ -592,6 +599,31 @@ namespace fonline_mapgen
                 DrawMap.InvalidateCache();
                 panel1.Refresh();
             }
+        }
+
+        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (debugToolStripMenuItem.Checked)
+            {
+                if(frmDebugInfo == null || frmDebugInfo.IsDisposed)
+                    frmDebugInfo = new frmDebugInfo();
+                frmDebugInfo.Show();
+                return;
+            }
+
+            if (frmDebugInfo == null || frmDebugInfo.IsDisposed) return;
+
+            frmDebugInfo.Hide();
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            framesPerSecond = 0;
+        }
+
+        private void pnlViewPort_Scroll(object sender, ScrollEventArgs e)
+        {
+            //panel1.Refresh();
         }
     }
 }

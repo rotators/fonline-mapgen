@@ -31,8 +31,6 @@
             this.components = new System.ComponentModel.Container();
             this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
-            this.lblMouseCoords = new System.Windows.Forms.Label();
-            this.lblProtos = new System.Windows.Forms.Label();
             this.cmbMaps = new System.Windows.Forms.ComboBox();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.menuFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,8 +42,11 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stuffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewMapTreeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pathsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.performanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuView = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewTiles = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewRoofs = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,18 +55,20 @@
             this.menuViewScenery = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapDialog = new System.Windows.Forms.OpenFileDialog();
-            this.performanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewMapTreeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer = new System.Windows.Forms.Timer(this.components);
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new fonline_mapgen.DoubleBufferPanel();
-            this.settingsDatasource = new System.Windows.Forms.BindingSource(this.components);
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.settingsDatasource)).BeginInit();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnLoadMap
             // 
-            this.btnLoadMap.Location = new System.Drawing.Point(547, 22);
+            this.btnLoadMap.Location = new System.Drawing.Point(538, 22);
             this.btnLoadMap.Name = "btnLoadMap";
             this.btnLoadMap.Size = new System.Drawing.Size(78, 25);
             this.btnLoadMap.TabIndex = 1;
@@ -80,29 +83,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlViewPort.AutoScroll = true;
             this.pnlViewPort.Controls.Add(this.panel1);
-            this.pnlViewPort.Location = new System.Drawing.Point(12, 88);
+            this.pnlViewPort.Location = new System.Drawing.Point(0, 52);
             this.pnlViewPort.Name = "pnlViewPort";
-            this.pnlViewPort.Size = new System.Drawing.Size(1004, 538);
+            this.pnlViewPort.Size = new System.Drawing.Size(1028, 561);
             this.pnlViewPort.TabIndex = 7;
-            // 
-            // lblMouseCoords
-            // 
-            this.lblMouseCoords.AutoSize = true;
-            this.lblMouseCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMouseCoords.Location = new System.Drawing.Point(690, 22);
-            this.lblMouseCoords.Name = "lblMouseCoords";
-            this.lblMouseCoords.Size = new System.Drawing.Size(164, 25);
-            this.lblMouseCoords.TabIndex = 8;
-            this.lblMouseCoords.Text = "Mouse Coords: ";
-            // 
-            // lblProtos
-            // 
-            this.lblProtos.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProtos.Location = new System.Drawing.Point(12, 56);
-            this.lblProtos.Name = "lblProtos";
-            this.lblProtos.Size = new System.Drawing.Size(1279, 25);
-            this.lblProtos.TabIndex = 9;
-            this.lblProtos.Text = "Protos:";
+            this.pnlViewPort.Scroll += new System.Windows.Forms.ScrollEventHandler(this.pnlViewPort_Scroll);
             // 
             // cmbMaps
             // 
@@ -190,16 +175,27 @@
             // 
             // headerToolStripMenuItem
             // 
+            this.headerToolStripMenuItem.Enabled = false;
             this.headerToolStripMenuItem.Name = "headerToolStripMenuItem";
             this.headerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.headerToolStripMenuItem.Text = "Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
+            // viewMapTreeToolStripMenuItem
+            // 
+            this.viewMapTreeToolStripMenuItem.CheckOnClick = true;
+            this.viewMapTreeToolStripMenuItem.Enabled = false;
+            this.viewMapTreeToolStripMenuItem.Name = "viewMapTreeToolStripMenuItem";
+            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.viewMapTreeToolStripMenuItem.Text = "View Tree";
+            this.viewMapTreeToolStripMenuItem.Click += new System.EventHandler(this.viewMapTreeToolStripMenuItem_Click);
+            // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.pathsToolStripMenuItem,
-            this.performanceToolStripMenuItem});
+            this.performanceToolStripMenuItem,
+            this.debugToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -207,9 +203,24 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
+            // 
+            // performanceToolStripMenuItem
+            // 
+            this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.performanceToolStripMenuItem.Text = "Performance";
+            this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
+            // 
+            // debugToolStripMenuItem
+            // 
+            this.debugToolStripMenuItem.CheckOnClick = true;
+            this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.debugToolStripMenuItem.Text = "Debug Info";
+            this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
             // menuView
             // 
@@ -281,20 +292,41 @@
             this.openMapDialog.ShowReadOnly = true;
             this.openMapDialog.SupportMultiDottedExtensions = true;
             // 
-            // performanceToolStripMenuItem
+            // timer
             // 
-            this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
-            this.performanceToolStripMenuItem.Text = "Performance";
-            this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
+            this.timer.Enabled = true;
+            this.timer.Interval = 1000;
+            this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
-            // viewMapTreeToolStripMenuItem
+            // statusStrip1
             // 
-            this.viewMapTreeToolStripMenuItem.CheckOnClick = true;
-            this.viewMapTreeToolStripMenuItem.Name = "viewMapTreeToolStripMenuItem";
-            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.viewMapTreeToolStripMenuItem.Text = "View Tree";
-            this.viewMapTreeToolStripMenuItem.Click += new System.EventHandler(this.viewMapTreeToolStripMenuItem_Click);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatus,
+            this.toolStripStatusHex,
+            this.toolStripStatusProto});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 616);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1028, 22);
+            this.statusStrip1.TabIndex = 12;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatus
+            // 
+            this.toolStripStatus.Name = "toolStripStatus";
+            this.toolStripStatus.Size = new System.Drawing.Size(118, 17);
+            this.toolStripStatus.Text = "toolStripStatusLabel1";
+            // 
+            // toolStripStatusHex
+            // 
+            this.toolStripStatusHex.Name = "toolStripStatusHex";
+            this.toolStripStatusHex.Size = new System.Drawing.Size(118, 17);
+            this.toolStripStatusHex.Text = "toolStripStatusLabel2";
+            // 
+            // toolStripStatusProto
+            // 
+            this.toolStripStatusProto.Name = "toolStripStatusProto";
+            this.toolStripStatusProto.Size = new System.Drawing.Size(118, 17);
+            this.toolStripStatusProto.Text = "toolStripStatusLabel1";
             // 
             // panel1
             // 
@@ -303,14 +335,9 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(300, 300);
             this.panel1.TabIndex = 0;
-            this.panel1.Click += new System.EventHandler(this.panel1_Click);
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
             this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
-            // 
-            // settingsDatasource
-            // 
-            this.settingsDatasource.DataSource = typeof(MapperSettings);
             // 
             // frmMain
             // 
@@ -318,13 +345,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1028, 638);
-            this.Controls.Add(this.cmbMaps);
-            this.Controls.Add(this.lblProtos);
-            this.Controls.Add(this.lblMouseCoords);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.pnlViewPort);
+            this.Controls.Add(this.cmbMaps);
             this.Controls.Add(this.btnLoadMap);
             this.Controls.Add(this.menu);
-            this.DoubleBuffered = true;
             this.MainMenuStrip = this.menu;
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -336,7 +361,8 @@
             this.pnlViewPort.ResumeLayout(false);
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.settingsDatasource)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -347,8 +373,6 @@
         private System.Windows.Forms.Button btnLoadMap;
         private System.Windows.Forms.Panel pnlViewPort;
         private DoubleBufferPanel panel1;
-        private System.Windows.Forms.Label lblMouseCoords;
-        private System.Windows.Forms.Label lblProtos;
         private System.Windows.Forms.ComboBox cmbMaps;
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem stuffToolStripMenuItem;
@@ -370,9 +394,14 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pathsToolStripMenuItem;
-        private System.Windows.Forms.BindingSource settingsDatasource;
         private System.Windows.Forms.ToolStripMenuItem performanceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewMapTreeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
+        private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatus;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusHex;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusProto;
     }
 }
 

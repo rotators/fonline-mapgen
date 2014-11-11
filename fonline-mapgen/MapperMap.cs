@@ -65,11 +65,6 @@ namespace fonline_mapgen
             this.HexMap = new FOHexMap(baseOffset, new Size(this.Header.MaxHexX, this.Header.MaxHexY));
         }
 
-        /*public void Draw(Graphics g, Dictionary<int, ItemProto> itemsPid, Dictionary<string, FalloutFRM> frms, DrawMap.Flags flags)
-        {
-            DrawMap.OnGraphics( g, this, this.HexMap, itemsPid, frms, flags, new SizeF(1.0f, 1.0f), new Point(0,0));
-        }*/
-
         public static MapperMap Load( string fileName )
         {
             FOMapParser parser = new FOMapParser( fileName );

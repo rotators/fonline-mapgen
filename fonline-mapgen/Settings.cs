@@ -34,6 +34,7 @@ public class PathSettings
 public class UISettings
 {
     public bool LoadLastMap { get; set; }
+    public bool Debug { get; set; }
     public int Height { get; set; }
     public int Width { get; set; }
     public int X { get; set; }
