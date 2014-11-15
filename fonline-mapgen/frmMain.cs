@@ -80,6 +80,10 @@ namespace fonline_mapgen
         {
             InitializeComponent();
             LoadResources();
+
+            toolStripStatus.Text =
+            toolStripStatusHex.Text =
+            toolStripStatusProto.Text = "";
         }
 
         private void Form1_Load( object sender, EventArgs e )

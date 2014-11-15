@@ -48,9 +48,7 @@ namespace fonline_mapgen
         [DllImport("User32.dll")]
         public static extern void ReleaseDC(IntPtr dc);
 
-        public static bool cachedScenery;
-        public static bool cachedTiles;
-        public static bool cachedRoofTiles;
+        public static bool cachedCalls;
 
         public static object ClickedObject;
 
@@ -59,10 +57,13 @@ namespace fonline_mapgen
         private static List<string> MissingNotified = new List<string>();
         private static List<string> Errors = new List<string>();
 
+        private static List<List<DrawCall>> DeferedClickCalls = new List<List<DrawCall>>();
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
         private static List<DrawCall> CachedRoofTileDraws = new List<DrawCall>();
         private static Dictionary<int, ItemProto> itemsPids = new Dictionary<int, ItemProto>();
+
+        private static bool clickFound;
 
         public enum Flags
         {
@@ -76,9 +77,7 @@ namespace fonline_mapgen
 
         public static void InvalidateCache()
         {
-            cachedScenery = false;
-            cachedTiles = false;
-            cachedRoofTiles = false;
+            cachedCalls = false;
         }
 
         public static int GetNumCachedObjects()
@@ -92,31 +91,26 @@ namespace fonline_mapgen
             if (scale.Width != 1.0f)
                 g.ScaleTransform(scale.Width, scale.Height);
 
-            bool noneCached = (!cachedScenery && !cachedTiles && !cachedRoofTiles);
+            if (!cachedCalls)
+            {
+                CachedSceneryDraws = new List<DrawCall>();
+                CachedTileDraws = new List<DrawCall>();
+                CachedRoofTileDraws = new List<DrawCall>();
+                Errors = new List<string>();
+            }
 
-            if (!cachedScenery) CachedSceneryDraws = new List<DrawCall>();
-            if (!cachedTiles) CachedTileDraws = new List<DrawCall>();
-            if (!cachedRoofTiles) CachedRoofTileDraws = new List<DrawCall>();
-
-            if (noneCached) Errors = new List<string>();
+            clickFound = false;
 
             // Draw normal tiles.
-            if( DrawFlag( flags, Flags.Tiles ) )
+            if (DrawFlag(flags, Flags.Tiles) && !cachedCalls)
             {
-                if (!cachedTiles)
+                foreach (var tile in map.Tiles.Where(x => !x.Roof))
                 {
-                    foreach (var tile in map.Tiles.Where(x => !x.Roof))
-                    {
-                        DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, false);
-                    }
+                    DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, false);
                 }
             }
 
-            cachedTiles = true;
-            foreach (var call in CachedTileDraws)
-                g.DrawImage(call.Bitmap, call.X, call.Y);
-
-            if (!cachedScenery)
+            if (!cachedCalls)
             {
                 foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY * 2))
                 {
@@ -155,27 +149,27 @@ namespace fonline_mapgen
 
                         if (prot.Type == (int)ItemTypes.ITEM_WALL && !DrawFlag(flags, Flags.SceneryWalls))
                             continue;
-                        DrawScenery(g, hexMap, frms, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY);
+                        if (DrawScenery(g, hexMap, frms, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY, clickPos))
+                            ClickedObject = obj;
                     }
                 }
             }
-
-            cachedScenery = true;
-            foreach(var call in CachedSceneryDraws)
-                g.DrawImage(call.Bitmap, call.X, call.Y);
 
             // Draw roof tiles
-            if( DrawFlag( flags, Flags.Roofs ) )
+            if( DrawFlag( flags, Flags.Roofs ) && !cachedCalls)
             {
-                if (!cachedRoofTiles)
+                foreach (var tile in map.Tiles.Where(x => x.Roof))
                 {
-                    foreach (var tile in map.Tiles.Where(x => x.Roof))
-                    {
-                        DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, true);
-                    }
+                    DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, true);
                 }
-                cachedRoofTiles = true;
             }
+
+            cachedCalls = true;
+            foreach (var call in CachedTileDraws)
+                g.DrawImage(call.Bitmap, call.X, call.Y);
+
+            foreach (var call in CachedSceneryDraws)
+                g.DrawImage(call.Bitmap, call.X, call.Y);
 
             foreach (var call in CachedRoofTileDraws)
                 g.DrawImage(call.Bitmap, call.X, call.Y);
@@ -230,6 +224,12 @@ namespace fonline_mapgen
             return bmp;
         }
 
+        private static bool ClickedInside(Point clickPos, RectangleF rect)
+        {
+            return ((clickPos.X > rect.X && clickPos.X < rect.X + rect.Width) &&
+                (clickPos.Y > rect.Y && clickPos.Y < rect.Y + rect.Height));
+        }
+
         // returns true if clicked.
         private static bool DrawCritter( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string critter, int x, int y, int dir, Point clickPos)
         {
@@ -250,11 +250,12 @@ namespace fonline_mapgen
             var idleFrame = frm.GetAnimFrameByDir(dir, 1);
 
 
-            if ((clickPos.X > coords.X && clickPos.X < coords.X + idleFrame.Width) &&
-                (clickPos.Y > coords.Y && clickPos.Y < coords.Y + idleFrame.Height))
+            if (ClickedInside(clickPos, new RectangleF(coords.X, coords.Y, idleFrame.Width, idleFrame.Height)) && !clickFound)
             {
-                var opaque = MakeOpaque(idleFrame, 0.3f);
-                CachedSceneryDraws.Add(new DrawCall(opaque, coords.X, coords.Y));
+                clickFound = true;
+                var opaque = MakeOpaque(idleFrame, 0.5f);
+
+
                 return true;
             }
             else
@@ -264,18 +265,27 @@ namespace fonline_mapgen
             return false;
         }
 
-        private static void DrawScenery( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string scenery, int x, int y, int offx2, int offy2 )
+        private static bool DrawScenery( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string scenery, int x, int y, int offx2, int offy2, Point clickPos )
         {
             if( !frms.ContainsKey( scenery ) )
             {
                 Errors.Add("Scenery graphics " + scenery + " not loaded.");
-                return;
+                return false;
             }
 
             var frm = frms[scenery];
             var coords = hexMap.GetObjectCoords( new Point( x, y ), frm.Frames[0].Size, new Point( frm.PixelShift.X, frm.PixelShift.Y ), new Point( offx2, offy2 ) );
 
+            if (ClickedInside(clickPos, new RectangleF(coords.X, coords.Y, frm.Frames[0].Width, frm.Frames[0].Height)) && !clickFound)
+            {
+                clickFound = true;
+                var opaque = MakeOpaque(frm.Frames[0], 0.5f);
+                CachedSceneryDraws.Add(new DrawCall(opaque, coords.X, coords.Y));
+                return true;
+            }
+
             CachedSceneryDraws.Add(new DrawCall(frm.Frames[0], coords.X, coords.Y));
+            return false;
         }
 
         private static void DrawTile( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string tile, int x, int y, bool isRoof )
