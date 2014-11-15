@@ -35,7 +35,6 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
         Point clickedPos = new Point(0,0);
-        int framesPerSecond = 0; // only updated when repainting.
 
         PointF viewPortSize = new PointF();
 
@@ -50,7 +49,7 @@ namespace fonline_mapgen
         frmMapTree frmMapTree;
         frmDebugInfo frmDebugInfo;
 
-        string title = "Mapper experiment [ALPHA]";
+        string title = "Mapper [ALPHA] - ";
 
 
         public MapperMap CurrentMap
@@ -73,16 +72,8 @@ namespace fonline_mapgen
         }
         private int CurrentMapIdx = -1;
         private List<MapperMap> Maps = new List<MapperMap>();
-        TabPage TabTemplate;
+        //TabPage TabTemplate;
 
-        /*
-        bool drawTiles = true;
-        bool drawRoofs = true;
-        bool drawCritters = true;
-        bool drawItems = true;
-        bool drawScenery = true;
-        bool drawSceneryWalls = true;
-        */
         DrawMap.Flags drawFlags;
 
         public frmMain()
@@ -132,6 +123,13 @@ namespace fonline_mapgen
                 centerViewport();
 
                 panel1.Refresh();
+
+                // TODO: Check critter/proto names and PID in the map itself instead of just graphics.
+                var errors = DrawMap.GetErrors();
+                errors.Sort();
+                frmErrors frmErrors = new frmErrors(fileName, string.Join(Environment.NewLine, errors.Distinct().ToArray()));
+                if(errors.Count != 0)
+                    frmErrors.ShowDialog();
             }
             else
                 MessageBox.Show( "Error loading map " + fileName );
@@ -142,7 +140,7 @@ namespace fonline_mapgen
             File.AppendAllText( "./debug.log", str + Environment.NewLine );
         }
 
-        public bool LoadDat( string DatPath, Color Transparency )
+        public bool LoadDat( string DatPath, List<string> crFiles, Color Transparency )
         {
             DatReaderError status;
             DAT loadedDat = DATReader.ReadDat( DatPath, out status );
@@ -156,14 +154,13 @@ namespace fonline_mapgen
             foreach( string path in this.GraphicsPaths )
             {
                 files.AddRange( loadedDat.GetFilesByPattern( path ) );
-            
+
                 // Critters to load
                 foreach (var crType in critterData.crTypeGraphic.Values)
                 {
                     var file = loadedDat.GetFileByName("art\\critters\\" + crType.ToUpper() + "AA.FRM"); // Idle anim
                     if (file == null) file = loadedDat.GetFileByName("art\\critters\\" + crType.ToLower() + "aa.frm");
                     if (file == null) continue;
-
                     files.Add(file);
                 }
 
@@ -201,20 +198,67 @@ namespace fonline_mapgen
             return true;
         }
 
-        public bool LoadZip( string ZipPath, Color Transparency )
+        public bool LoadDir(string DirPath, List<string> crFiles, Color Transparency)
+        {
+            List<string> filenames = new List<string>();
+            foreach (var path in this.GraphicsPaths)
+            {
+                var fullPath = DirPath + Path.DirectorySeparatorChar + path;
+                if(Directory.Exists(fullPath))
+                    filenames.AddRange(Directory.GetFiles(fullPath));
+            }
+            foreach(var crFile in crFiles)
+
+
+            foreach (var filename in filenames)
+            {
+                string ext = Path.GetExtension(filename).ToLower();
+                if (!(ext == ".frm" || ext == ".png"))
+                    continue;
+                byte[] bytes = File.ReadAllBytes(filename);
+                if (ext == ".frm")
+                {
+                    var frm = FalloutFRMLoader.LoadFRM(bytes, Transparency);
+                    Frms[filename] = frm;
+                }
+                else
+                {
+                    System.ComponentModel.TypeConverter tc = System.ComponentModel.TypeDescriptor.GetConverter(typeof(Bitmap));
+                    Bitmap bitmap = (Bitmap)tc.ConvertFrom(bytes);
+                    Frms[filename] = new FalloutFRM();
+                    Frms[filename].Frames = new List<Bitmap>();
+                    Frms[filename].Frames.Add(bitmap);
+                    Frms[filename].FileName = filename.Remove(filename.IndexOf(DirPath), DirPath.Length);
+                }
+            }
+            return true;
+        }
+
+        public bool LoadZip( string ZipPath, List<string> crFiles, Color Transparency )
         {
             if (!File.Exists(ZipPath))
             {
-                MessageBox.Show("Unable to load " + ZipPath, "Mapper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Unable to load " + ZipPath + ", doesn't exist.", "Mapper", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
 
-
             var zip = ZipStorer.Open(ZipPath, FileAccess.Read);
+            if(zip == null)
+            {
+                MessageBox.Show("Unable to load " + ZipPath + ".", "Mapper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            var patternToCheck = new List<string>();
+            foreach (var cr in crFiles)
+                patternToCheck.Add(cr);
+            foreach (var path in this.GraphicsPaths)
+                patternToCheck.Add(path);
+
             var entries = zip.ReadCentralDir();
             foreach (var entry in entries)
             {
-                foreach(var path in this.GraphicsPaths)
+                foreach(var path in patternToCheck)
                 {
                     if (!entry.FilenameInZip.Replace('/', '\\').Contains(path))
                         continue;
@@ -231,10 +275,6 @@ namespace fonline_mapgen
                     using (MemoryStream stream = new MemoryStream())
                     {
                         zip.ExtractFile(entry, stream);
-                        /*using (BinaryReader br = new BinaryReader(stream))
-                        {
-                            bytes = br.ReadBytes((int)br.Length);
-                        }*/
                         bytes = stream.ToArray();
                     }
                     if (ext == ".frm")
@@ -288,7 +328,7 @@ namespace fonline_mapgen
             // new Rectangle(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height)
 
             Font font = new System.Drawing.Font(FontFamily.GenericSansSerif, 17.0f, FontStyle.Bold);
-            g.DrawString("Selected", font, Brushes.OrangeRed, new PointF(clickedPos.X - 30.0f, clickedPos.Y - 40.0f));
+           // g.DrawString("Selected", font, Brushes.OrangeRed, new PointF(clickedPos.X - 30.0f, clickedPos.Y - 40.0f));
            // 
             if (frmDebugInfo != null && !frmDebugInfo.IsDisposed)
             {
@@ -509,6 +549,14 @@ namespace fonline_mapgen
 
                 if (mapperSettings.Paths.DataFiles != null || mapperSettings.Paths.DataFiles.Count != 0)
                 {
+
+                    List<string> crFiles = new List<string>();
+                    foreach (var crType in critterData.crTypeGraphic.Values)
+                    {
+                        crFiles.Add("art\\critters\\" + crType.ToUpper() + "AA.FRM"); // Idle anim
+                        crFiles.Add("art\\critters\\" + crType.ToLower() + "aa.frm");
+                    }
+
                     foreach (string dataFile in mapperSettings.Paths.DataFiles)
                     {
                         string ext = Path.GetExtension(dataFile).ToLower();
@@ -518,9 +566,13 @@ namespace fonline_mapgen
                             continue;
                         }
                         if (ext == ".dat")
-                            LoadDat(dataFile, transparency);
+                            LoadDat(dataFile, crFiles, transparency);
                         else
-                            LoadZip(dataFile, transparency);
+                            LoadZip(dataFile, crFiles, transparency);
+                    }
+                    foreach (string dataDir in mapperSettings.Paths.DataDirs)
+                    {
+                        LoadDir(dataDir, crFiles, transparency);
                     }
 
                     if (mapperSettings.Performance.CacheResources)
@@ -670,11 +722,6 @@ namespace fonline_mapgen
             if (frmDebugInfo == null || frmDebugInfo.IsDisposed) return;
 
             frmDebugInfo.Hide();
-        }
-
-        private void timer_Tick(object sender, EventArgs e)
-        {
-            framesPerSecond = 0;
         }
 
         private void pnlViewPort_Scroll(object sender, ScrollEventArgs e)

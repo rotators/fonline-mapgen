@@ -5,6 +5,43 @@ namespace fonline_mapgen
 {
     internal static class ExtensionMethods
     {
+
+
+        public static void MoveUp(this ListBox lst)
+        {
+            MoveItem(lst, -1);
+        }
+
+        public static void MoveDown(this ListBox lst)
+        {
+            MoveItem(lst, 1);
+        }
+
+        public static void MoveItem(this ListBox lst, int direction)
+        {
+            // Checking selected item
+            if (lst.SelectedItem == null || lst.SelectedIndex < 0)
+                return; // No selected item - nothing to do
+
+            // Calculate new index using move direction
+            int newIndex = lst.SelectedIndex + direction;
+
+            // Checking bounds of the range
+            if (newIndex < 0 || newIndex >= lst.Items.Count)
+                return; // Index out of range - nothing to do
+
+            object selected = lst.SelectedItem;
+
+            // Removing removable element
+            lst.Items.Remove(selected);
+            // Insert it in new position
+            lst.Items.Insert(newIndex, selected);
+            // Restore selection
+            lst.SetSelected(newIndex, true);
+        }
+
+
+
         // http://stackoverflow.com/a/15449969
         internal static Point? GetRowColumnIndex( this TableLayoutPanel tlp, Point point )
         {

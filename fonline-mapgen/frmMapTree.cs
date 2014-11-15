@@ -66,6 +66,13 @@ namespace fonline_mapgen
                 {
                     node.Nodes.Add(kvp.Key + " = " + kvp.Value);
                 }
+                if (obj.MapObjType == FOCommon.Maps.MapObjectType.Critter)
+                {
+                    foreach (var kvp in obj.CritterParams)
+                    {
+                        node.Nodes.Add(kvp.Key + " = " + kvp.Value);
+                    }
+                }
             }
             
         }

@@ -110,6 +110,7 @@
             this.Controls.Add(this.cmbRendering);
             this.Controls.Add(this.label1);
             this.Name = "frmPerformance";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Performance";
             this.ResumeLayout(false);
             this.PerformLayout();

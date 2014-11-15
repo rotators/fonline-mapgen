@@ -109,6 +109,7 @@
             this.Controls.Add(this.lstResults);
             this.Controls.Add(this.btnSearch);
             this.Name = "frmFindMaps";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "frmFindMaps";
             this.ResumeLayout(false);
             this.PerformLayout();

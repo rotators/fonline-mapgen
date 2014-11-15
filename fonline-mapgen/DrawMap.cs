@@ -54,7 +54,10 @@ namespace fonline_mapgen
 
         public static object ClickedObject;
 
+        public static List<string> GetErrors() { return Errors; }
+
         private static List<string> MissingNotified = new List<string>();
+        private static List<string> Errors = new List<string>();
 
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
@@ -89,9 +92,13 @@ namespace fonline_mapgen
             if (scale.Width != 1.0f)
                 g.ScaleTransform(scale.Width, scale.Height);
 
+            bool noneCached = (!cachedScenery && !cachedTiles && !cachedRoofTiles);
+
             if (!cachedScenery) CachedSceneryDraws = new List<DrawCall>();
             if (!cachedTiles) CachedTileDraws = new List<DrawCall>();
             if (!cachedRoofTiles) CachedRoofTileDraws = new List<DrawCall>();
+
+            if (noneCached) Errors = new List<string>();
 
             // Draw normal tiles.
             if( DrawFlag( flags, Flags.Tiles ) )
@@ -230,11 +237,7 @@ namespace fonline_mapgen
             string cr = "art\\critters\\" + critter + "aa.frm";
             if (!frms.TryGetValue(cr, out frm))
             {
-                if (!MissingNotified.Contains(cr))
-                {
-                    System.Windows.Forms.MessageBox.Show("critter " + cr + " is missing.");
-                    MissingNotified.Add(cr);
-                }
+                Errors.Add("Critter graphics " + cr + " not loaded.");
                 return false;
             }
 
@@ -250,7 +253,6 @@ namespace fonline_mapgen
             if ((clickPos.X > coords.X && clickPos.X < coords.X + idleFrame.Width) &&
                 (clickPos.Y > coords.Y && clickPos.Y < coords.Y + idleFrame.Height))
             {
-                System.Windows.Forms.MessageBox.Show("clicked!");
                 var opaque = MakeOpaque(idleFrame, 0.3f);
                 CachedSceneryDraws.Add(new DrawCall(opaque, coords.X, coords.Y));
                 return true;
@@ -266,7 +268,7 @@ namespace fonline_mapgen
         {
             if( !frms.ContainsKey( scenery ) )
             {
-                //MessageBox.Show(scenery + " not found");
+                Errors.Add("Scenery graphics " + scenery + " not loaded.");
                 return;
             }
 
@@ -282,8 +284,7 @@ namespace fonline_mapgen
             {
                 if (!MissingNotified.Contains(tile))
                 {
-                    MissingNotified.Add(tile); 
-                    System.Windows.Forms.MessageBox.Show("tile " + tile + " not loaded.");
+                    Errors.Add("Tile graphics " + tile + " not loaded.");
                 }
                 return;
             }

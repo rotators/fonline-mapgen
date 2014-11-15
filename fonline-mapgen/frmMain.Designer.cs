@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
             this.cmbMaps = new System.Windows.Forms.ComboBox();
@@ -43,6 +42,8 @@
             this.stuffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewMapTreeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findMapsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pathsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.performanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,14 +56,11 @@
             this.menuViewScenery = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapDialog = new System.Windows.Forms.OpenFileDialog();
-            this.timer = new System.Windows.Forms.Timer(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new fonline_mapgen.DoubleBufferPanel();
-            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.findMapsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -180,7 +178,7 @@
             // 
             this.headerToolStripMenuItem.Enabled = false;
             this.headerToolStripMenuItem.Name = "headerToolStripMenuItem";
-            this.headerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.headerToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
             this.headerToolStripMenuItem.Text = "Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
@@ -189,9 +187,25 @@
             this.viewMapTreeToolStripMenuItem.CheckOnClick = true;
             this.viewMapTreeToolStripMenuItem.Enabled = false;
             this.viewMapTreeToolStripMenuItem.Name = "viewMapTreeToolStripMenuItem";
-            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
             this.viewMapTreeToolStripMenuItem.Text = "View Tree";
             this.viewMapTreeToolStripMenuItem.Click += new System.EventHandler(this.viewMapTreeToolStripMenuItem_Click);
+            // 
+            // toolsToolStripMenuItem
+            // 
+            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.findMapsToolStripMenuItem});
+            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.toolsToolStripMenuItem.Text = "Tools";
+            this.toolsToolStripMenuItem.Click += new System.EventHandler(this.toolsToolStripMenuItem_Click);
+            // 
+            // findMapsToolStripMenuItem
+            // 
+            this.findMapsToolStripMenuItem.Name = "findMapsToolStripMenuItem";
+            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.findMapsToolStripMenuItem.Text = "Find Maps";
+            this.findMapsToolStripMenuItem.Click += new System.EventHandler(this.findMapsToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
@@ -206,14 +220,14 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
             // performanceToolStripMenuItem
             // 
             this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
             this.performanceToolStripMenuItem.Text = "Performance";
             this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
             // 
@@ -221,7 +235,7 @@
             // 
             this.debugToolStripMenuItem.CheckOnClick = true;
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
             this.debugToolStripMenuItem.Text = "Debug Info";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
@@ -295,12 +309,6 @@
             this.openMapDialog.ShowReadOnly = true;
             this.openMapDialog.SupportMultiDottedExtensions = true;
             // 
-            // timer
-            // 
-            this.timer.Enabled = true;
-            this.timer.Interval = 1000;
-            this.timer.Tick += new System.EventHandler(this.timer_Tick);
-            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -342,22 +350,6 @@
             this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
             this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
-            // toolsToolStripMenuItem
-            // 
-            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.findMapsToolStripMenuItem});
-            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
-            this.toolsToolStripMenuItem.Text = "Tools";
-            this.toolsToolStripMenuItem.Click += new System.EventHandler(this.toolsToolStripMenuItem_Click);
-            // 
-            // findMapsToolStripMenuItem
-            // 
-            this.findMapsToolStripMenuItem.Name = "findMapsToolStripMenuItem";
-            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.findMapsToolStripMenuItem.Text = "Find Maps";
-            this.findMapsToolStripMenuItem.Click += new System.EventHandler(this.findMapsToolStripMenuItem_Click);
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -372,7 +364,7 @@
             this.MainMenuStrip = this.menu;
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Mapper experiment";
+            this.Text = "Mapper";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -416,7 +408,6 @@
         private System.Windows.Forms.ToolStripMenuItem performanceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewMapTreeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
-        private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatus;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusHex;

@@ -13,7 +13,7 @@ namespace fonline_mapgen
     {
         MapperSettings settings;
 
-        const string dirSuffix = "[Directory]";
+        bool addedData;
 
         public frmPaths(MapperSettings settings)
         {
@@ -29,17 +29,23 @@ namespace fonline_mapgen
             foreach (var file in settings.Paths.DataFiles)
                 lstDataFiles.Items.Add(file);
             foreach (var dir in settings.Paths.DataDirs)
-                lstDataFiles.Items.Add(dir + " " + dirSuffix);
+                lstDataDirs.Items.Add(dir);
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void btnSetItemProtos_Click(object sender, EventArgs e)
         {
             SetFolder(txtItemProtos);
+        }
+
+        private bool IsEmpty(string field)
+        {
+            return MessageBox.Show(field + " has no path set, are you sure you want to continue?", 
+                "No path set for " + field, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes;
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -51,17 +57,23 @@ namespace fonline_mapgen
             settings.Paths.CritterTypes = txtCritterTypes.Text;
             settings.Paths.MapsDir = txtMapsDir.Text;
 
+            if (settings.Paths.BaseDir == "")       if (!IsEmpty(lblBasePath.Text))      return;
+            if (settings.Paths.CritterProtos == "") if (!IsEmpty(lblCritterProtos.Text)) return;
+            if (settings.Paths.ItemProtos == "")    if (!IsEmpty(lblItemProtos.Text))    return;
+            if (settings.Paths.FOOBJ == "")         if (!IsEmpty(lblFOOBJ.Text))         return;
+            if (settings.Paths.CritterTypes == "")  if (!IsEmpty(lblCritterTypes.Text))  return;
+            if (settings.Paths.MapsDir == "")       if (!IsEmpty(lblMapsDir.Text))       return;
+
+            if(lstDataDirs.Items.Count+lstDataFiles.Items.Count == 0 )
+                if(MessageBox.Show("No data files or directories added, no graphics will be able to render without the graphics files loaded. Are you sure you want to continue?", 
+                    "No resource paths added", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No) return;
+
             settings.Paths.DataFiles.Clear();
+            settings.Paths.DataDirs.Clear();
             foreach (string entry in lstDataFiles.Items)
-            {
-                if (entry.Contains(dirSuffix))
-                {
-                    string trimmed = entry.Remove(entry.IndexOf(dirSuffix[0]) - 1, dirSuffix.Length + 1);
-                    settings.Paths.DataDirs.Add((string)trimmed);
-                }
-                else
-                    settings.Paths.DataFiles.Add((string)entry);
-            }
+                settings.Paths.DataFiles.Add(entry);
+            foreach (string entry in lstDataDirs.Items)
+                settings.Paths.DataDirs.Add(entry);
 
             SettingsManager.SaveSettings(settings);
             this.Close();
@@ -73,7 +85,11 @@ namespace fonline_mapgen
             openFileDialog1.Filter = "FOnline DAT|*.dat|FOnline ZIP|*.zip";
             openFileDialog1.ShowDialog();
             foreach (var file in openFileDialog1.FileNames)
-                lstDataFiles.Items.Add(file);
+                if (!lstDataFiles.Items.Contains(file))
+                {
+                    lstDataFiles.Items.Add(file);
+                    addedData = true;
+                }
         }
 
         private void SetFolder(TextBox txt)
@@ -93,7 +109,7 @@ namespace fonline_mapgen
             if (txt.Text == "") txt.Text = path + def;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnSetBasePath_Click(object sender, EventArgs e)
         {
             if (folderBrowserDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 txtBasePath.Text = folderBrowserDialog1.SelectedPath;
@@ -104,37 +120,66 @@ namespace fonline_mapgen
             SetDefault(txtFOOBJ, txtBasePath.Text, @"\text\engl\FOOBJ.MSG");
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void btnSetCritterProtos_Click(object sender, EventArgs e)
         {
             SetFolder(txtCritterProtos);
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void btnSetMapsDir_Click(object sender, EventArgs e)
         {
             SetFolder(txtMapsDir);
         }
 
-        private void button6_Click(object sender, EventArgs e)
+        private void btnSetSetFOOBJ_Click(object sender, EventArgs e)
         {
             SetFile(txtFOOBJ);
         }
 
-        private void button7_Click(object sender, EventArgs e)
+        private void btnSetCritterTypes_Click(object sender, EventArgs e)
         {
             SetFile(txtCritterTypes);
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            lstDataFiles.Items.Remove(lstDataFiles.SelectedItem);
+            foreach (string s in lstDataFiles.SelectedItems.OfType<string>().ToList())
+                lstDataFiles.Items.Remove(s);
+        }
+
+        private void btnRemoveDir_Click(object sender, EventArgs e)
+        {
+            foreach (string s in lstDataDirs.SelectedItems.OfType<string>().ToList())
+                lstDataDirs.Items.Remove(s);
         }
 
         private void btnAddDir_Click(object sender, EventArgs e)
         {
             if (folderBrowserDialog1.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 return;
+            if(lstDataDirs.Items.Contains(folderBrowserDialog1.SelectedPath))
+                return;
+            lstDataDirs.Items.Add(folderBrowserDialog1.SelectedPath);
+            addedData = true;
+        }
 
-            lstDataFiles.Items.Add(folderBrowserDialog1.SelectedPath + " " + dirSuffix);
+        private void btnUpFile_Click(object sender, EventArgs e)
+        {
+            lstDataFiles.MoveUp();
+        }
+
+        private void btnDownFile_Click(object sender, EventArgs e)
+        {
+            lstDataFiles.MoveDown();
+        }
+
+        private void btnUpDir_Click(object sender, EventArgs e)
+        {
+            lstDataDirs.MoveUp();
+        }
+
+        private void btnDownDir_Click(object sender, EventArgs e)
+        {
+            lstDataDirs.MoveDown();
         }
     }
 }

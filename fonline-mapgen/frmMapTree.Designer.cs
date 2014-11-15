@@ -48,6 +48,7 @@
             this.ClientSize = new System.Drawing.Size(439, 388);
             this.Controls.Add(this.treeView1);
             this.Name = "frmMapTree";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "frmMapTree";
             this.ResumeLayout(false);
 

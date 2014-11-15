@@ -68,6 +68,12 @@
     <Compile Include="frmDebugInfo.Designer.cs">
       <DependentUpon>frmDebugInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmErrors.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmErrors.Designer.cs">
+      <DependentUpon>frmErrors.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmFindMaps.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -111,6 +117,9 @@
     <Compile Include="ZipStorer.cs" />
     <EmbeddedResource Include="frmDebugInfo.resx">
       <DependentUpon>frmDebugInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmErrors.resx">
+      <DependentUpon>frmErrors.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmFindMaps.resx">
       <DependentUpon>frmFindMaps.cs</DependentUpon>
