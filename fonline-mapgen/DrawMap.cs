@@ -33,6 +33,15 @@ namespace fonline_mapgen
         }
     }
 
+    // Selection logic
+    public class CurrentClick
+    {
+        public DrawCall NormalCall;
+        public DrawCall OpaqueCall;
+        public int index;
+        public DrawMap.Flags Type;
+    }
+
     public static class DrawMap
     {
         [DllImport("Gdi32.dll")]
@@ -54,16 +63,17 @@ namespace fonline_mapgen
 
         public static List<string> GetErrors() { return Errors; }
 
-        private static List<string> MissingNotified = new List<string>();
         private static List<string> Errors = new List<string>();
 
-        private static List<List<DrawCall>> DeferedClickCalls = new List<List<DrawCall>>();
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
         private static List<DrawCall> CachedRoofTileDraws = new List<DrawCall>();
         private static Dictionary<int, ItemProto> itemsPids = new Dictionary<int, ItemProto>();
 
-        private static bool clickFound;
+        private static List<MapObject> SelectedObjects = new List<MapObject>();
+        private static List<Tile> SelectedTiles = new List<Tile>();
+
+        private static CurrentClick currentClick = null;
 
         public enum Flags
         {
@@ -85,8 +95,30 @@ namespace fonline_mapgen
             return CachedSceneryDraws.Count + CachedTileDraws.Count + CachedRoofTileDraws.Count;
         }
 
+
+        public static List<MapObject> GetSelectedObjects()
+        {
+            return SelectedObjects;
+        }
+
+        private static void AddToCache(CurrentClick previous, bool normal)
+        {
+            List<DrawCall> list = null;
+            if(previous.Type == Flags.Tiles)
+                list = CachedTileDraws;
+            if(previous.Type == Flags.Scenery) // Can be critter also, it's the same cache.
+                list = CachedSceneryDraws;
+            if(previous.Type == Flags.Roofs)
+                list = CachedRoofTileDraws;
+
+            if(normal)
+                list.Insert(previous.index, previous.NormalCall);
+            else
+                list.Insert(previous.index, previous.OpaqueCall);
+        }
+
         public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, Point clickPos)
+            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, RectangleF selectionArea, bool clicked)
         {
             if (scale.Width != 1.0f)
                 g.ScaleTransform(scale.Width, scale.Height);
@@ -96,10 +128,9 @@ namespace fonline_mapgen
                 CachedSceneryDraws = new List<DrawCall>();
                 CachedTileDraws = new List<DrawCall>();
                 CachedRoofTileDraws = new List<DrawCall>();
+                currentClick = null;
                 Errors = new List<string>();
             }
-
-            clickFound = false;
 
             // Draw normal tiles.
             if (DrawFlag(flags, Flags.Tiles) && !cachedCalls)
@@ -122,36 +153,74 @@ namespace fonline_mapgen
                     else if (obj.MapObjType == MapObjectType.Scenery && !DrawFlag(flags, Flags.Scenery))
                         continue;
 
+                    Bitmap drawBitmap;
+                    PointF coords;
+
                     if (obj.MapObjType == MapObjectType.Critter)
                     {
-
-                        int crType = 0;
-                        critterData.crProtos.TryGetValue(obj.ProtoId, out crType);
-
                         string dirS;
                         int dir = 0;
-
                         obj.Properties.TryGetValue("Dir", out dirS);
-
                         int.TryParse(dirS, out dir);
 
-                        string crTypeS = "";
-                        critterData.crTypeGraphic.TryGetValue(crType, out crTypeS);
+                        string crType = "";
+                        critterData.GetCritterType(obj.ProtoId, out crType);
 
-                        if (DrawCritter(g, hexMap, frms, crTypeS, obj.MapX, obj.MapY, dir, clickPos))
-                            ClickedObject = obj;
+                        FalloutFRM frm;
+                        string cr = "art\\critters\\" + crType + "aa.frm";
+                        if (!frms.TryGetValue(cr, out frm))
+                        {
+                            Errors.Add("Critter graphics " + cr + " not loaded.");
+                            continue;
+                        }
+                        if (frm == null)
+                            continue;
+
+                        coords = hexMap.GetObjectCoords(new Point(obj.MapX, obj.MapY), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(0, 0));
+                        drawBitmap = frm.GetAnimFrameByDir(dir, 1);
                     }
+                    // Scenery or Item
                     else
                     {
                         ItemProto prot;
                         if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
                             continue;
-
                         if (prot.Type == (int)ItemTypes.ITEM_WALL && !DrawFlag(flags, Flags.SceneryWalls))
                             continue;
-                        if (DrawScenery(g, hexMap, frms, prot.PicMap, obj.MapX, obj.MapY, prot.OffsetX, prot.OffsetY, clickPos))
-                            ClickedObject = obj;
+                        if (!frms.ContainsKey(prot.PicMap))
+                        {
+                            Errors.Add("Scenery graphics " + prot.PicMap + " not loaded.");
+                            continue;
+                        }
+                        var frm = frms[prot.PicMap];
+                        coords = hexMap.GetObjectCoords(new Point(obj.MapX, obj.MapY), frm.Frames[0].Size, 
+                            new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(prot.OffsetX, prot.OffsetY));
+                        drawBitmap = frm.Frames[0];
                     }
+
+                    var normalDraw = new DrawCall(drawBitmap, coords.X, coords.Y);
+                    if (InsideSelection(selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
+                    {
+                        var opaque = MakeOpaque(drawBitmap, 0.5f);
+                        var opDraw = new DrawCall(opaque, coords.X, coords.Y);
+
+                        if (clicked)
+                        {
+                            if (currentClick != null) AddToCache(currentClick, true);
+                            currentClick = new CurrentClick();
+                            currentClick.index = CachedSceneryDraws.Count;
+                            currentClick.Type = Flags.Scenery;
+                            currentClick.NormalCall = normalDraw;
+                            currentClick.OpaqueCall = opDraw;
+                        }
+                        else
+                        {
+                            CachedSceneryDraws.Add(opDraw);
+                            SelectedObjects.Add(obj);
+                        }
+                    }
+                    else
+                        CachedSceneryDraws.Add(normalDraw);
                 }
             }
 
@@ -163,6 +232,9 @@ namespace fonline_mapgen
                     DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, true);
                 }
             }
+
+            if (currentClick != null)
+                AddToCache(currentClick, false);
 
             cachedCalls = true;
             foreach (var call in CachedTileDraws)
@@ -224,82 +296,20 @@ namespace fonline_mapgen
             return bmp;
         }
 
-        private static bool ClickedInside(Point clickPos, RectangleF rect)
+        private static bool InsideSelection(RectangleF selectArea, RectangleF rect)
         {
-            return ((clickPos.X > rect.X && clickPos.X < rect.X + rect.Width) &&
-                (clickPos.Y > rect.Y && clickPos.Y < rect.Y + rect.Height));
-        }
-
-        // returns true if clicked.
-        private static bool DrawCritter( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string critter, int x, int y, int dir, Point clickPos)
-        {
-            FalloutFRM frm;
-            string cr = "art\\critters\\" + critter + "aa.frm";
-            if (!frms.TryGetValue(cr, out frm))
-            {
-                Errors.Add("Critter graphics " + cr + " not loaded.");
-                return false;
-            }
-
-            if (frm == null)
-            {
-                return false;
-            }
-
-            var coords = hexMap.GetObjectCoords(new Point(x, y), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(0, 0));
-            var idleFrame = frm.GetAnimFrameByDir(dir, 1);
-
-
-            if (ClickedInside(clickPos, new RectangleF(coords.X, coords.Y, idleFrame.Width, idleFrame.Height)) && !clickFound)
-            {
-                clickFound = true;
-                var opaque = MakeOpaque(idleFrame, 0.5f);
-
-
-                return true;
-            }
-            else
-            {
-                CachedSceneryDraws.Add(new DrawCall(idleFrame, coords.X, coords.Y));
-            }
-            return false;
-        }
-
-        private static bool DrawScenery( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string scenery, int x, int y, int offx2, int offy2, Point clickPos )
-        {
-            if( !frms.ContainsKey( scenery ) )
-            {
-                Errors.Add("Scenery graphics " + scenery + " not loaded.");
-                return false;
-            }
-
-            var frm = frms[scenery];
-            var coords = hexMap.GetObjectCoords( new Point( x, y ), frm.Frames[0].Size, new Point( frm.PixelShift.X, frm.PixelShift.Y ), new Point( offx2, offy2 ) );
-
-            if (ClickedInside(clickPos, new RectangleF(coords.X, coords.Y, frm.Frames[0].Width, frm.Frames[0].Height)) && !clickFound)
-            {
-                clickFound = true;
-                var opaque = MakeOpaque(frm.Frames[0], 0.5f);
-                CachedSceneryDraws.Add(new DrawCall(opaque, coords.X, coords.Y));
-                return true;
-            }
-
-            CachedSceneryDraws.Add(new DrawCall(frm.Frames[0], coords.X, coords.Y));
-            return false;
+            return selectArea.IntersectsWith(rect);
         }
 
         private static void DrawTile( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string tile, int x, int y, bool isRoof )
         {
-            if( !frms.ContainsKey( tile ) )
+            if (!frms.ContainsKey(tile))
             {
-                if (!MissingNotified.Contains(tile))
-                {
-                    Errors.Add("Tile graphics " + tile + " not loaded.");
-                }
+                Errors.Add("Tile graphics " + tile + " not loaded.");
                 return;
             }
 
-            var tileCoords = hexMap.GetTileCoords( new Point( x, y ), isRoof );
+            var tileCoords = hexMap.GetTileCoords(new Point(x, y), isRoof);
 
             if (isRoof) CachedRoofTileDraws.Add(new DrawCall(frms[tile].Frames[0], tileCoords.X, tileCoords.Y));
             else CachedTileDraws.Add(new DrawCall(frms[tile].Frames[0], tileCoords.X, tileCoords.Y));

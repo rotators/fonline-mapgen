@@ -61,6 +61,13 @@
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new fonline_mapgen.DoubleBufferPanel();
+            this.selectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.roofsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.crittersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.itemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sceneryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wallsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -106,6 +113,7 @@
             this.stuffToolStripMenuItem,
             this.toolsToolStripMenuItem,
             this.settingsToolStripMenuItem,
+            this.selectionToolStripMenuItem,
             this.menuView});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
@@ -255,7 +263,7 @@
             // 
             this.menuViewTiles.CheckOnClick = true;
             this.menuViewTiles.Name = "menuViewTiles";
-            this.menuViewTiles.Size = new System.Drawing.Size(115, 22);
+            this.menuViewTiles.Size = new System.Drawing.Size(152, 22);
             this.menuViewTiles.Text = "Tiles";
             this.menuViewTiles.CheckedChanged += new System.EventHandler(this.menuViewTiles_CheckedChanged);
             // 
@@ -263,7 +271,7 @@
             // 
             this.menuViewRoofs.CheckOnClick = true;
             this.menuViewRoofs.Name = "menuViewRoofs";
-            this.menuViewRoofs.Size = new System.Drawing.Size(115, 22);
+            this.menuViewRoofs.Size = new System.Drawing.Size(152, 22);
             this.menuViewRoofs.Text = "Roofs";
             this.menuViewRoofs.CheckedChanged += new System.EventHandler(this.menuViewRoofs_CheckedChanged);
             // 
@@ -271,7 +279,7 @@
             // 
             this.menuViewCritters.CheckOnClick = true;
             this.menuViewCritters.Name = "menuViewCritters";
-            this.menuViewCritters.Size = new System.Drawing.Size(115, 22);
+            this.menuViewCritters.Size = new System.Drawing.Size(152, 22);
             this.menuViewCritters.Text = "Critters";
             this.menuViewCritters.CheckedChanged += new System.EventHandler(this.menuViewCritters_CheckedChanged);
             // 
@@ -279,7 +287,7 @@
             // 
             this.menuViewItems.CheckOnClick = true;
             this.menuViewItems.Name = "menuViewItems";
-            this.menuViewItems.Size = new System.Drawing.Size(115, 22);
+            this.menuViewItems.Size = new System.Drawing.Size(152, 22);
             this.menuViewItems.Text = "Items";
             this.menuViewItems.CheckedChanged += new System.EventHandler(this.menuViewItems_CheckedChanged);
             // 
@@ -289,7 +297,7 @@
             this.menuViewScenery.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuViewSceneryWalls});
             this.menuViewScenery.Name = "menuViewScenery";
-            this.menuViewScenery.Size = new System.Drawing.Size(115, 22);
+            this.menuViewScenery.Size = new System.Drawing.Size(152, 22);
             this.menuViewScenery.Text = "Scenery";
             this.menuViewScenery.CheckedChanged += new System.EventHandler(this.menuViewScenery_CheckedChanged);
             // 
@@ -297,7 +305,7 @@
             // 
             this.menuViewSceneryWalls.CheckOnClick = true;
             this.menuViewSceneryWalls.Name = "menuViewSceneryWalls";
-            this.menuViewSceneryWalls.Size = new System.Drawing.Size(102, 22);
+            this.menuViewSceneryWalls.Size = new System.Drawing.Size(152, 22);
             this.menuViewSceneryWalls.Text = "Walls";
             this.menuViewSceneryWalls.CheckedChanged += new System.EventHandler(this.menuViewSceneryWalls_CheckedChanged);
             // 
@@ -349,6 +357,57 @@
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
             this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
+            this.panel1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
+            // 
+            // selectionToolStripMenuItem
+            // 
+            this.selectionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tilesToolStripMenuItem,
+            this.roofsToolStripMenuItem,
+            this.crittersToolStripMenuItem,
+            this.itemsToolStripMenuItem,
+            this.sceneryToolStripMenuItem});
+            this.selectionToolStripMenuItem.Name = "selectionToolStripMenuItem";
+            this.selectionToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
+            this.selectionToolStripMenuItem.Text = "Selection";
+            // 
+            // tilesToolStripMenuItem
+            // 
+            this.tilesToolStripMenuItem.Name = "tilesToolStripMenuItem";
+            this.tilesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.tilesToolStripMenuItem.Text = "Tiles";
+            // 
+            // roofsToolStripMenuItem
+            // 
+            this.roofsToolStripMenuItem.Name = "roofsToolStripMenuItem";
+            this.roofsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.roofsToolStripMenuItem.Text = "Roofs";
+            // 
+            // crittersToolStripMenuItem
+            // 
+            this.crittersToolStripMenuItem.Name = "crittersToolStripMenuItem";
+            this.crittersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.crittersToolStripMenuItem.Text = "Critters";
+            // 
+            // itemsToolStripMenuItem
+            // 
+            this.itemsToolStripMenuItem.Name = "itemsToolStripMenuItem";
+            this.itemsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.itemsToolStripMenuItem.Text = "Items";
+            // 
+            // sceneryToolStripMenuItem
+            // 
+            this.sceneryToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.wallsToolStripMenuItem});
+            this.sceneryToolStripMenuItem.Name = "sceneryToolStripMenuItem";
+            this.sceneryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sceneryToolStripMenuItem.Text = "Scenery";
+            // 
+            // wallsToolStripMenuItem
+            // 
+            this.wallsToolStripMenuItem.Name = "wallsToolStripMenuItem";
+            this.wallsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.wallsToolStripMenuItem.Text = "Walls";
             // 
             // frmMain
             // 
@@ -414,6 +473,13 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusProto;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findMapsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem roofsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem crittersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem itemsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sceneryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem wallsToolStripMenuItem;
     }
 }
 

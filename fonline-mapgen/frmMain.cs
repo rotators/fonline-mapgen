@@ -34,7 +34,13 @@ namespace fonline_mapgen
         Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
 
         float scaleFactor = 1.0f;
+
+        // Selection
         Point clickedPos = new Point(0,0);
+        Point mouseRectPos = new Point(0, 0);
+        Pen rectPen = new Pen(Brushes.LightGreen, 5.0f);
+        bool isMouseDown = false;
+
 
         PointF viewPortSize = new PointF();
 
@@ -328,8 +334,18 @@ namespace fonline_mapgen
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             }
 
-            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), clickedPos);
-            // new Rectangle(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height)
+            var selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X-clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+
+            if (!isMouseDown)
+            {
+                selectionArea.Width = 1;
+                selectionArea.Height = 1;
+            }
+
+            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, !isMouseDown);
+
+            if (isMouseDown)
+                g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X-clickedPos.X, mouseRectPos.Y - clickedPos.Y);
 
             Font font = new System.Drawing.Font(FontFamily.GenericSansSerif, 17.0f, FontStyle.Bold);
            // g.DrawString("Selected", font, Brushes.OrangeRed, new PointF(clickedPos.X - 30.0f, clickedPos.Y - 40.0f));
@@ -338,6 +354,7 @@ namespace fonline_mapgen
             {
                 frmDebugInfo.setText("Objects rendered: " + DrawMap.GetNumCachedObjects());
             }
+
         }
 
         private void centerViewport()
@@ -376,6 +393,16 @@ namespace fonline_mapgen
 
             if( map == null )
                 return;
+
+            if (isMouseDown)
+            {
+                DrawMap.InvalidateCache();
+                panel1.Refresh();
+
+                mouseRectPos.X = (int)((float)e.X / scaleFactor);
+                mouseRectPos.Y = (int)((float)e.Y / scaleFactor);
+            }
+
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
             toolStripStatusHex.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
             //
@@ -710,6 +737,7 @@ namespace fonline_mapgen
                 clickedPos.Y = (int)((float)e.Y / scaleFactor);
                 DrawMap.InvalidateCache();
                 panel1.Refresh();
+                isMouseDown = true;
             }
         }
 
@@ -742,6 +770,19 @@ namespace fonline_mapgen
         {
             frmFindMaps frmFindMaps = new frmFindMaps(maps, Frms.Keys.ToList<string>());
             frmFindMaps.Show();
+        }
+
+        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                isMouseDown = false;
+                mouseRectPos.X = 0;
+                mouseRectPos.Y = 0;
+
+                panel1.Refresh();
+                DrawMap.InvalidateCache();
+            }
         }
     }
 }
