@@ -14,20 +14,21 @@ using FOCommon.Parsers;
 using System.Runtime.InteropServices;
 using System;
 using System.Drawing.Imaging;
-
-
+using SharpGL;
 
 namespace fonline_mapgen
 {
     public class DrawCall
     {
         public Bitmap Bitmap;
+        public string Path;
         public float X;
         public float Y;
 
-        public DrawCall(Bitmap Bitmap, float X, float Y)
+        public DrawCall(Bitmap Bitmap, string Path, float X, float Y)
         {
             this.Bitmap = Bitmap;
+            this.Path = Path;
             this.X = X;
             this.Y = Y;
         }
@@ -40,6 +41,11 @@ namespace fonline_mapgen
         public DrawCall OpaqueCall;
         public int index;
         public List<DrawCall> CacheList;
+    }
+
+    public class GLBinding
+    {
+        public uint[] frames;
     }
 
     public static class DrawMap
@@ -73,6 +79,8 @@ namespace fonline_mapgen
         private static List<MapObject> SelectedObjects = new List<MapObject>();
         private static List<Tile> SelectedTiles = new List<Tile>();
 
+        private static Dictionary<string, int> glIds = new Dictionary<string, int>();
+
         private static CurrentClick currentClick = null;
 
         public enum Flags
@@ -84,6 +92,11 @@ namespace fonline_mapgen
             Scenery = 0x10,
             SceneryWalls = 0x20
         };
+        
+        private static void Log(string txt)
+        {
+            System.IO.File.AppendAllText("./gl_log.txt", txt);
+        }
 
         public static void InvalidateCache()
         {
@@ -101,13 +114,18 @@ namespace fonline_mapgen
             return SelectedObjects;
         }
 
-        private static bool AddToCache(Bitmap drawBitmap, List<DrawCall> cacheList, PointF coords, RectangleF selectionArea, bool clicked)
+        public static List<Tile> GetSelectedTiles()
         {
-            var normalDraw = new DrawCall(drawBitmap, coords.X, coords.Y);
-            if (InsideSelection(selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
+            return SelectedTiles;
+        }
+
+        private static bool AddToCache(Bitmap drawBitmap, string path, List<DrawCall> cacheList, PointF coords, RectangleF selectionArea, bool selectable, bool clicked)
+        {
+            var normalDraw = new DrawCall(drawBitmap, path, coords.X, coords.Y);
+            if (selectable && InsideSelection(selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
             {
                 var opaque = MakeOpaque(drawBitmap, 0.5f);
-                var opDraw = new DrawCall(opaque, coords.X, coords.Y);
+                var opDraw = new DrawCall(opaque, path, coords.X, coords.Y);
                 if (clicked)
                 {
                     if (currentClick != null) ClickToCache(currentClick, true);
@@ -136,31 +154,73 @@ namespace fonline_mapgen
                 previous.CacheList.Insert(previous.index, previous.OpaqueCall);
         }
 
-        public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, Flags flags, SizeF scale, RectangleF selectionArea, bool clicked)
+        /*public static void BindGLTextures(OpenGL gl, List<String> Paths, Dictionary<string, FalloutFRM> Frms)
         {
-            if (scale.Width != 1.0f)
-                g.ScaleTransform(scale.Width, scale.Height);
+            glIds = new Dictionary<string, uint[]>();
 
+            int totalFrames = 0;
+            foreach(var kvp in Frms)
+                totalFrames+=kvp.Value.Frames.Count;
+
+            uint[] ids = new uint[totalFrames];
+            gl.GenTextures(Paths.Count, ids);
+
+            uint id = 0;
+
+            // Load textures
+            int idx = 0;
+            foreach(var path in Paths)
+            {
+                glIds[path] = new UInt32[Frms[path].Frames.Count];
+                int i = 0;
+                foreach(Bitmap bmp in Frms[path].Frames)
+                {
+                     glIds[path][i++] = ids[idx++];
+
+                     gl.BindTexture(OpenGL.GL_TEXTURE_2D, id++);
+
+                     //  Tell OpenGL where the texture data is.
+                     gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, 3, bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
+                         bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                         ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb).Scan0);
+
+
+                     //  Specify linear filtering.
+                     gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
+                     gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
+                }
+            }
+        }*/
+
+        public static void OnGraphics( Graphics gdi, SharpGL.OpenGL gl, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
+            Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF selectionArea, bool clicked)
+        {
             if (!cachedCalls)
             {
                 CachedSceneryDraws = new List<DrawCall>();
                 CachedTileDraws = new List<DrawCall>();
                 CachedRoofTileDraws = new List<DrawCall>();
                 currentClick = null;
+                SelectedObjects = new List<MapObject>();
+                SelectedTiles = new List<Tile>();
                 Errors = new List<string>();
-            }
 
-            if (!cachedCalls)
-            {
                 if (DrawFlag(flags, Flags.Tiles) || DrawFlag(flags, Flags.Roofs))
                 {
                     foreach (var tile in map.Tiles)
                     {
+                        bool selectable = false;
+
                         if (!tile.Roof && !DrawFlag(flags, Flags.Tiles))
                             continue;
+                        if (!tile.Roof && DrawFlag(selectFlags, Flags.Tiles))
+                            selectable = true;
                         if (tile.Roof && !DrawFlag(flags, Flags.Roofs))
                             continue;
+                        if(tile.Roof && DrawFlag(selectFlags, Flags.Roofs))
+                            selectable = true;
+
+
                         List<DrawCall> list = null;
                         if (tile.Roof) list = CachedRoofTileDraws;
                         else list = CachedTileDraws;
@@ -172,13 +232,15 @@ namespace fonline_mapgen
                         }
                         var tileCoords = hexMap.GetTileCoords(new Point(tile.X, tile.Y), tile.Roof);
                         Bitmap drawBitmap = frms[tile.Path].Frames[0];
-                        if (AddToCache(drawBitmap, list, tileCoords, selectionArea, clicked))
+                        if (AddToCache(drawBitmap, tile.Path, list, tileCoords, selectionArea, selectable, clicked))
                             SelectedTiles.Add(tile);
                     }
                 }
 
                 foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY * 2))
                 {
+                    bool selectable = false;
+
                     // skip specific object types
                     if (obj.MapObjType == MapObjectType.Critter && !DrawFlag(flags, Flags.Critters))
                         continue;
@@ -187,8 +249,16 @@ namespace fonline_mapgen
                     else if (obj.MapObjType == MapObjectType.Scenery && !DrawFlag(flags, Flags.Scenery))
                         continue;
 
+                    if (obj.MapObjType == MapObjectType.Critter && DrawFlag(selectFlags, Flags.Critters))
+                        selectable = true;
+                    else if (obj.MapObjType == MapObjectType.Item && DrawFlag(selectFlags, Flags.Items))
+                        selectable = true;
+                    else if (obj.MapObjType == MapObjectType.Scenery && DrawFlag(selectFlags, Flags.Scenery))
+                        selectable = true;
+
                     Bitmap drawBitmap;
                     PointF coords;
+                    string path;
 
                     if (obj.MapObjType == MapObjectType.Critter)
                     {
@@ -202,6 +272,7 @@ namespace fonline_mapgen
 
                         FalloutFRM frm;
                         string cr = "art\\critters\\" + crType + "aa.frm";
+                        path = cr;
                         if (!frms.TryGetValue(cr, out frm))
                         {
                             Errors.Add("Critter graphics " + cr + " not loaded.");
@@ -227,28 +298,121 @@ namespace fonline_mapgen
                             continue;
                         }
                         var frm = frms[prot.PicMap];
+                        path = prot.PicMap;
                         coords = hexMap.GetObjectCoords(new Point(obj.MapX, obj.MapY), frm.Frames[0].Size, 
                             new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(prot.OffsetX, prot.OffsetY));
                         drawBitmap = frm.Frames[0];
                     }
 
-                    if (AddToCache(drawBitmap, CachedSceneryDraws, coords, selectionArea, clicked))
+                    if (AddToCache(drawBitmap, path, CachedSceneryDraws, coords, selectionArea, selectable, clicked))
                         SelectedObjects.Add(obj);
                 }
             }
 
+            // Rendering
             if (currentClick != null)
                 ClickToCache(currentClick, false);
 
+            if (scale.Width != 1.0f && gdi != null)
+                gdi.ScaleTransform(scale.Width, scale.Height);
+
             cachedCalls = true;
-            foreach (var call in CachedTileDraws)
-                g.DrawImage(call.Bitmap, call.X, call.Y);
 
-            foreach (var call in CachedSceneryDraws)
-                g.DrawImage(call.Bitmap, call.X, call.Y);
+            if (gdi != null)
+            {
+                foreach (var call in CachedTileDraws)
+                    gdi.DrawImage(call.Bitmap, call.X, call.Y);
 
-            foreach (var call in CachedRoofTileDraws)
-                g.DrawImage(call.Bitmap, call.X, call.Y);
+                foreach (var call in CachedSceneryDraws)
+                    gdi.DrawImage(call.Bitmap, call.X, call.Y);
+
+                foreach (var call in CachedRoofTileDraws)
+                    gdi.DrawImage(call.Bitmap, call.X, call.Y);
+            }
+            else
+            {
+                uint[] ids = new uint[CachedTileDraws.Count];
+
+                float MinX = CachedTileDraws.Min(x => x.X);
+                float MinY = CachedTileDraws.Min(x => x.Y);
+                float MaxX = CachedTileDraws.Max(x => x.X);
+                float MaxY = CachedTileDraws.Max(x => x.Y);
+
+                
+
+                foreach (var call in CachedTileDraws)
+                {
+                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
+
+                    uint glDrawId = 0;
+
+                    if (!glIds.Keys.Contains(call.Path))
+                    {
+                        //Log("Loading " + call.Path + Environment.NewLine);
+                        var bmp = call.Bitmap;
+                        var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+
+                        uint[] u = new uint[1];
+                        gl.GenTextures(1, u);
+                        gl.BindTexture(OpenGL.GL_TEXTURE_2D, u[0]);
+
+                        glDrawId = u[0];
+                        glIds[call.Path] = (int)u[0];
+
+                        //  Tell OpenGL where the texture data is.
+                        BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+                        gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_REPLACE);
+                        
+
+                        gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA , bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
+                            bmpData.Scan0);
+                        //  Specify linear filtering.
+                        gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
+                        gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
+
+                        bmp.UnlockBits(bmpData);
+                    }
+                    else
+                    {
+                        glDrawId = (uint)glIds[call.Path];
+                    }
+
+                    float factor = 74.0f;
+
+                    gl.Enable(OpenGL.GL_BLEND);
+                    gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
+                    gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
+                    gl.PushMatrix();
+                    
+                    gl.Translate((scaleX * factor), (-scaleY * factor), 0.0f);
+                    gl.Begin(OpenGL.GL_QUADS);
+                    gl.TexCoord(0.0f, 0.0f);
+                    gl.Vertex(0.0, 1.0f, 0.0f);
+                    gl.TexCoord(0.0f, 1.0f);
+                    gl.Vertex(0.0, 0.0, 0.0f);
+                    gl.TexCoord(1.0f, 1.0f);
+                    gl.Vertex(1.0f, 0.0, 0.0f);
+                    gl.TexCoord(1.0f, 0.0f);
+                    gl.Vertex(1.0f, 1.0f, 0.0f);
+                    gl.End();
+                    gl.PopMatrix();
+                }
+                //System.Windows.Forms.MessageBox.Show("Done!");
+
+                /*if (glIds.Count == 0)
+                {
+                    List<String> paths = new List<String>();
+                    foreach (var call in CachedTileDraws)
+                        paths.Add(call.Path);
+                    foreach (var call in CachedSceneryDraws)
+                        paths.Add(call.Path);
+                    foreach (var call in CachedRoofTileDraws)
+                        paths.Add(call.Path);
+                    //BindGLTextures(gl, paths,frms);
+                }*/
+            }
         }
 
         private static Bitmap MakeOpaque(Bitmap original, double opacity)

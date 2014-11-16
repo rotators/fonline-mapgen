@@ -48,6 +48,13 @@
             this.pathsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.performanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectionTiles = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectionRoofs = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectionCritters = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectionItems = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectionScenery = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuSelectionSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
             this.menuView = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewTiles = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewRoofs = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,17 +67,12 @@
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
+            this.openGLControl1 = new SharpGL.OpenGLControl();
             this.panel1 = new fonline_mapgen.DoubleBufferPanel();
-            this.selectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.roofsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.crittersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.itemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sceneryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.wallsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
             this.SuspendLayout();
             // 
             // btnLoadMap
@@ -92,7 +94,7 @@
             this.pnlViewPort.Controls.Add(this.panel1);
             this.pnlViewPort.Location = new System.Drawing.Point(0, 52);
             this.pnlViewPort.Name = "pnlViewPort";
-            this.pnlViewPort.Size = new System.Drawing.Size(1028, 561);
+            this.pnlViewPort.Size = new System.Drawing.Size(426, 338);
             this.pnlViewPort.TabIndex = 7;
             this.pnlViewPort.Scroll += new System.Windows.Forms.ScrollEventHandler(this.pnlViewPort_Scroll);
             // 
@@ -247,6 +249,68 @@
             this.debugToolStripMenuItem.Text = "Debug Info";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
+            // selectionToolStripMenuItem
+            // 
+            this.selectionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuSelectionTiles,
+            this.menuSelectionRoofs,
+            this.menuSelectionCritters,
+            this.menuSelectionItems,
+            this.menuSelectionScenery});
+            this.selectionToolStripMenuItem.Name = "selectionToolStripMenuItem";
+            this.selectionToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
+            this.selectionToolStripMenuItem.Text = "Selection";
+            // 
+            // menuSelectionTiles
+            // 
+            this.menuSelectionTiles.CheckOnClick = true;
+            this.menuSelectionTiles.Name = "menuSelectionTiles";
+            this.menuSelectionTiles.Size = new System.Drawing.Size(115, 22);
+            this.menuSelectionTiles.Text = "Tiles";
+            this.menuSelectionTiles.CheckedChanged += new System.EventHandler(this.menuSelectionTiles_CheckedChanged);
+            // 
+            // menuSelectionRoofs
+            // 
+            this.menuSelectionRoofs.CheckOnClick = true;
+            this.menuSelectionRoofs.Name = "menuSelectionRoofs";
+            this.menuSelectionRoofs.Size = new System.Drawing.Size(115, 22);
+            this.menuSelectionRoofs.Text = "Roofs";
+            this.menuSelectionRoofs.CheckedChanged += new System.EventHandler(this.menuSelectionRoofs_CheckedChanged);
+            // 
+            // menuSelectionCritters
+            // 
+            this.menuSelectionCritters.CheckOnClick = true;
+            this.menuSelectionCritters.Name = "menuSelectionCritters";
+            this.menuSelectionCritters.Size = new System.Drawing.Size(115, 22);
+            this.menuSelectionCritters.Text = "Critters";
+            this.menuSelectionCritters.CheckedChanged += new System.EventHandler(this.menuSelectionCritters_CheckedChanged);
+            // 
+            // menuSelectionItems
+            // 
+            this.menuSelectionItems.CheckOnClick = true;
+            this.menuSelectionItems.Name = "menuSelectionItems";
+            this.menuSelectionItems.Size = new System.Drawing.Size(115, 22);
+            this.menuSelectionItems.Text = "Items";
+            this.menuSelectionItems.CheckedChanged += new System.EventHandler(this.menuSelectionItems_CheckedChanged);
+            // 
+            // menuSelectionScenery
+            // 
+            this.menuSelectionScenery.CheckOnClick = true;
+            this.menuSelectionScenery.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuSelectionSceneryWalls});
+            this.menuSelectionScenery.Name = "menuSelectionScenery";
+            this.menuSelectionScenery.Size = new System.Drawing.Size(115, 22);
+            this.menuSelectionScenery.Text = "Scenery";
+            this.menuSelectionScenery.CheckedChanged += new System.EventHandler(this.menuSelectionScenery_CheckedChanged);
+            // 
+            // menuSelectionSceneryWalls
+            // 
+            this.menuSelectionSceneryWalls.CheckOnClick = true;
+            this.menuSelectionSceneryWalls.Name = "menuSelectionSceneryWalls";
+            this.menuSelectionSceneryWalls.Size = new System.Drawing.Size(102, 22);
+            this.menuSelectionSceneryWalls.Text = "Walls";
+            this.menuSelectionSceneryWalls.CheckedChanged += new System.EventHandler(this.menuSelectionSceneryWalls_CheckedChanged);
+            // 
             // menuView
             // 
             this.menuView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -263,7 +327,7 @@
             // 
             this.menuViewTiles.CheckOnClick = true;
             this.menuViewTiles.Name = "menuViewTiles";
-            this.menuViewTiles.Size = new System.Drawing.Size(152, 22);
+            this.menuViewTiles.Size = new System.Drawing.Size(115, 22);
             this.menuViewTiles.Text = "Tiles";
             this.menuViewTiles.CheckedChanged += new System.EventHandler(this.menuViewTiles_CheckedChanged);
             // 
@@ -271,7 +335,7 @@
             // 
             this.menuViewRoofs.CheckOnClick = true;
             this.menuViewRoofs.Name = "menuViewRoofs";
-            this.menuViewRoofs.Size = new System.Drawing.Size(152, 22);
+            this.menuViewRoofs.Size = new System.Drawing.Size(115, 22);
             this.menuViewRoofs.Text = "Roofs";
             this.menuViewRoofs.CheckedChanged += new System.EventHandler(this.menuViewRoofs_CheckedChanged);
             // 
@@ -279,7 +343,7 @@
             // 
             this.menuViewCritters.CheckOnClick = true;
             this.menuViewCritters.Name = "menuViewCritters";
-            this.menuViewCritters.Size = new System.Drawing.Size(152, 22);
+            this.menuViewCritters.Size = new System.Drawing.Size(115, 22);
             this.menuViewCritters.Text = "Critters";
             this.menuViewCritters.CheckedChanged += new System.EventHandler(this.menuViewCritters_CheckedChanged);
             // 
@@ -287,7 +351,7 @@
             // 
             this.menuViewItems.CheckOnClick = true;
             this.menuViewItems.Name = "menuViewItems";
-            this.menuViewItems.Size = new System.Drawing.Size(152, 22);
+            this.menuViewItems.Size = new System.Drawing.Size(115, 22);
             this.menuViewItems.Text = "Items";
             this.menuViewItems.CheckedChanged += new System.EventHandler(this.menuViewItems_CheckedChanged);
             // 
@@ -297,7 +361,7 @@
             this.menuViewScenery.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuViewSceneryWalls});
             this.menuViewScenery.Name = "menuViewScenery";
-            this.menuViewScenery.Size = new System.Drawing.Size(152, 22);
+            this.menuViewScenery.Size = new System.Drawing.Size(115, 22);
             this.menuViewScenery.Text = "Scenery";
             this.menuViewScenery.CheckedChanged += new System.EventHandler(this.menuViewScenery_CheckedChanged);
             // 
@@ -305,7 +369,7 @@
             // 
             this.menuViewSceneryWalls.CheckOnClick = true;
             this.menuViewSceneryWalls.Name = "menuViewSceneryWalls";
-            this.menuViewSceneryWalls.Size = new System.Drawing.Size(152, 22);
+            this.menuViewSceneryWalls.Size = new System.Drawing.Size(102, 22);
             this.menuViewSceneryWalls.Text = "Walls";
             this.menuViewSceneryWalls.CheckedChanged += new System.EventHandler(this.menuViewSceneryWalls_CheckedChanged);
             // 
@@ -347,6 +411,23 @@
             this.toolStripStatusProto.Size = new System.Drawing.Size(118, 17);
             this.toolStripStatusProto.Text = "toolStripStatusLabel1";
             // 
+            // openGLControl1
+            // 
+            this.openGLControl1.DrawFPS = true;
+            this.openGLControl1.Enabled = false;
+            this.openGLControl1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.openGLControl1.FrameRate = 50;
+            this.openGLControl1.Location = new System.Drawing.Point(161, 151);
+            this.openGLControl1.Name = "openGLControl1";
+            this.openGLControl1.OpenGLVersion = SharpGL.Version.OpenGLVersion.OpenGL2_1;
+            this.openGLControl1.RenderContextType = SharpGL.RenderContextType.FBO;
+            this.openGLControl1.RenderTrigger = SharpGL.RenderTrigger.TimerBased;
+            this.openGLControl1.Size = new System.Drawing.Size(855, 462);
+            this.openGLControl1.TabIndex = 15;
+            this.openGLControl1.OpenGLInitialized += new System.EventHandler(this.openGLControl1_OpenGLInitialized);
+            this.openGLControl1.OpenGLDraw += new SharpGL.RenderEventHandler(this.openGLControl1_OpenGLDraw);
+            this.openGLControl1.Resized += new System.EventHandler(this.openGLControl1_Resized);
+            // 
             // panel1
             // 
             this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -359,67 +440,19 @@
             this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             this.panel1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
             // 
-            // selectionToolStripMenuItem
-            // 
-            this.selectionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tilesToolStripMenuItem,
-            this.roofsToolStripMenuItem,
-            this.crittersToolStripMenuItem,
-            this.itemsToolStripMenuItem,
-            this.sceneryToolStripMenuItem});
-            this.selectionToolStripMenuItem.Name = "selectionToolStripMenuItem";
-            this.selectionToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
-            this.selectionToolStripMenuItem.Text = "Selection";
-            // 
-            // tilesToolStripMenuItem
-            // 
-            this.tilesToolStripMenuItem.Name = "tilesToolStripMenuItem";
-            this.tilesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.tilesToolStripMenuItem.Text = "Tiles";
-            // 
-            // roofsToolStripMenuItem
-            // 
-            this.roofsToolStripMenuItem.Name = "roofsToolStripMenuItem";
-            this.roofsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.roofsToolStripMenuItem.Text = "Roofs";
-            // 
-            // crittersToolStripMenuItem
-            // 
-            this.crittersToolStripMenuItem.Name = "crittersToolStripMenuItem";
-            this.crittersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.crittersToolStripMenuItem.Text = "Critters";
-            // 
-            // itemsToolStripMenuItem
-            // 
-            this.itemsToolStripMenuItem.Name = "itemsToolStripMenuItem";
-            this.itemsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.itemsToolStripMenuItem.Text = "Items";
-            // 
-            // sceneryToolStripMenuItem
-            // 
-            this.sceneryToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.wallsToolStripMenuItem});
-            this.sceneryToolStripMenuItem.Name = "sceneryToolStripMenuItem";
-            this.sceneryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.sceneryToolStripMenuItem.Text = "Scenery";
-            // 
-            // wallsToolStripMenuItem
-            // 
-            this.wallsToolStripMenuItem.Name = "wallsToolStripMenuItem";
-            this.wallsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.wallsToolStripMenuItem.Text = "Walls";
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1028, 638);
+            this.Controls.Add(this.openGLControl1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.pnlViewPort);
             this.Controls.Add(this.cmbMaps);
             this.Controls.Add(this.btnLoadMap);
             this.Controls.Add(this.menu);
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menu;
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -428,11 +461,14 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.frmMain_Paint);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmMain_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.frmMain_KeyUp);
             this.pnlViewPort.ResumeLayout(false);
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -474,12 +510,13 @@
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findMapsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectionToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem tilesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem roofsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem crittersToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem itemsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem sceneryToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem wallsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem menuSelectionTiles;
+        private System.Windows.Forms.ToolStripMenuItem menuSelectionRoofs;
+        private System.Windows.Forms.ToolStripMenuItem menuSelectionCritters;
+        private System.Windows.Forms.ToolStripMenuItem menuSelectionItems;
+        private System.Windows.Forms.ToolStripMenuItem menuSelectionScenery;
+        private System.Windows.Forms.ToolStripMenuItem menuSelectionSceneryWalls;
+        private SharpGL.OpenGLControl openGLControl1;
     }
 }
 

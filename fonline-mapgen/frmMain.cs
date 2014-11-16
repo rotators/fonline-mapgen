@@ -15,6 +15,8 @@ using FOCommon.Graphic;
 using FOCommon.Parsers;
 using FOCommon.Items;
 using System.IO.Compression;
+using SharpGL;
+using System.Drawing.Imaging;
 
 namespace fonline_mapgen
 {
@@ -24,6 +26,10 @@ namespace fonline_mapgen
         //public Dictionary<String, Bitmap> Bitmaps = new Dictionary<string, Bitmap>();
 
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
+        uint[] textures = new uint[1];
+        bool glLoadedImages = false;
+        bool glIsInit = false;
+
         List<ItemProto> items = new List<ItemProto>();
 
         Color transparency = Color.FromArgb(11, 0, 11);
@@ -35,13 +41,21 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
 
+        bool glMode = true;
+
         // Selection
         Point clickedPos = new Point(0,0);
         Point mouseRectPos = new Point(0, 0);
         Pen rectPen = new Pen(Brushes.LightGreen, 5.0f);
         bool isMouseDown = false;
+        bool selectionClicked = false;
 
+        float rotation;
 
+        float glPosX = 0.0f;
+        float glPosY = 0.0f;
+
+        RectangleF selectionArea = new RectangleF();
         PointF viewPortSize = new PointF();
 
         MapperSettings mapperSettings = new MapperSettings();
@@ -81,6 +95,7 @@ namespace fonline_mapgen
         //TabPage TabTemplate;
 
         DrawMap.Flags drawFlags;
+        DrawMap.Flags selectFlags;
 
         public frmMain()
         {
@@ -90,6 +105,14 @@ namespace fonline_mapgen
             toolStripStatus.Text =
             toolStripStatusHex.Text =
             toolStripStatusProto.Text = "";
+
+            openGLControl1.Enabled = true;
+
+            if (glMode)
+            {
+                panel1.Visible = false;
+                pnlViewPort.Visible = false;
+            }
         }
 
         private void Form1_Load( object sender, EventArgs e )
@@ -112,7 +135,7 @@ namespace fonline_mapgen
 
         private void LoadMap( string fileName )
         {
-            MapperMap map = MapperMap.Load( fileName );
+            MapperMap map = MapperMap.Load( fileName, glMode );
             if( map != null )
             {
                 this.Maps.Add( map );
@@ -124,15 +147,21 @@ namespace fonline_mapgen
                 menuFileExport.Enabled =
                 viewMapTreeToolStripMenuItem.Enabled = true;
 
-                DrawMap.InvalidateCache();
-
                 viewPortSize.X = ((map.GetEdgeCoords(FOHexMap.Direction.Right).X) - (map.GetEdgeCoords(FOHexMap.Direction.Left).X)) + 100.0f;
                 viewPortSize.Y = ((map.GetEdgeCoords(FOHexMap.Direction.Down).Y)  - (map.GetEdgeCoords(FOHexMap.Direction.Up).Y)) + 100.0f;
 
+                if (glMode)
+                {
+                    /*OpenGL gl = openGLControl1.OpenGL;
+                    gl.MatrixMode(OpenGL.GL_PROJECTION);
+                    gl.LoadIdentity();*/
+                    //gl.Viewport(0, 0, (int)viewPortSize.X, (int)viewPortSize.Y);
+                }
+                 
+
                 resizeViewport();
                 centerViewport();
-
-                panel1.Refresh();
+                RefreshViewport();
 
                 // TODO: Check critter/proto names and PID in the map itself instead of just graphics.
                 var errors = DrawMap.GetErrors();
@@ -307,18 +336,8 @@ namespace fonline_mapgen
             return true;
         }
 
-        private void panel1_Paint( object sender, PaintEventArgs e )
+        private void DrawGDI(Graphics g, MapperMap map)
         {
-            if( Frms.Count == 0 )
-                return;
-
-            MapperMap map = this.CurrentMap;
-
-            if( map == null )
-                return;
-
-            var g = e.Graphics;
-
             if (mapperSettings.Performance.FastRendering)
             {
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
@@ -334,27 +353,71 @@ namespace fonline_mapgen
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             }
 
-            var selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X-clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+            if (isMouseDown)
+                g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
 
-            if (!isMouseDown)
+            DrawMap.OnGraphics(g, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
+        }
+
+        private void DrawGL(MapperMap map)
+        {
+            OpenGL gl = openGLControl1.OpenGL;
+
+            //  Load the identity matrix.
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT);
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            gl.LoadIdentity();
+            
+
+            gl.Translate(glPosX, glPosY, 0.0f);
+            gl.Scale(0.1f, 0.1f, 0.0f);
+
+            DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, 
+                this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
+
+            
+
+            gl.Flush();
+        }
+
+        private void RefreshViewport()
+        {
+            if (Frms.Count == 0)
+                return;
+
+            MapperMap map = this.CurrentMap;
+
+            if (map == null)
+                return;
+
+            DrawMap.InvalidateCache();
+            if (glMode)
             {
-                selectionArea.Width = 1;
-                selectionArea.Height = 1;
+                DrawGL(map);
+            }
+            else 
+            {
+                panel1.Refresh();
             }
 
-            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, !isMouseDown);
-
-            if (isMouseDown)
-                g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X-clickedPos.X, mouseRectPos.Y - clickedPos.Y);
-
-            Font font = new System.Drawing.Font(FontFamily.GenericSansSerif, 17.0f, FontStyle.Bold);
-           // g.DrawString("Selected", font, Brushes.OrangeRed, new PointF(clickedPos.X - 30.0f, clickedPos.Y - 40.0f));
-           // 
             if (frmDebugInfo != null && !frmDebugInfo.IsDisposed)
             {
                 frmDebugInfo.setText("Objects rendered: " + DrawMap.GetNumCachedObjects());
+                frmDebugInfo.setText("Objects selected: " + (DrawMap.GetSelectedObjects().Count + DrawMap.GetSelectedTiles().Count));
             }
+        }
 
+        private void panel1_Paint( object sender, PaintEventArgs e )
+        {
+            MapperMap map = this.CurrentMap;
+
+            if (map == null)
+                return;
+            if (glMode)
+                return;
+
+            DrawGDI(e.Graphics, map);
         }
 
         private void centerViewport()
@@ -384,7 +447,7 @@ namespace fonline_mapgen
             scaleFactor = Math.Max(scaleFactor, 0.03f);
 
             resizeViewport();
-            panel1.Refresh();
+            RefreshViewport();
         }
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
@@ -396,11 +459,13 @@ namespace fonline_mapgen
 
             if (isMouseDown)
             {
-                DrawMap.InvalidateCache();
-                panel1.Refresh();
-
                 mouseRectPos.X = (int)((float)e.X / scaleFactor);
                 mouseRectPos.Y = (int)((float)e.Y / scaleFactor);
+
+                selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+
+                DrawMap.InvalidateCache();
+                RefreshViewport();
             }
 
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
@@ -657,6 +722,14 @@ namespace fonline_mapgen
             }
         }
 
+        private void UpdateSelectFlags(object sender, DrawMap.Flags flag)
+        {
+            if (((ToolStripMenuItem)sender).Checked)
+                this.selectFlags = this.selectFlags | flag;
+            else
+                this.selectFlags = this.selectFlags & ~flag;
+        }
+
         private void UpdateDrawFlags( object sender, DrawMap.Flags flag )
         {
             if( ((ToolStripMenuItem)sender).Checked )
@@ -664,8 +737,7 @@ namespace fonline_mapgen
             else
                 this.drawFlags = this.drawFlags & ~flag;
 
-            DrawMap.InvalidateCache(); 
-            panel1.Refresh();
+            RefreshViewport();
         }
 
         private void menuViewTiles_CheckedChanged( object sender, EventArgs e )
@@ -731,12 +803,14 @@ namespace fonline_mapgen
 
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
+            if (isMouseDown)
+                return;
+
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
+                selectionClicked = false;
                 clickedPos.X = (int)((float)e.X / scaleFactor);
                 clickedPos.Y = (int)((float)e.Y / scaleFactor);
-                DrawMap.InvalidateCache();
-                panel1.Refresh();
                 isMouseDown = true;
             }
         }
@@ -758,7 +832,7 @@ namespace fonline_mapgen
 
         private void pnlViewPort_Scroll(object sender, ScrollEventArgs e)
         {
-            //panel1.Refresh();
+            
         }
 
         private void toolsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -777,12 +851,120 @@ namespace fonline_mapgen
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
                 isMouseDown = false;
+                selectionClicked = false;
+                selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+
+                if (selectionArea.Width <= 0)
+                {
+                    selectionArea.Width = 1;
+                    selectionArea.Height = 1;
+                    selectionClicked = true;
+                }
+
                 mouseRectPos.X = 0;
                 mouseRectPos.Y = 0;
 
-                panel1.Refresh();
-                DrawMap.InvalidateCache();
+                RefreshViewport();
             }
+        }
+
+        private void menuSelectionTiles_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateSelectFlags(sender, DrawMap.Flags.Tiles);
+        }
+
+        private void menuSelectionRoofs_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateSelectFlags(sender, DrawMap.Flags.Roofs);
+        }
+
+        private void menuSelectionCritters_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateSelectFlags(sender, DrawMap.Flags.Critters);
+        }
+
+        private void menuSelectionItems_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateSelectFlags(sender, DrawMap.Flags.Items);
+        }
+
+        private void menuSelectionScenery_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateSelectFlags(sender, DrawMap.Flags.Scenery);
+        }
+
+        private void menuSelectionSceneryWalls_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateSelectFlags(sender, DrawMap.Flags.SceneryWalls);
+        }
+
+        private void frmMain_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                foreach (var obj in DrawMap.GetSelectedObjects())
+                    CurrentMap.Objects.Remove(obj);
+                foreach (var tile in DrawMap.GetSelectedTiles())
+                    CurrentMap.Tiles.Remove(tile);
+
+                RefreshViewport();
+            }
+        }
+
+
+        private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
+        {
+            //  Get the OpenGL object.
+            OpenGL gl = openGLControl1.OpenGL;
+            gl.ClearColor(0, 0, 0, 0);
+
+            //  We need to load the texture from file.
+
+            //gl.Enable(OpenGL.GL_BLEND);
+            gl.Disable(OpenGL.GL_DEPTH_TEST);
+
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            gl.LoadIdentity();
+            gl.Ortho2D(0.0, openGLControl1.Width, openGLControl1.Height, 0);
+        }
+
+        private void openGLControl1_Resized(object sender, EventArgs e)
+        {
+            //  Get the OpenGL object.
+            OpenGL gl = openGLControl1.OpenGL;
+
+            //  Set the projection matrix.
+            //gl.MatrixMode(OpenGL.GL_MATRIX_MODE);
+
+            //  Load the identity.
+            //gl.LoadIdentity();
+
+            //  Create a perspective transformation.
+            //gl.Perspective(60.0f, (double)Width / (double)Height, 1, 1000.0);
+            
+
+            //  Use the 'look at' helper function to position and aim the camera.
+            //gl.LookAt(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        }
+
+        private void openGLControl1_OpenGLDraw(object sender, RenderEventArgs args)
+        {
+            if (CurrentMap == null)
+                return;
+
+            DrawGL(CurrentMap);
+        }
+
+        private void frmMain_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.W)
+                glPosY -= 0.5f;
+            if (e.KeyCode == Keys.S)
+                glPosY += 0.5f;
+            if (e.KeyCode == Keys.A)
+                glPosX += 0.5f;
+            if (e.KeyCode == Keys.D)
+                glPosX -= 0.5f;
         }
     }
 }
