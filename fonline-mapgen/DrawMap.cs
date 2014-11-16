@@ -74,6 +74,8 @@ namespace fonline_mapgen
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
         private static List<DrawCall> CachedRoofTileDraws = new List<DrawCall>();
+        private static List<List<DrawCall>> CachedDrawsLists = new List<List<DrawCall>>();
+
         private static Dictionary<int, ItemProto> itemsPids = new Dictionary<int, ItemProto>();
 
         private static List<MapObject> SelectedObjects = new List<MapObject>();
@@ -154,43 +156,40 @@ namespace fonline_mapgen
                 previous.CacheList.Insert(previous.index, previous.OpaqueCall);
         }
 
-        /*public static void BindGLTextures(OpenGL gl, List<String> Paths, Dictionary<string, FalloutFRM> Frms)
+        private static uint BindGlTexture(OpenGL gl, string path, Bitmap bitmap)
         {
-            glIds = new Dictionary<string, uint[]>();
-
-            int totalFrames = 0;
-            foreach(var kvp in Frms)
-                totalFrames+=kvp.Value.Frames.Count;
-
-            uint[] ids = new uint[totalFrames];
-            gl.GenTextures(Paths.Count, ids);
-
-            uint id = 0;
-
-            // Load textures
-            int idx = 0;
-            foreach(var path in Paths)
+            uint glDrawId = 0;
+            if (!glIds.Keys.Contains(path))
             {
-                glIds[path] = new UInt32[Frms[path].Frames.Count];
-                int i = 0;
-                foreach(Bitmap bmp in Frms[path].Frames)
-                {
-                     glIds[path][i++] = ids[idx++];
+                var bmp = bitmap;
+                var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
 
-                     gl.BindTexture(OpenGL.GL_TEXTURE_2D, id++);
+                uint[] u = new uint[1];
+                gl.GenTextures(1, u);
+                gl.BindTexture(OpenGL.GL_TEXTURE_2D, u[0]);
 
-                     //  Tell OpenGL where the texture data is.
-                     gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, 3, bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
-                         bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
-                         ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb).Scan0);
+                glDrawId = u[0];
+                glIds[path] = (int)u[0];
 
+                //  Tell OpenGL where the texture data is.
+                BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-                     //  Specify linear filtering.
-                     gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
-                     gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
-                }
+                gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_REPLACE);
+
+                gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA, bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
+                    bmpData.Scan0);
+                //  Specify linear filtering.
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
+
+                bmp.UnlockBits(bmpData);
             }
-        }*/
+            else
+            {
+                glDrawId = (uint)glIds[path];
+            }
+            return glDrawId;
+        }
 
         public static void OnGraphics( Graphics gdi, SharpGL.OpenGL gl, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
             Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF selectionArea, bool clicked)
@@ -200,6 +199,11 @@ namespace fonline_mapgen
                 CachedSceneryDraws = new List<DrawCall>();
                 CachedTileDraws = new List<DrawCall>();
                 CachedRoofTileDraws = new List<DrawCall>();
+                CachedDrawsLists = new List<List<DrawCall>>();
+                CachedDrawsLists.Add(CachedTileDraws);
+                CachedDrawsLists.Add(CachedSceneryDraws);
+                CachedDrawsLists.Add(CachedRoofTileDraws);
+
                 currentClick = null;
                 SelectedObjects = new List<MapObject>();
                 SelectedTiles = new List<Tile>();
@@ -322,70 +326,60 @@ namespace fonline_mapgen
             {
                 foreach (var call in CachedTileDraws)
                     gdi.DrawImage(call.Bitmap, call.X, call.Y);
-
                 foreach (var call in CachedSceneryDraws)
                     gdi.DrawImage(call.Bitmap, call.X, call.Y);
-
                 foreach (var call in CachedRoofTileDraws)
                     gdi.DrawImage(call.Bitmap, call.X, call.Y);
             }
             else
             {
-                uint[] ids = new uint[CachedTileDraws.Count];
+                //uint[] ids = new uint[CachedTileDraws.Count];
 
                 float MinX = CachedTileDraws.Min(x => x.X);
                 float MinY = CachedTileDraws.Min(x => x.Y);
                 float MaxX = CachedTileDraws.Max(x => x.X);
                 float MaxY = CachedTileDraws.Max(x => x.Y);
 
-                
+                /*foreach (var list in CachedDrawsLists)
+                {
+                    foreach (var call in list)
+                    {
+                        float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                        float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
+
+                        uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
+                        DrawGlTexture(gl, glDrawId, scaleX, scaleY);
+                    }
+                }*/
 
                 foreach (var call in CachedTileDraws)
                 {
                     float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
                     float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
 
-                    uint glDrawId = 0;
+                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
+                    DrawGlTexture(gl, glDrawId, scaleX, scaleY);
+                }
 
-                    if (!glIds.Keys.Contains(call.Path))
-                    {
-                        //Log("Loading " + call.Path + Environment.NewLine);
-                        var bmp = call.Bitmap;
-                        var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                foreach (var call in CachedRoofTileDraws)
+                {
+                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
 
-                        uint[] u = new uint[1];
-                        gl.GenTextures(1, u);
-                        gl.BindTexture(OpenGL.GL_TEXTURE_2D, u[0]);
+                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
+                    DrawGlTexture(gl, glDrawId, scaleX, scaleY);
+                }
 
-                        glDrawId = u[0];
-                        glIds[call.Path] = (int)u[0];
-
-                        //  Tell OpenGL where the texture data is.
-                        BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-
-                        gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_REPLACE);
-                        
-
-                        gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA , bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
-                            bmpData.Scan0);
-                        //  Specify linear filtering.
-                        gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
-                        gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
-
-                        bmp.UnlockBits(bmpData);
-                    }
-                    else
-                    {
-                        glDrawId = (uint)glIds[call.Path];
-                    }
-
-                    float factor = 74.0f;
-
+                /*foreach (var call in CachedSceneryDraws)
+                {
+                    float factor = 70.0f;
+                    float posX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                    float posY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
                     gl.Enable(OpenGL.GL_BLEND);
                     gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
+                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
                     gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
                     gl.PushMatrix();
-                    
                     gl.Translate((scaleX * factor), (-scaleY * factor), 0.0f);
                     gl.Begin(OpenGL.GL_QUADS);
                     gl.TexCoord(0.0f, 0.0f);
@@ -398,21 +392,30 @@ namespace fonline_mapgen
                     gl.Vertex(1.0f, 1.0f, 0.0f);
                     gl.End();
                     gl.PopMatrix();
-                }
-                //System.Windows.Forms.MessageBox.Show("Done!");
-
-                /*if (glIds.Count == 0)
-                {
-                    List<String> paths = new List<String>();
-                    foreach (var call in CachedTileDraws)
-                        paths.Add(call.Path);
-                    foreach (var call in CachedSceneryDraws)
-                        paths.Add(call.Path);
-                    foreach (var call in CachedRoofTileDraws)
-                        paths.Add(call.Path);
-                    //BindGLTextures(gl, paths,frms);
                 }*/
             }
+        }
+
+        private static void DrawGlTexture(OpenGL gl, uint glDrawId, float X, float Y)
+        {
+            float factor = 70.0f;
+            gl.Enable(OpenGL.GL_BLEND);
+            gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
+            gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
+            gl.PushMatrix();
+
+            gl.Translate((X * factor), (-Y * factor), 0.0f);
+            gl.Begin(OpenGL.GL_QUADS);
+            gl.TexCoord(0.0f, 0.0f);
+            gl.Vertex(0.0, 1.0f, 0.0f);
+            gl.TexCoord(0.0f, 1.0f);
+            gl.Vertex(0.0, 0.0, 0.0f);
+            gl.TexCoord(1.0f, 1.0f);
+            gl.Vertex(1.0f, 0.0, 0.0f);
+            gl.TexCoord(1.0f, 0.0f);
+            gl.Vertex(1.0f, 1.0f, 0.0f);
+            gl.End();
+            gl.PopMatrix();
         }
 
         private static Bitmap MakeOpaque(Bitmap original, double opacity)

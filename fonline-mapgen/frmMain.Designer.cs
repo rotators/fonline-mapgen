@@ -94,7 +94,7 @@
             this.pnlViewPort.Controls.Add(this.panel1);
             this.pnlViewPort.Location = new System.Drawing.Point(0, 52);
             this.pnlViewPort.Name = "pnlViewPort";
-            this.pnlViewPort.Size = new System.Drawing.Size(426, 338);
+            this.pnlViewPort.Size = new System.Drawing.Size(1028, 561);
             this.pnlViewPort.TabIndex = 7;
             this.pnlViewPort.Scroll += new System.Windows.Forms.ScrollEventHandler(this.pnlViewPort_Scroll);
             // 
@@ -413,17 +413,18 @@
             // 
             // openGLControl1
             // 
+            this.openGLControl1.AutoScroll = true;
             this.openGLControl1.DrawFPS = true;
             this.openGLControl1.Enabled = false;
             this.openGLControl1.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.openGLControl1.FrameRate = 50;
-            this.openGLControl1.Location = new System.Drawing.Point(161, 151);
+            this.openGLControl1.FrameRate = 300;
+            this.openGLControl1.Location = new System.Drawing.Point(647, 0);
             this.openGLControl1.Name = "openGLControl1";
             this.openGLControl1.OpenGLVersion = SharpGL.Version.OpenGLVersion.OpenGL2_1;
             this.openGLControl1.RenderContextType = SharpGL.RenderContextType.FBO;
             this.openGLControl1.RenderTrigger = SharpGL.RenderTrigger.TimerBased;
-            this.openGLControl1.Size = new System.Drawing.Size(855, 462);
-            this.openGLControl1.TabIndex = 15;
+            this.openGLControl1.Size = new System.Drawing.Size(190, 46);
+            this.openGLControl1.TabIndex = 18;
             this.openGLControl1.OpenGLInitialized += new System.EventHandler(this.openGLControl1_OpenGLInitialized);
             this.openGLControl1.OpenGLDraw += new SharpGL.RenderEventHandler(this.openGLControl1_OpenGLDraw);
             this.openGLControl1.Resized += new System.EventHandler(this.openGLControl1_Resized);

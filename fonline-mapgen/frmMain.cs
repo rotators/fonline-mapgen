@@ -41,6 +41,8 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
 
+        float glScale = 0.1f;
+
         bool glMode = true;
 
         // Selection
@@ -106,12 +108,21 @@ namespace fonline_mapgen
             toolStripStatusHex.Text =
             toolStripStatusProto.Text = "";
 
-            openGLControl1.Enabled = true;
-
             if (glMode)
             {
                 panel1.Visible = false;
                 pnlViewPort.Visible = false;
+                openGLControl1.Location = pnlViewPort.Location;
+                openGLControl1.Width = pnlViewPort.Width;
+                openGLControl1.Height = pnlViewPort.Height;
+                openGLControl1.Enabled = true;
+                openGLControl1.RenderTrigger = RenderTrigger.TimerBased;
+                //openGLControl1.Auto
+            }
+            else
+            {
+                openGLControl1.Enabled = false;
+                openGLControl1.Visible = false;
             }
         }
 
@@ -353,10 +364,11 @@ namespace fonline_mapgen
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             }
 
-            if (isMouseDown)
-                g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
 
             DrawMap.OnGraphics(g, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
+
+            if (isMouseDown)
+                g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
         }
 
         private void DrawGL(MapperMap map)
@@ -371,7 +383,7 @@ namespace fonline_mapgen
             
 
             gl.Translate(glPosX, glPosY, 0.0f);
-            gl.Scale(0.1f, 0.1f, 0.0f);
+            gl.Scale(glScale, glScale, 0.0f);
 
             DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, 
                 this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
@@ -965,6 +977,11 @@ namespace fonline_mapgen
                 glPosX += 0.5f;
             if (e.KeyCode == Keys.D)
                 glPosX -= 0.5f;
+
+            if (e.KeyCode == Keys.PageUp)
+                glScale += 0.005f;
+            if (e.KeyCode == Keys.PageDown)
+                glScale -= 0.005f;
         }
     }
 }
