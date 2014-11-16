@@ -39,7 +39,7 @@ namespace fonline_mapgen
         public DrawCall NormalCall;
         public DrawCall OpaqueCall;
         public int index;
-        public DrawMap.Flags Type;
+        public List<DrawCall> CacheList;
     }
 
     public static class DrawMap
@@ -101,20 +101,39 @@ namespace fonline_mapgen
             return SelectedObjects;
         }
 
-        private static void AddToCache(CurrentClick previous, bool normal)
+        private static bool AddToCache(Bitmap drawBitmap, List<DrawCall> cacheList, PointF coords, RectangleF selectionArea, bool clicked)
         {
-            List<DrawCall> list = null;
-            if(previous.Type == Flags.Tiles)
-                list = CachedTileDraws;
-            if(previous.Type == Flags.Scenery) // Can be critter also, it's the same cache.
-                list = CachedSceneryDraws;
-            if(previous.Type == Flags.Roofs)
-                list = CachedRoofTileDraws;
-
-            if(normal)
-                list.Insert(previous.index, previous.NormalCall);
+            var normalDraw = new DrawCall(drawBitmap, coords.X, coords.Y);
+            if (InsideSelection(selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
+            {
+                var opaque = MakeOpaque(drawBitmap, 0.5f);
+                var opDraw = new DrawCall(opaque, coords.X, coords.Y);
+                if (clicked)
+                {
+                    if (currentClick != null) ClickToCache(currentClick, true);
+                    currentClick = new CurrentClick();
+                    currentClick.index = cacheList.Count;
+                    currentClick.CacheList = cacheList;
+                    currentClick.NormalCall = normalDraw;
+                    currentClick.OpaqueCall = opDraw;
+                }
+                else
+                {
+                    cacheList.Add(opDraw);
+                    return true;
+                }
+            }
             else
-                list.Insert(previous.index, previous.OpaqueCall);
+                cacheList.Add(normalDraw);
+            return false;
+        }
+
+        private static void ClickToCache(CurrentClick previous, bool normal)
+        {
+            if(normal)
+                previous.CacheList.Insert(previous.index, previous.NormalCall);
+            else
+                previous.CacheList.Insert(previous.index, previous.OpaqueCall);
         }
 
         public static void OnGraphics( Graphics g, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
@@ -132,17 +151,32 @@ namespace fonline_mapgen
                 Errors = new List<string>();
             }
 
-            // Draw normal tiles.
-            if (DrawFlag(flags, Flags.Tiles) && !cachedCalls)
-            {
-                foreach (var tile in map.Tiles.Where(x => !x.Roof))
-                {
-                    DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, false);
-                }
-            }
-
             if (!cachedCalls)
             {
+                if (DrawFlag(flags, Flags.Tiles) || DrawFlag(flags, Flags.Roofs))
+                {
+                    foreach (var tile in map.Tiles)
+                    {
+                        if (!tile.Roof && !DrawFlag(flags, Flags.Tiles))
+                            continue;
+                        if (tile.Roof && !DrawFlag(flags, Flags.Roofs))
+                            continue;
+                        List<DrawCall> list = null;
+                        if (tile.Roof) list = CachedRoofTileDraws;
+                        else list = CachedTileDraws;
+
+                        if (!frms.ContainsKey(tile.Path))
+                        {
+                            Errors.Add("Tile graphics " + tile.Path + " not loaded.");
+                            return;
+                        }
+                        var tileCoords = hexMap.GetTileCoords(new Point(tile.X, tile.Y), tile.Roof);
+                        Bitmap drawBitmap = frms[tile.Path].Frames[0];
+                        if (AddToCache(drawBitmap, list, tileCoords, selectionArea, clicked))
+                            SelectedTiles.Add(tile);
+                    }
+                }
+
                 foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY * 2))
                 {
                     // skip specific object types
@@ -198,43 +232,13 @@ namespace fonline_mapgen
                         drawBitmap = frm.Frames[0];
                     }
 
-                    var normalDraw = new DrawCall(drawBitmap, coords.X, coords.Y);
-                    if (InsideSelection(selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
-                    {
-                        var opaque = MakeOpaque(drawBitmap, 0.5f);
-                        var opDraw = new DrawCall(opaque, coords.X, coords.Y);
-
-                        if (clicked)
-                        {
-                            if (currentClick != null) AddToCache(currentClick, true);
-                            currentClick = new CurrentClick();
-                            currentClick.index = CachedSceneryDraws.Count;
-                            currentClick.Type = Flags.Scenery;
-                            currentClick.NormalCall = normalDraw;
-                            currentClick.OpaqueCall = opDraw;
-                        }
-                        else
-                        {
-                            CachedSceneryDraws.Add(opDraw);
-                            SelectedObjects.Add(obj);
-                        }
-                    }
-                    else
-                        CachedSceneryDraws.Add(normalDraw);
-                }
-            }
-
-            // Draw roof tiles
-            if( DrawFlag( flags, Flags.Roofs ) && !cachedCalls)
-            {
-                foreach (var tile in map.Tiles.Where(x => x.Roof))
-                {
-                    DrawTile(g, hexMap, frms, tile.Path, tile.X, tile.Y, true);
+                    if (AddToCache(drawBitmap, CachedSceneryDraws, coords, selectionArea, clicked))
+                        SelectedObjects.Add(obj);
                 }
             }
 
             if (currentClick != null)
-                AddToCache(currentClick, false);
+                ClickToCache(currentClick, false);
 
             cachedCalls = true;
             foreach (var call in CachedTileDraws)
@@ -299,20 +303,6 @@ namespace fonline_mapgen
         private static bool InsideSelection(RectangleF selectArea, RectangleF rect)
         {
             return selectArea.IntersectsWith(rect);
-        }
-
-        private static void DrawTile( Graphics g, FOHexMap hexMap, Dictionary<string, FalloutFRM> frms, string tile, int x, int y, bool isRoof )
-        {
-            if (!frms.ContainsKey(tile))
-            {
-                Errors.Add("Tile graphics " + tile + " not loaded.");
-                return;
-            }
-
-            var tileCoords = hexMap.GetTileCoords(new Point(x, y), isRoof);
-
-            if (isRoof) CachedRoofTileDraws.Add(new DrawCall(frms[tile].Frames[0], tileCoords.X, tileCoords.Y));
-            else CachedTileDraws.Add(new DrawCall(frms[tile].Frames[0], tileCoords.X, tileCoords.Y));
         }
 
         private static bool DrawFlag( Flags flags, Flags flag )
