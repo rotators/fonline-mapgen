@@ -111,8 +111,9 @@ namespace fonline_mapgen
 
         private void btnSetBasePath_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                txtBasePath.Text = folderBrowserDialog1.SelectedPath;
+            if (folderBrowserDialog1.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return;
+            txtBasePath.Text = folderBrowserDialog1.SelectedPath;
             SetDefault(txtCritterProtos, txtBasePath.Text, @"\proto\critters\");
             SetDefault(txtItemProtos, txtBasePath.Text, @"\proto\items\");
             SetDefault(txtMapsDir, txtBasePath.Text, @"\maps\");

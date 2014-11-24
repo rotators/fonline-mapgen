@@ -38,7 +38,7 @@
             this.btnSetMapsDir = new System.Windows.Forms.Button();
             this.lblMapsDir = new System.Windows.Forms.Label();
             this.txtMapsDir = new System.Windows.Forms.TextBox();
-            this.btnSetCritterTypesDir = new System.Windows.Forms.Button();
+            this.btnSetCritterTypes = new System.Windows.Forms.Button();
             this.lblCritterTypes = new System.Windows.Forms.Label();
             this.txtCritterTypes = new System.Windows.Forms.TextBox();
             this.btnSetItemProtosDir = new System.Windows.Forms.Button();
@@ -94,7 +94,7 @@
             this.tabPage1.Controls.Add(this.btnSetMapsDir);
             this.tabPage1.Controls.Add(this.lblMapsDir);
             this.tabPage1.Controls.Add(this.txtMapsDir);
-            this.tabPage1.Controls.Add(this.btnSetCritterTypesDir);
+            this.tabPage1.Controls.Add(this.btnSetCritterTypes);
             this.tabPage1.Controls.Add(this.lblCritterTypes);
             this.tabPage1.Controls.Add(this.txtCritterTypes);
             this.tabPage1.Controls.Add(this.btnSetItemProtosDir);
@@ -122,6 +122,7 @@
             this.btnSetFOOBJDir.TabIndex = 50;
             this.btnSetFOOBJDir.Text = "...";
             this.btnSetFOOBJDir.UseVisualStyleBackColor = true;
+            this.btnSetFOOBJDir.Click += new System.EventHandler(this.btnSetSetFOOBJ_Click);
             // 
             // lblFOOBJ
             // 
@@ -147,6 +148,7 @@
             this.btnSetMapsDir.TabIndex = 47;
             this.btnSetMapsDir.Text = "...";
             this.btnSetMapsDir.UseVisualStyleBackColor = true;
+            this.btnSetMapsDir.Click += new System.EventHandler(this.btnSetMapsDir_Click);
             // 
             // lblMapsDir
             // 
@@ -164,14 +166,15 @@
             this.txtMapsDir.Size = new System.Drawing.Size(342, 20);
             this.txtMapsDir.TabIndex = 45;
             // 
-            // btnSetCritterTypesDir
+            // btnSetCritterTypes
             // 
-            this.btnSetCritterTypesDir.Location = new System.Drawing.Point(477, 36);
-            this.btnSetCritterTypesDir.Name = "btnSetCritterTypesDir";
-            this.btnSetCritterTypesDir.Size = new System.Drawing.Size(34, 20);
-            this.btnSetCritterTypesDir.TabIndex = 44;
-            this.btnSetCritterTypesDir.Text = "...";
-            this.btnSetCritterTypesDir.UseVisualStyleBackColor = true;
+            this.btnSetCritterTypes.Location = new System.Drawing.Point(477, 36);
+            this.btnSetCritterTypes.Name = "btnSetCritterTypes";
+            this.btnSetCritterTypes.Size = new System.Drawing.Size(34, 20);
+            this.btnSetCritterTypes.TabIndex = 44;
+            this.btnSetCritterTypes.Text = "...";
+            this.btnSetCritterTypes.UseVisualStyleBackColor = true;
+            this.btnSetCritterTypes.Click += new System.EventHandler(this.btnSetCritterTypes_Click);
             // 
             // lblCritterTypes
             // 
@@ -197,6 +200,7 @@
             this.btnSetItemProtosDir.TabIndex = 41;
             this.btnSetItemProtosDir.Text = "...";
             this.btnSetItemProtosDir.UseVisualStyleBackColor = true;
+            this.btnSetItemProtosDir.Click += new System.EventHandler(this.btnSetItemProtos_Click);
             // 
             // lblItemProtos
             // 
@@ -222,6 +226,7 @@
             this.btnSetCritterProtosDir.TabIndex = 32;
             this.btnSetCritterProtosDir.Text = "...";
             this.btnSetCritterProtosDir.UseVisualStyleBackColor = true;
+            this.btnSetCritterProtosDir.Click += new System.EventHandler(this.btnSetCritterProtos_Click);
             // 
             // lblCritterProtos
             // 
@@ -484,7 +489,7 @@
         private System.Windows.Forms.Button btnSetMapsDir;
         private System.Windows.Forms.Label lblMapsDir;
         private System.Windows.Forms.TextBox txtMapsDir;
-        private System.Windows.Forms.Button btnSetCritterTypesDir;
+        private System.Windows.Forms.Button btnSetCritterTypes;
         private System.Windows.Forms.Label lblCritterTypes;
         private System.Windows.Forms.TextBox txtCritterTypes;
         private System.Windows.Forms.Button btnSetItemProtosDir;
