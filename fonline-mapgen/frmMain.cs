@@ -542,10 +542,10 @@ namespace fonline_mapgen
 
             SettingsManager.Init();
             mapperSettings = SettingsManager.LoadSettings();
+            frmPaths = new frmPaths(mapperSettings);
             if (mapperSettings == null)
             {
                 mapperSettings = new MapperSettings();
-                frmPaths = new frmPaths(mapperSettings);
                 frmPaths.ShowDialog();
 
                 mapperSettings.View.Tiles =
@@ -624,7 +624,7 @@ namespace fonline_mapgen
 
                 if (!File.Exists(itemslst))
                 {
-                    MessageBox.Show("No " + itemslst + " , unable to load item protos.");
+                    MessageBox.Show("No " + itemslst + " , unable to load item protos.", "No items.lst", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
                 {
@@ -651,7 +651,6 @@ namespace fonline_mapgen
                 if (mapperSettings.Paths.DataFiles == null || mapperSettings.Paths.DataFiles.Count == 0)
                 {
                     MessageBox.Show("No datafiles specified, unable to load graphics!");
-                    frmPaths = new frmPaths(mapperSettings);
                     frmPaths.ShowDialog();
                 }
 
@@ -696,6 +695,12 @@ namespace fonline_mapgen
 
             if (mapperSettings.Paths.MapsDir != null)
             {
+                while(!Directory.Exists(mapperSettings.Paths.MapsDir))
+                {
+                    MessageBox.Show("Maps path: " + mapperSettings.Paths.MapsDir + " not found. ", "Maps path not found.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (frmPaths.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+                        break;
+                }
                 maps = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
                 cmbMaps.Items.AddRange(maps.ToArray());
             }
