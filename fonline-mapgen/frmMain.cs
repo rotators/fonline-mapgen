@@ -384,7 +384,7 @@ namespace fonline_mapgen
             gl.LoadIdentity();
             gl.Scale(1.0f, -1.0f, 1.0f);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            //gl.PushMatrix();
+            gl.PushMatrix();
 
             gl.Translate(glPosX, glPosY, 0.0f);
             gl.Scale(glScale, glScale, 0.0f);
@@ -393,7 +393,7 @@ namespace fonline_mapgen
                 this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
 
 
-            //gl.PopMatrix();
+            gl.PopMatrix();
             gl.Flush();
         }
 
@@ -944,7 +944,8 @@ namespace fonline_mapgen
 
             gl.MatrixMode(OpenGL.GL_PROJECTION);
             gl.LoadIdentity();
-            gl.Ortho(0.0, 64, 48, 0, -1, 1);
+            gl.Ortho(0.0, 20, 20, 0, -1, 1);
+            gl.Viewport(0, 0, openGLControl1.Width, openGLControl1.Height);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 

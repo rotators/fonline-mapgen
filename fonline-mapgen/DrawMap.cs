@@ -179,8 +179,8 @@ namespace fonline_mapgen
                 gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA, bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
                     bmpData.Scan0);
                 //  Specify linear filtering.
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
 
                 bmp.UnlockBits(bmpData);
             }
@@ -340,6 +340,9 @@ namespace fonline_mapgen
                 float MaxX = CachedTileDraws.Max(x => x.X);
                 float MaxY = CachedTileDraws.Max(x => x.Y);
 
+                float deltX = MaxX - MinX;
+                float deltY = MaxY - MinY;
+
                 /*foreach (var list in CachedDrawsLists)
                 {
                     foreach (var call in list)
@@ -355,19 +358,14 @@ namespace fonline_mapgen
                 //float normX = CachedTileDraws[0].X;
                 //float normY = CachedTileDraws[0].Y;
 
+                float factorX = Math.Abs((1 - MinX) / (MaxX - MinX));
+                float factorY = Math.Abs((1 - MinY) / (MaxY - MinY));
+
                 foreach (var call in CachedTileDraws)
                 {
                     float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
                     float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
 
-                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
-                    DrawGlTexture(gl, glDrawId, scaleX, scaleY);
-                }
-
-                foreach (var call in CachedRoofTileDraws)
-                {
-                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
 
                     uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
                     DrawGlTexture(gl, glDrawId, scaleX, scaleY);
@@ -391,8 +389,12 @@ namespace fonline_mapgen
                     //gl.Rotate(0.45f, 0.0f, 0.0f);
                     //float b = 1.0f / 32;
 
-                    float width = (1.0f / 64) * call.Bitmap.Width;
-                    float height = (1.0f / 48) * call.Bitmap.Height;
+                    float width = ((1.0f / 64) * call.Bitmap.Width);
+                    float height = ((1.0f / 32) * call.Bitmap.Height);
+
+                    //float width = Math.Abs((call.Bitmap.Width - MinX) / (MaxX - MinX));
+                    //float height = Math.Abs((call.Bitmap.Height - MinY) / (MaxY - MinY));
+
 
                     gl.Begin(OpenGL.GL_QUADS);
                     gl.TexCoord(0.0f, 0.0f);
@@ -406,6 +408,15 @@ namespace fonline_mapgen
 
                     gl.End();
                     gl.PopMatrix();
+                }
+
+                foreach (var call in CachedRoofTileDraws)
+                {
+                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
+
+                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
+                    DrawGlTexture(gl, glDrawId, scaleX, scaleY);
                 }
             }
         }
