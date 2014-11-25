@@ -179,8 +179,8 @@ namespace fonline_mapgen
                 gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA, bmp.Width, bmp.Height, 0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE,
                     bmpData.Scan0);
                 //  Specify linear filtering.
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
 
                 bmp.UnlockBits(bmpData);
             }
@@ -352,6 +352,9 @@ namespace fonline_mapgen
                     }
                 }*/
 
+                //float normX = CachedTileDraws[0].X;
+                //float normY = CachedTileDraws[0].Y;
+
                 foreach (var call in CachedTileDraws)
                 {
                     float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
@@ -370,29 +373,40 @@ namespace fonline_mapgen
                     DrawGlTexture(gl, glDrawId, scaleX, scaleY);
                 }
 
-                /*foreach (var call in CachedSceneryDraws)
+                foreach (var call in CachedSceneryDraws)
                 {
+                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
+
                     float factor = 70.0f;
-                    float posX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                    float posY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
+                    //float posX = Math.Abs((call.X - MinX) / (MaxX - MinX));
+                    //float posY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
                     gl.Enable(OpenGL.GL_BLEND);
                     gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
                     uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
                     gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
                     gl.PushMatrix();
-                    gl.Translate((scaleX * factor), (-scaleY * factor), 0.0f);
+                    gl.Translate((scaleX * factor), (scaleY * factor), 0.0f);
+                    //gl.Scale(1.0f / call.Bitmap.Width, 1.0f / call.Bitmap.Height, 0.0f);
+                    //gl.Rotate(0.45f, 0.0f, 0.0f);
+                    //float b = 1.0f / 32;
+
+                    float width = (1.0f / 64) * call.Bitmap.Width;
+                    float height = (1.0f / 48) * call.Bitmap.Height;
+
                     gl.Begin(OpenGL.GL_QUADS);
                     gl.TexCoord(0.0f, 0.0f);
-                    gl.Vertex(0.0, 1.0f, 0.0f);
+                    gl.Vertex(0.0, height, 0.0f);
                     gl.TexCoord(0.0f, 1.0f);
                     gl.Vertex(0.0, 0.0, 0.0f);
                     gl.TexCoord(1.0f, 1.0f);
-                    gl.Vertex(1.0f, 0.0, 0.0f);
+                    gl.Vertex(width, 0.0, 0.0f);
                     gl.TexCoord(1.0f, 0.0f);
-                    gl.Vertex(1.0f, 1.0f, 0.0f);
+                    gl.Vertex(width, height, 0.0f);
+
                     gl.End();
                     gl.PopMatrix();
-                }*/
+                }
             }
         }
 
@@ -404,7 +418,7 @@ namespace fonline_mapgen
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
             gl.PushMatrix();
 
-            gl.Translate((X * factor), (-Y * factor), 0.0f);
+            gl.Translate((X * factor), (Y * factor), 0.0f);
             gl.Begin(OpenGL.GL_QUADS);
             gl.TexCoord(0.0f, 0.0f);
             gl.Vertex(0.0, 1.0f, 0.0f);

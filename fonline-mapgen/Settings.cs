@@ -10,6 +10,7 @@ public class MapperSettings
     public UISettings UI { get; set; }
     public ViewSettings View { get; set; }
     public PerformanceSettings Performance { get; set; }
+    public bool GLMode { get; set;}
 
     public MapperSettings()
     {

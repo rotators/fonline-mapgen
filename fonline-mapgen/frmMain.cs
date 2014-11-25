@@ -41,7 +41,7 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
 
-        float glScale = 0.1f;
+        float glScale = 1.0f;
 
         bool glMode = true;
 
@@ -378,9 +378,13 @@ namespace fonline_mapgen
             //  Load the identity matrix.
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT);
             gl.Enable(OpenGL.GL_TEXTURE_2D);
-            gl.MatrixMode(OpenGL.GL_PROJECTION);
+
+            // Flip since it's bitmaps
+            gl.MatrixMode(OpenGL.GL_TEXTURE);
             gl.LoadIdentity();
-            
+            gl.Scale(1.0f, -1.0f, 1.0f);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+            //gl.PushMatrix();
 
             gl.Translate(glPosX, glPosY, 0.0f);
             gl.Scale(glScale, glScale, 0.0f);
@@ -388,8 +392,8 @@ namespace fonline_mapgen
             DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, 
                 this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
 
-            
 
+            //gl.PopMatrix();
             gl.Flush();
         }
 
@@ -542,6 +546,8 @@ namespace fonline_mapgen
 
             SettingsManager.Init();
             mapperSettings = SettingsManager.LoadSettings();
+            glMode = mapperSettings.GLMode;
+
             frmPaths = new frmPaths(mapperSettings);
             if (mapperSettings == null)
             {
@@ -931,37 +937,21 @@ namespace fonline_mapgen
 
         private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
         {
-            //  Get the OpenGL object.
             OpenGL gl = openGLControl1.OpenGL;
             gl.ClearColor(0, 0, 0, 0);
 
-            //  We need to load the texture from file.
-
-            //gl.Enable(OpenGL.GL_BLEND);
             gl.Disable(OpenGL.GL_DEPTH_TEST);
 
             gl.MatrixMode(OpenGL.GL_PROJECTION);
             gl.LoadIdentity();
-            gl.Ortho2D(0.0, openGLControl1.Width, openGLControl1.Height, 0);
+            gl.Ortho(0.0, 64, 48, 0, -1, 1);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 
         private void openGLControl1_Resized(object sender, EventArgs e)
         {
             //  Get the OpenGL object.
             OpenGL gl = openGLControl1.OpenGL;
-
-            //  Set the projection matrix.
-            //gl.MatrixMode(OpenGL.GL_MATRIX_MODE);
-
-            //  Load the identity.
-            //gl.LoadIdentity();
-
-            //  Create a perspective transformation.
-            //gl.Perspective(60.0f, (double)Width / (double)Height, 1, 1000.0);
-            
-
-            //  Use the 'look at' helper function to position and aim the camera.
-            //gl.LookAt(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
         }
 
         private void openGLControl1_OpenGLDraw(object sender, RenderEventArgs args)
