@@ -41,7 +41,7 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
 
-        float glScale = 1.0f;
+        float glScale = 0.1f;
 
         bool glMode = true;
 
@@ -108,16 +108,16 @@ namespace fonline_mapgen
             toolStripStatusHex.Text =
             toolStripStatusProto.Text = "";
 
+            openGLControl1.Location = pnlViewPort.Location;
+            openGLControl1.Width = pnlViewPort.Width;
+            openGLControl1.Height = pnlViewPort.Height;
+            openGLControl1.RenderTrigger = RenderTrigger.TimerBased;
+
             if (glMode)
             {
                 panel1.Visible = false;
                 pnlViewPort.Visible = false;
-                openGLControl1.Location = pnlViewPort.Location;
-                openGLControl1.Width = pnlViewPort.Width;
-                openGLControl1.Height = pnlViewPort.Height;
                 openGLControl1.Enabled = true;
-                openGLControl1.RenderTrigger = RenderTrigger.TimerBased;
-                //openGLControl1.Auto
             }
             else
             {
@@ -365,7 +365,8 @@ namespace fonline_mapgen
             }
 
 
-            DrawMap.OnGraphics(g, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
+            DrawMap.OnGraphics(g, null, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, 
+                this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked, 0.0f, 0.0f);
 
             if (isMouseDown)
                 g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
@@ -378,6 +379,7 @@ namespace fonline_mapgen
             //  Load the identity matrix.
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT);
             gl.Enable(OpenGL.GL_TEXTURE_2D);
+            gl.Enable(OpenGL.GL_MULTISAMPLE);
 
             // Flip since it's bitmaps
             gl.MatrixMode(OpenGL.GL_TEXTURE);
@@ -389,8 +391,8 @@ namespace fonline_mapgen
             gl.Translate(glPosX, glPosY, 0.0f);
             gl.Scale(glScale, glScale, 0.0f);
 
-            DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms, 
-                this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
+            DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms,
+                this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked, (float)numericUpDown1.Value, (float)numericUpDown2.Value);
 
 
             gl.PopMatrix();
@@ -814,7 +816,24 @@ namespace fonline_mapgen
         private void performanceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (frmPerformance == null || frmPerformance.IsDisposed) frmPerformance = new frmPerformance(mapperSettings);
-            frmPerformance.Show();
+            
+            //bool oldMode = glMode;
+            frmPerformance.ShowDialog();
+            glMode = mapperSettings.GLMode;
+
+            panel1.Visible = !glMode;
+            pnlViewPort.Visible = !glMode;
+            openGLControl1.Enabled = glMode;
+            openGLControl1.Visible = glMode;
+
+            /*if (mapperSettings.GLMode && oldMode != glMode)
+            {
+
+            }
+            if (!mapperSettings.GLMode && oldMode == glMode)
+            {
+
+            }*/
         }
 
         private void viewMapTreeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -944,7 +963,7 @@ namespace fonline_mapgen
 
             gl.MatrixMode(OpenGL.GL_PROJECTION);
             gl.LoadIdentity();
-            gl.Ortho(0.0, 20, 20, 0, -1, 1);
+            gl.Ortho(0.0, 1, 1, 0, -1, 1);
             gl.Viewport(0, 0, openGLControl1.Width, openGLControl1.Height);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }

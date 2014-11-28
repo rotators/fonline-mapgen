@@ -30,6 +30,7 @@
         {
             this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
+            this.panel1 = new fonline_mapgen.DoubleBufferPanel();
             this.cmbMaps = new System.Windows.Forms.ComboBox();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.menuFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,11 +69,14 @@
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
             this.openGLControl1 = new SharpGL.OpenGLControl();
-            this.panel1 = new fonline_mapgen.DoubleBufferPanel();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             this.SuspendLayout();
             // 
             // btnLoadMap
@@ -97,6 +101,18 @@
             this.pnlViewPort.Size = new System.Drawing.Size(1028, 561);
             this.pnlViewPort.TabIndex = 7;
             this.pnlViewPort.Scroll += new System.Windows.Forms.ScrollEventHandler(this.pnlViewPort_Scroll);
+            // 
+            // panel1
+            // 
+            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel1.Location = new System.Drawing.Point(3, 3);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(300, 300);
+            this.panel1.TabIndex = 0;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
+            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
+            this.panel1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
             // 
             // cmbMaps
             // 
@@ -230,22 +246,22 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
             // performanceToolStripMenuItem
             // 
             this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
-            this.performanceToolStripMenuItem.Text = "Performance";
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.performanceToolStripMenuItem.Text = "Rendering";
             this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
             // 
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.CheckOnClick = true;
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.debugToolStripMenuItem.Text = "Debug Info";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
@@ -429,17 +445,61 @@
             this.openGLControl1.OpenGLDraw += new SharpGL.RenderEventHandler(this.openGLControl1_OpenGLDraw);
             this.openGLControl1.Resized += new System.EventHandler(this.openGLControl1_Resized);
             // 
-            // panel1
+            // numericUpDown1
             // 
-            this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel1.Location = new System.Drawing.Point(3, 3);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(300, 300);
-            this.panel1.TabIndex = 0;
-            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
-            this.panel1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
-            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
-            this.panel1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
+            this.numericUpDown1.DecimalPlaces = 2;
+            this.numericUpDown1.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.numericUpDown1.Location = new System.Drawing.Point(843, 22);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            -2147483648});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(93, 20);
+            this.numericUpDown1.TabIndex = 19;
+            this.numericUpDown1.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            131072});
+            // 
+            // numericUpDown2
+            // 
+            this.numericUpDown2.DecimalPlaces = 2;
+            this.numericUpDown2.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.numericUpDown2.Location = new System.Drawing.Point(942, 22);
+            this.numericUpDown2.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numericUpDown2.Minimum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            -2147483648});
+            this.numericUpDown2.Name = "numericUpDown2";
+            this.numericUpDown2.Size = new System.Drawing.Size(73, 20);
+            this.numericUpDown2.TabIndex = 20;
+            this.numericUpDown2.Value = new decimal(new int[] {
+            101,
+            0,
+            0,
+            131072});
             // 
             // frmMain
             // 
@@ -447,6 +507,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1028, 638);
+            this.Controls.Add(this.numericUpDown2);
+            this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.openGLControl1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.pnlViewPort);
@@ -470,6 +532,8 @@
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -518,6 +582,8 @@
         private System.Windows.Forms.ToolStripMenuItem menuSelectionScenery;
         private System.Windows.Forms.ToolStripMenuItem menuSelectionSceneryWalls;
         private SharpGL.OpenGLControl openGLControl1;
+        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown numericUpDown2;
     }
 }
 

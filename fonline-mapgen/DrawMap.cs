@@ -192,7 +192,7 @@ namespace fonline_mapgen
         }
 
         public static void OnGraphics( Graphics gdi, SharpGL.OpenGL gl, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF selectionArea, bool clicked)
+            Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF selectionArea, bool clicked, float minX, float minY)
         {
             if (!cachedCalls)
             {
@@ -333,112 +333,62 @@ namespace fonline_mapgen
             }
             else
             {
-                //uint[] ids = new uint[CachedTileDraws.Count];
+               /* float MinX = CachedRoofTileDraws.Min(x => x.X);
+                float MinY = CachedRoofTileDraws.Min(x => x.Y);
+                float MaxX = CachedRoofTileDraws.Max(x => x.X);
+                float MaxY = CachedRoofTileDraws.Max(x => x.Y);
+                */
+                
+                float divY = 38.20f;
+                float divX = 38.20f * 2.014f;
 
-                float MinX = CachedTileDraws.Min(x => x.X);
-                float MinY = CachedTileDraws.Min(x => x.Y);
-                float MaxX = CachedTileDraws.Max(x => x.X);
-                float MaxY = CachedTileDraws.Max(x => x.Y);
+                float protX = 63.96533f;
+                float protY = 31.75609f;
 
-                float deltX = MaxX - MinX;
-                float deltY = MaxY - MinY;
-
-                /*foreach (var list in CachedDrawsLists)
+                foreach (var list in CachedDrawsLists)
                 {
+                    float glX;
+                    float glY;
                     foreach (var call in list)
                     {
-                        float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                        float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
+                        if (list == CachedSceneryDraws)
+                        {
+                            glX = ((call.X) / (protX)) - minX;
+                            glY = ((call.Y) / (protY)) - minY;
+                        }
+                        else
+                        {
+                            glX = ((call.X) / (divX));
+                            glY = ((call.Y) / (divY));
+                        }
+
+                        float width = ((1.0f / 64) * call.Bitmap.Width);
+                        float height = ((1.0f / 32) * call.Bitmap.Height);
 
                         uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
-                        DrawGlTexture(gl, glDrawId, scaleX, scaleY);
+                        DrawGlTexture(gl, glDrawId, glX, glY, width, height);
                     }
-                }*/
-
-                //float normX = CachedTileDraws[0].X;
-                //float normY = CachedTileDraws[0].Y;
-
-                float factorX = Math.Abs((1 - MinX) / (MaxX - MinX));
-                float factorY = Math.Abs((1 - MinY) / (MaxY - MinY));
-
-                foreach (var call in CachedTileDraws)
-                {
-                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
-
-
-                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
-                    DrawGlTexture(gl, glDrawId, scaleX, scaleY);
-                }
-
-                foreach (var call in CachedSceneryDraws)
-                {
-                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
-
-                    float factor = 70.0f;
-                    //float posX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                    //float posY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
-                    gl.Enable(OpenGL.GL_BLEND);
-                    gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
-                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
-                    gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
-                    gl.PushMatrix();
-                    gl.Translate((scaleX * factor), (scaleY * factor), 0.0f);
-                    //gl.Scale(1.0f / call.Bitmap.Width, 1.0f / call.Bitmap.Height, 0.0f);
-                    //gl.Rotate(0.45f, 0.0f, 0.0f);
-                    //float b = 1.0f / 32;
-
-                    float width = ((1.0f / 64) * call.Bitmap.Width);
-                    float height = ((1.0f / 32) * call.Bitmap.Height);
-
-                    //float width = Math.Abs((call.Bitmap.Width - MinX) / (MaxX - MinX));
-                    //float height = Math.Abs((call.Bitmap.Height - MinY) / (MaxY - MinY));
-
-
-                    gl.Begin(OpenGL.GL_QUADS);
-                    gl.TexCoord(0.0f, 0.0f);
-                    gl.Vertex(0.0, height, 0.0f);
-                    gl.TexCoord(0.0f, 1.0f);
-                    gl.Vertex(0.0, 0.0, 0.0f);
-                    gl.TexCoord(1.0f, 1.0f);
-                    gl.Vertex(width, 0.0, 0.0f);
-                    gl.TexCoord(1.0f, 0.0f);
-                    gl.Vertex(width, height, 0.0f);
-
-                    gl.End();
-                    gl.PopMatrix();
-                }
-
-                foreach (var call in CachedRoofTileDraws)
-                {
-                    float scaleX = Math.Abs((call.X - MinX) / (MaxX - MinX));
-                    float scaleY = Math.Abs((call.Y - MinY) / (MaxY - MinY));
-
-                    uint glDrawId = BindGlTexture(gl, call.Path, call.Bitmap);
-                    DrawGlTexture(gl, glDrawId, scaleX, scaleY);
                 }
             }
         }
 
-        private static void DrawGlTexture(OpenGL gl, uint glDrawId, float X, float Y)
+        private static void DrawGlTexture(OpenGL gl, uint glDrawId, float X, float Y, float width, float height)
         {
-            float factor = 70.0f;
             gl.Enable(OpenGL.GL_BLEND);
             gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, glDrawId);
             gl.PushMatrix();
 
-            gl.Translate((X * factor), (Y * factor), 0.0f);
+            gl.Translate((X), (Y), 0.0f);
             gl.Begin(OpenGL.GL_QUADS);
             gl.TexCoord(0.0f, 0.0f);
-            gl.Vertex(0.0, 1.0f, 0.0f);
+            gl.Vertex(0.0, height, 0.0f);
             gl.TexCoord(0.0f, 1.0f);
             gl.Vertex(0.0, 0.0, 0.0f);
             gl.TexCoord(1.0f, 1.0f);
-            gl.Vertex(1.0f, 0.0, 0.0f);
+            gl.Vertex(width, 0.0, 0.0f);
             gl.TexCoord(1.0f, 0.0f);
-            gl.Vertex(1.0f, 1.0f, 0.0f);
+            gl.Vertex(width, height, 0.0f);
             gl.End();
             gl.PopMatrix();
         }

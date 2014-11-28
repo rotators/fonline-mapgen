@@ -34,12 +34,14 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.chkCache = new System.Windows.Forms.CheckBox();
             this.btnClearCache = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cmbRenderer = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 13);
+            this.label1.Location = new System.Drawing.Point(12, 36);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(56, 13);
             this.label1.TabIndex = 0;
@@ -52,7 +54,7 @@
             this.cmbRendering.Items.AddRange(new object[] {
             "Best Performance",
             "Best Rendering Quality"});
-            this.cmbRendering.Location = new System.Drawing.Point(108, 10);
+            this.cmbRendering.Location = new System.Drawing.Point(108, 33);
             this.cmbRendering.Name = "cmbRendering";
             this.cmbRendering.Size = new System.Drawing.Size(232, 21);
             this.cmbRendering.TabIndex = 1;
@@ -80,7 +82,7 @@
             // chkCache
             // 
             this.chkCache.AutoSize = true;
-            this.chkCache.Location = new System.Drawing.Point(12, 37);
+            this.chkCache.Location = new System.Drawing.Point(12, 60);
             this.chkCache.Name = "chkCache";
             this.chkCache.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.chkCache.Size = new System.Drawing.Size(111, 17);
@@ -90,7 +92,7 @@
             // 
             // btnClearCache
             // 
-            this.btnClearCache.Location = new System.Drawing.Point(12, 60);
+            this.btnClearCache.Location = new System.Drawing.Point(12, 83);
             this.btnClearCache.Name = "btnClearCache";
             this.btnClearCache.Size = new System.Drawing.Size(148, 29);
             this.btnClearCache.TabIndex = 5;
@@ -98,11 +100,34 @@
             this.btnClearCache.UseVisualStyleBackColor = true;
             this.btnClearCache.Click += new System.EventHandler(this.btnClearCache_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 9);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(62, 13);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "Render API";
+            // 
+            // cmbRenderer
+            // 
+            this.cmbRenderer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbRenderer.FormattingEnabled = true;
+            this.cmbRenderer.Items.AddRange(new object[] {
+            "OpenGL",
+            "GDI+"});
+            this.cmbRenderer.Location = new System.Drawing.Point(108, 6);
+            this.cmbRenderer.Name = "cmbRenderer";
+            this.cmbRenderer.Size = new System.Drawing.Size(232, 21);
+            this.cmbRenderer.TabIndex = 7;
+            // 
             // frmPerformance
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(352, 158);
+            this.Controls.Add(this.cmbRenderer);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.btnClearCache);
             this.Controls.Add(this.chkCache);
             this.Controls.Add(this.btnCancel);
@@ -125,5 +150,7 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.CheckBox chkCache;
         private System.Windows.Forms.Button btnClearCache;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cmbRenderer;
     }
 }
