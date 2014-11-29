@@ -192,7 +192,7 @@ namespace fonline_mapgen
         }
 
         public static void OnGraphics( Graphics gdi, SharpGL.OpenGL gl, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF selectionArea, bool clicked, float minX, float minY)
+            Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF selectionArea, bool clicked)
         {
             if (!cachedCalls)
             {
@@ -333,17 +333,9 @@ namespace fonline_mapgen
             }
             else
             {
-               /* float MinX = CachedRoofTileDraws.Min(x => x.X);
-                float MinY = CachedRoofTileDraws.Min(x => x.Y);
-                float MaxX = CachedRoofTileDraws.Max(x => x.X);
-                float MaxY = CachedRoofTileDraws.Max(x => x.Y);
-                */
-                
-                float divY = 38.20f;
-                float divX = 38.20f * 2.014f;
-
-                float protX = 63.96533f;
-                float protY = 31.75609f;
+                // Translation from pixel/GDI to GL coords
+                float divX = 63.96533f;
+                float divY = 31.75609f;
 
                 foreach (var list in CachedDrawsLists)
                 {
@@ -351,16 +343,8 @@ namespace fonline_mapgen
                     float glY;
                     foreach (var call in list)
                     {
-                        if (list == CachedSceneryDraws)
-                        {
-                            glX = ((call.X) / (protX)) - minX;
-                            glY = ((call.Y) / (protY)) - minY;
-                        }
-                        else
-                        {
-                            glX = ((call.X) / (divX));
-                            glY = ((call.Y) / (divY));
-                        }
+                        glX = ((call.X) / (divX));
+                        glY = ((call.Y) / (divY));
 
                         float width = ((1.0f / 64) * call.Bitmap.Width);
                         float height = ((1.0f / 32) * call.Bitmap.Height);

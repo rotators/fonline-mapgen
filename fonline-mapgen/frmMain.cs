@@ -27,8 +27,6 @@ namespace fonline_mapgen
 
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
         uint[] textures = new uint[1];
-        bool glLoadedImages = false;
-        bool glIsInit = false;
 
         List<ItemProto> items = new List<ItemProto>();
 
@@ -51,8 +49,6 @@ namespace fonline_mapgen
         Pen rectPen = new Pen(Brushes.LightGreen, 5.0f);
         bool isMouseDown = false;
         bool selectionClicked = false;
-
-        float rotation;
 
         float glPosX = 0.0f;
         float glPosY = 0.0f;
@@ -366,7 +362,7 @@ namespace fonline_mapgen
 
 
             DrawMap.OnGraphics(g, null, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, 
-                this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked, 0.0f, 0.0f);
+                this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
 
             if (isMouseDown)
                 g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
@@ -392,7 +388,7 @@ namespace fonline_mapgen
             gl.Scale(glScale, glScale, 0.0f);
 
             DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms,
-                this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked, (float)numericUpDown1.Value, (float)numericUpDown2.Value);
+                this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
 
 
             gl.PopMatrix();
