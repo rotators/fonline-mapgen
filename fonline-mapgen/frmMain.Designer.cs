@@ -98,10 +98,10 @@
             this.pnlRenderBitmap.Name = "pnlRenderBitmap";
             this.pnlRenderBitmap.Size = new System.Drawing.Size(300, 300);
             this.pnlRenderBitmap.TabIndex = 0;
-            this.pnlRenderBitmap.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
-            this.pnlRenderBitmap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
-            this.pnlRenderBitmap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
-            this.pnlRenderBitmap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
+            this.pnlRenderBitmap.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlRenderBitmap_Paint);
+            this.pnlRenderBitmap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlRenderBitmap_MouseDown);
+            this.pnlRenderBitmap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlRenderBitmap_MouseMove);
+            this.pnlRenderBitmap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlRenderBitmap_MouseUp);
             // 
             // menu
             // 
@@ -137,21 +137,21 @@
             // 
             this.menuFileOpen.Name = "menuFileOpen";
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size(146, 22);
+            this.menuFileOpen.Size = new System.Drawing.Size(152, 22);
             this.menuFileOpen.Text = "&Open";
             this.menuFileOpen.Click += new System.EventHandler(this.menuFileOpen_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(143, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
             // 
             // menuFileExport
             // 
             this.menuFileExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuFileExportImage});
             this.menuFileExport.Name = "menuFileExport";
-            this.menuFileExport.Size = new System.Drawing.Size(146, 22);
+            this.menuFileExport.Size = new System.Drawing.Size(152, 22);
             this.menuFileExport.Text = "Export...";
             // 
             // menuFileExportImage
@@ -164,12 +164,12 @@
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(143, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -186,7 +186,7 @@
             // 
             this.headerToolStripMenuItem.Enabled = false;
             this.headerToolStripMenuItem.Name = "headerToolStripMenuItem";
-            this.headerToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.headerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.headerToolStripMenuItem.Text = "Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
@@ -195,7 +195,7 @@
             this.viewMapTreeToolStripMenuItem.CheckOnClick = true;
             this.viewMapTreeToolStripMenuItem.Enabled = false;
             this.viewMapTreeToolStripMenuItem.Name = "viewMapTreeToolStripMenuItem";
-            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.viewMapTreeToolStripMenuItem.Text = "View Tree";
             this.viewMapTreeToolStripMenuItem.Click += new System.EventHandler(this.viewMapTreeToolStripMenuItem_Click);
             // 
@@ -210,7 +210,7 @@
             // findMapsToolStripMenuItem
             // 
             this.findMapsToolStripMenuItem.Name = "findMapsToolStripMenuItem";
-            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.findMapsToolStripMenuItem.Text = "Find Maps";
             this.findMapsToolStripMenuItem.Click += new System.EventHandler(this.findMapsToolStripMenuItem_Click);
             // 
@@ -227,14 +227,14 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
             // performanceToolStripMenuItem
             // 
             this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.performanceToolStripMenuItem.Text = "Rendering";
             this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
             // 
@@ -242,7 +242,7 @@
             // 
             this.debugToolStripMenuItem.CheckOnClick = true;
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugToolStripMenuItem.Text = "Debug Info";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
@@ -265,7 +265,6 @@
             this.crittersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.crittersToolStripMenuItem.Text = "Critters";
             this.crittersToolStripMenuItem.CheckedChanged += new System.EventHandler(this.crittersToolStripMenuItem_CheckedChanged);
-            this.crittersToolStripMenuItem.Click += new System.EventHandler(this.crittersToolStripMenuItem_Click);
             // 
             // itemsToolStripMenuItem
             // 
@@ -417,8 +416,8 @@
             // loadMapsToolStripMenuItem
             // 
             this.loadMapsToolStripMenuItem.Name = "loadMapsToolStripMenuItem";
-            this.loadMapsToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
-            this.loadMapsToolStripMenuItem.Text = "Load Maps";
+            this.loadMapsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadMapsToolStripMenuItem.Text = "Maps";
             // 
             // openMapDialog
             // 
@@ -478,10 +477,8 @@
             this.Text = "Mapper";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
-            this.Load += new System.EventHandler(this.frmMain_Load);
             this.Shown += new System.EventHandler(this.frmMain_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.frmMain_Paint);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmMain_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.frmMain_KeyUp);
             this.pnlViewPort.ResumeLayout(false);
             this.menu.ResumeLayout(false);

@@ -21,35 +21,34 @@ namespace fonline_mapgen
 {
     public partial class frmMain : Form
     {
+        // Data containers
         public EditorData EditorData = new EditorData(ErrorMsgBox);
-
-        public List<String> GraphicsPaths = new List<string>();
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
-
         List<ItemProto> items = new List<ItemProto>();
-
-        Color transparency = Color.FromArgb(11, 0, 11);
-
         CritterData critterData = new CritterData();
 
-        float scaleFactor = 1.0f;
-
-        // Selection
+        // Mouse
         MouseSelection mouseSelection = new MouseSelection(new Pen(Brushes.Red, 3.0f));
+        Point currentMouseHex = new Point();
         
+        // Viewport
         PointF viewPortSize = new PointF();
+        float scaleFactor = 1.0f;
 
         MapperSettings mapperSettings = new MapperSettings();
         ItemProtoParser protoParser = new ItemProtoParser();
 
+        // Forms
         frmPaths frmPaths;
         frmPerformance frmPerformance;
         frmMapTree frmMapTree;
         frmDebugInfo frmDebugInfo;
         frmLoadMap frmLoadMap;
         frmLoading frmLoading;
+        frmOverlay frmOverlay;
 
-        string title = "Mapper [ALPHA] - ";
+        const string title = "Mapper [ALPHA] - ";
+        Color transparency = Color.FromArgb(11, 0, 11);
 
         public static void ErrorMsgBox(string txt)
         {
@@ -59,18 +58,12 @@ namespace fonline_mapgen
         public frmMain()
         {
             InitializeComponent();
-            LoadResources();
-
-            toolStripStatus.Text =
-            toolStripStatusHex.Text =
-            toolStripStatusProto.Text = "";
-            
         }
 
         private void Exit()
         {
             mapperSettings.View.Tiles    = menuViewTiles.Checked;
-            mapperSettings.View.Roofs    =  menuViewRoofs.Checked;
+            mapperSettings.View.Roofs    = menuViewRoofs.Checked;
             mapperSettings.View.Critters = menuViewCritters.Checked;
             mapperSettings.View.Items    = menuViewItems.Checked;
             mapperSettings.View.Scenery  = menuViewScenery.Checked;
@@ -128,7 +121,7 @@ namespace fonline_mapgen
             }
 
             List<DATFile> files = new List<DATFile>();
-            foreach( string path in this.GraphicsPaths )
+            foreach( string path in this.EditorData.GraphicsPaths )
             {
                 files.AddRange( loadedDat.GetFilesByPattern( path ) );
 
@@ -181,7 +174,7 @@ namespace fonline_mapgen
         public bool LoadDir(string DirPath, List<string> crFiles, Color Transparency)
         {
             List<string> filenames = new List<string>();
-            foreach (var path in this.GraphicsPaths)
+            foreach (var path in this.EditorData.GraphicsPaths)
             {
                 var fullPath = DirPath + Path.DirectorySeparatorChar + path;
                 if(Directory.Exists(fullPath))
@@ -232,7 +225,7 @@ namespace fonline_mapgen
             var patternToCheck = new List<string>();
             foreach (var cr in crFiles)
                 patternToCheck.Add(cr);
-            foreach (var path in this.GraphicsPaths)
+            foreach (var path in this.EditorData.GraphicsPaths)
                 patternToCheck.Add(path);
 
             var filesToLoad = new List<ZipStorer.ZipFileEntry>();
@@ -278,9 +271,6 @@ namespace fonline_mapgen
                         zip.ExtractFile(entry, stream);
                         bytes = stream.ToArray();
                     }
-
-
-
                     if (ext == ".frm")
                     {
                         var frm = FalloutFRMLoader.LoadFRM(bytes, Transparency);
@@ -316,11 +306,13 @@ namespace fonline_mapgen
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             }
 
-            var screenArea = new RectangleF(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height);
-            //MessageBox.Show(screenArea.ToString());
+            int border = 128;
 
-            DrawMap.OnGraphics(g, map, map.HexMap, EditorData.itemsPid, critterData, Frms, EditorData.drawFlags,
-                EditorData.selectFlags, new SizeF(scaleFactor, scaleFactor), screenArea, mouseSelection.selectionArea, mouseSelection.clicked);
+            var screenArea = new RectangleF(pnlViewPort.HorizontalScroll.Value - border, pnlViewPort.VerticalScroll.Value - border, 
+                pnlViewPort.Width + border, pnlViewPort.Height + border);
+
+            DrawMap.OnGraphics(g, map, map.HexMap, EditorData.itemsPid, critterData, Frms, EditorData, new SizeF(scaleFactor, scaleFactor),
+                screenArea, mouseSelection);
 
             if (mouseSelection.isDown)
                 g.DrawRectangle(mouseSelection.rectPen, mouseSelection.GetRect());
@@ -346,15 +338,6 @@ namespace fonline_mapgen
             }
         }
 
-        private void panel1_Paint( object sender, PaintEventArgs e )
-        {
-            MapperMap map = EditorData.CurrentMap;
-
-            if (map == null)
-                return;
-            DrawGDI(e.Graphics, map);
-        }
-
         private void centerViewport()
         {
             pnlViewPort.VerticalScroll.Value = pnlViewPort.VerticalScroll.Maximum / 3;
@@ -371,40 +354,12 @@ namespace fonline_mapgen
             pnlRenderBitmap.Height = (int)(viewPortSize.Y * scaleFactor);
         }
 
-        private void panel1_MouseMove( object sender, MouseEventArgs e )
+        private void MouseHexChanged(MapperMap map, Point hex)
         {
-            MapperMap map = EditorData.CurrentMap;
-
-            if( map == null )
-                return;
-
-            if (mouseSelection.isDown)
-            {
-                mouseSelection.mouseRectPos.X = (int)((float)e.X / scaleFactor);
-                mouseSelection.mouseRectPos.Y = (int)((float)e.Y / scaleFactor);
-
-                mouseSelection.CalculateSelectionArea();
-
-                DrawMap.InvalidateCache();
-                int padding = 70;
-
-                mouseSelection.UpdateMaxRect();
-
-                int x1 = mouseSelection.clickedPos.X - padding;
-                int y1 = mouseSelection.clickedPos.Y - padding;
-                int x2 = mouseSelection.maxMouseRectPos.X + padding;
-                int y2 = mouseSelection.maxMouseRectPos.Y + padding;
-
-                pnlRenderBitmap.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
-            }
-
-            var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
-            toolStripStatusHex.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
-
-            if( map.Objects.Count( x => x.MapX == hex.X && x.MapY == hex.Y ) == 0 )
+            if (map.Objects.Count(x => x.MapX == hex.X && x.MapY == hex.Y) == 0)
                 toolStripStatusProto.Text = "";
 
-            foreach( var obj in map.Objects.FindAll( x => x.MapX == hex.X && x.MapY == hex.Y ) )
+            foreach (var obj in map.Objects.FindAll(x => x.MapX == hex.X && x.MapY == hex.Y))
             {
                 if ((obj.MapObjType == FOCommon.Maps.MapObjectType.Item ||
                       obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery))
@@ -422,6 +377,50 @@ namespace fonline_mapgen
                     toolStripStatusProto.Text = "Critter: " + obj.ProtoId;
                 }
             }
+        }
+
+        private void pnlRenderBitmap_Paint(object sender, PaintEventArgs e)
+        {
+            MapperMap map = EditorData.CurrentMap;
+            if (map == null)
+                return;
+            DrawGDI(e.Graphics, map);
+        }
+
+        private void pnlRenderBitmap_MouseMove( object sender, MouseEventArgs e )
+        {
+            MapperMap map = EditorData.CurrentMap;
+
+            if( map == null )
+                return;
+
+            if (mouseSelection.isDown)
+            {
+                mouseSelection.mouseRectPos.X = (int)((float)e.X / scaleFactor);
+                mouseSelection.mouseRectPos.Y = (int)((float)e.Y / scaleFactor);
+
+                mouseSelection.CalculateSelectionArea();
+
+
+                int padding = 70;
+
+                mouseSelection.UpdateMaxRect();
+
+                int x1 = mouseSelection.clickedPos.X - padding;
+                int y1 = mouseSelection.clickedPos.Y - padding;
+                int x2 = mouseSelection.maxMouseRectPos.X + padding;
+                int y2 = mouseSelection.maxMouseRectPos.Y + padding;
+
+                DrawMap.InvalidateCache();
+                pnlRenderBitmap.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
+            }
+
+            var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
+            if (currentMouseHex != null && (currentMouseHex.X != hex.X && currentMouseHex.Y != hex.Y))
+                MouseHexChanged(map, hex);
+
+            currentMouseHex = hex;
+            toolStripStatusHex.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
         }
 
         private void headerToolStripMenuItem_Click( object sender, EventArgs e )
@@ -445,6 +444,13 @@ namespace fonline_mapgen
         {
             SettingsManager.Init();
             mapperSettings = SettingsManager.LoadSettings();
+
+            if (mapperSettings.UI.Overlay == null)
+            {
+                mapperSettings.UI.Overlay = new OverlaySettings();
+                mapperSettings.UI.Overlay.CritterFormat = "PID=%PID% [%P_ScriptName%@%P_FuncName%]\nBag=%P_ST_BAG_ID%";
+                mapperSettings.UI.Overlay.SceneryFormat = "PID=%PID%";
+            }
 
             frmPaths = new frmPaths(mapperSettings);
             if (mapperSettings == null)
@@ -495,10 +501,18 @@ namespace fonline_mapgen
             SaveFileDialog save = new SaveFileDialog();
             if( save.ShowDialog( this ) == DialogResult.OK )
             {
-                Bitmap bmp = new Bitmap( pnlRenderBitmap.ClientRectangle.Width, pnlRenderBitmap.ClientRectangle.Height );
-                pnlRenderBitmap.DrawToBitmap( bmp, pnlRenderBitmap.ClientRectangle );
-                bmp.Save( save.FileName );
+                using (Bitmap bmp = new Bitmap(pnlRenderBitmap.ClientRectangle.Width, pnlRenderBitmap.ClientRectangle.Height))
+                {
+                    pnlRenderBitmap.DrawToBitmap(bmp, pnlRenderBitmap.ClientRectangle);
+                    bmp.Save(save.FileName);
+                }
             }
+        }
+
+        private void UpdateOverlayFlags(object sender, DrawMap.Flags flag)
+        {
+            EditorData.UpdateOverlayFlags(((ToolStripMenuItem)sender).Checked, flag);
+            RefreshViewport();
         }
 
         private void UpdateSelectFlags(object sender, DrawMap.Flags flag)
@@ -603,40 +617,22 @@ namespace fonline_mapgen
             frmFindMaps.Show();
         }
 
-        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        private void pnlRenderBitmap_MouseDown(object sender, MouseEventArgs e)
         {
             if (mouseSelection.isDown)
                 return;
-
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                mouseSelection.clicked = false;
-                mouseSelection.clickedPos.X = (int)((float)e.X / scaleFactor);
-                mouseSelection.clickedPos.Y = (int)((float)e.Y / scaleFactor);
-                mouseSelection.isDown = true;
-
-                mouseSelection.maxMouseRectPos.X = 0;
-                mouseSelection.maxMouseRectPos.Y = 0;
-
-                mouseSelection.selectionArea.Width = 1;
-                mouseSelection.selectionArea.Height = 1;
-
+                mouseSelection.Click(new Point((int)((float)e.X / scaleFactor), (int)((float)e.Y / scaleFactor)));
                 RefreshViewport();
             }
         }
 
-        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        private void pnlRenderBitmap_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                mouseSelection.isDown = false;
-                mouseSelection.clicked  = false;
-
-                mouseSelection.CalculateSelectionArea();
-
-                mouseSelection.mouseRectPos.X = 0;
-                mouseSelection.mouseRectPos.Y = 0;
-
+                mouseSelection.MouseUp();
                 RefreshViewport();
             }
         }
@@ -671,6 +667,11 @@ namespace fonline_mapgen
             UpdateSelectFlags(sender, DrawMap.Flags.SceneryWalls);
         }
 
+        private void crittersToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateOverlayFlags(sender, DrawMap.Flags.Critters);
+        }
+
         private void frmMain_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
@@ -679,30 +680,19 @@ namespace fonline_mapgen
                     EditorData.CurrentMap.Objects.Remove(obj);
                 foreach (var tile in DrawMap.GetSelectedTiles())
                     EditorData.CurrentMap.Tiles.Remove(tile);
-
                 RefreshViewport();
             }
         }
 
-        private void frmMain_KeyDown(object sender, KeyEventArgs e)
-        {
-            
-        }
-
-        private void frmMain_Load(object sender, EventArgs e)
-        {
-            
-        }
-
         private void resourceLoader_DoWork(object sender, DoWorkEventArgs e)
         {
-            GraphicsPaths.Add("art\\misc");
-            GraphicsPaths.Add("art\\items");
-            GraphicsPaths.Add("art\\tiles");
-            GraphicsPaths.Add("art\\misc");
-            GraphicsPaths.Add("art\\walls");
-            GraphicsPaths.Add("art\\door");
-            GraphicsPaths.Add("art\\scenery");
+            this.EditorData.GraphicsPaths.Add("art\\misc");
+            this.EditorData.GraphicsPaths.Add("art\\items");
+            this.EditorData.GraphicsPaths.Add("art\\tiles");
+            this.EditorData.GraphicsPaths.Add("art\\misc");
+            this.EditorData.GraphicsPaths.Add("art\\walls");
+            this.EditorData.GraphicsPaths.Add("art\\door");
+            this.EditorData.GraphicsPaths.Add("art\\scenery");
 
             Stream stream;
             BinaryFormatter formatter = new BinaryFormatter();
@@ -885,6 +875,28 @@ namespace fonline_mapgen
 
             if (stream != null) stream.Close();
         }
+
+        private void settingsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            frmOverlay = new fonline_mapgen.frmOverlay(mapperSettings);
+            frmOverlay.ShowDialog();
+            mapperSettings.UI.Overlay.CritterFormat = frmOverlay.CritterFormat;
+            EditorData.overlayCritterFormat = frmOverlay.CritterFormat;
+        }
+
+        private void frmMain_Shown(object sender, EventArgs e)
+        {
+            LoadResources();
+
+            toolStripStatus.Text =
+            toolStripStatusHex.Text =
+            toolStripStatusProto.Text = "";
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 
     public class MouseSelection
@@ -903,6 +915,30 @@ namespace fonline_mapgen
                 this.selectionArea.Height = 1;
                 this.clicked = true;
             }
+        }
+
+        public void Click(Point point)
+        {
+            this.clicked = false;
+            this.clickedPos = point;
+            this.isDown = true;
+
+            this.maxMouseRectPos.X = 0;
+            this.maxMouseRectPos.Y = 0;
+
+            this.selectionArea.Width = 1;
+            this.selectionArea.Height = 1;
+        }
+
+        public void MouseUp()
+        {
+            this.isDown = false;
+            this.clicked = false;
+
+            this.CalculateSelectionArea();
+
+            this.mouseRectPos.X = 0;
+            this.mouseRectPos.Y = 0;
         }
 
         public Rectangle GetRect()

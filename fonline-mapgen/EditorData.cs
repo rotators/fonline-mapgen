@@ -15,7 +15,8 @@ namespace fonline_mapgen
 
         public delegate void ErrorMsg(string message); // MsgBox? Depends on UI.
         ErrorMsg CallErrorMsg = null;
-        
+
+        public List<String> GraphicsPaths = new List<string>();
         public List<string> mapsFiles = new List<string>(); // List of all maps
         public Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
         public string overlayCritterFormat = "PID=%PID% [%P_ScriptName%@%P_FuncName%]\nBag=%P_ST_BAG_ID%";

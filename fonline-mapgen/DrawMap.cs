@@ -57,20 +57,8 @@ namespace fonline_mapgen
         public List<DrawCall> CacheList;
     }
 
-    public class GLBinding
-    {
-        public uint[] frames;
-    }
-
     public static class DrawMap
     {
-        [DllImport("Gdi32.dll")]
-        public static extern int GetPixel(
-        System.IntPtr hdc,    // handle to DC
-        int nXPos,  // x-coordinate of pixel
-        int nYPos   // y-coordinate of pixel
-        );
-
         [DllImport("User32.dll")]
         public static extern IntPtr GetDC(IntPtr wnd);
 
@@ -99,9 +87,8 @@ namespace fonline_mapgen
         private static List<MapObject> SelectedObjects = new List<MapObject>();
         private static List<Tile> SelectedTiles = new List<Tile>();
 
-        private static Dictionary<string, int> glIds = new Dictionary<string, int>();
-
         private static CurrentClick currentClick = null;
+        private static Font overlayFont = new Font(FontFamily.GenericSansSerif, 13.0f, FontStyle.Bold);
 
         public enum Flags
         {
@@ -138,14 +125,18 @@ namespace fonline_mapgen
             return SelectedTiles;
         }
 
-        private static bool AddToCache(Bitmap drawBitmap, string path, List<DrawCall> cacheList, PointF coords, RectangleF selectionArea, bool selectable, bool clicked)
+        private static bool AddToCache(Bitmap drawBitmap, string path, List<DrawCall> cacheList, 
+            PointF coords, bool selectable, MouseSelection mouseSelection, RectangleF screenArea)
         {
+            if (mouseSelection.isDown && !screenArea.Contains(coords))
+                return false;
+
             var normalDraw = new DrawCall(drawBitmap, path, coords.X, coords.Y);
-            if (selectable && InsideSelection(selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
+            if (selectable && InsideSelection(mouseSelection.selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
             {
                 var opaque = MakeOpaque(drawBitmap, path, 0.5f);
                 var opDraw = new DrawCall(opaque, path, coords.X, coords.Y);
-                if (clicked)
+                if (mouseSelection.clicked)
                 {
                     if (currentClick != null) ClickToCache(currentClick, true);
                     currentClick = new CurrentClick();
@@ -173,8 +164,26 @@ namespace fonline_mapgen
                 previous.CacheList.Insert(previous.index, previous.OpaqueCall);
         }
 
+        private static string PreprocessOverlay(string text, MapObject obj, Func<string, string> dataLookup)
+        {
+            text = text.Replace("%PID%", obj.ProtoId.ToString());
+
+            Regex r = new Regex("%P_(.+?)%", RegexOptions.Multiline);
+            var matches = r.Matches(text);
+            foreach (Match match in matches)
+            {
+                string mStr = match.Groups[0].Value;
+                mStr = mStr.Replace("%P_", "");
+                mStr = mStr.Replace("%", "");
+                string data = "ERROR";
+                data = dataLookup(mStr);
+                text = text.Replace(match.Value, data);
+            }
+            return text;
+        }
+
         public static void OnGraphics( Graphics gdi, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, EditorData editorData, SizeF scale, RectangleF screenArea, RectangleF selectionArea, bool clicked)
+            Dictionary<string, FalloutFRM> frms, EditorData editorData, SizeF scale, RectangleF screenArea, MouseSelection mouseSelection)
         {
 
             Flags flags = editorData.drawFlags;
@@ -224,7 +233,7 @@ namespace fonline_mapgen
                         }
                         var tileCoords = hexMap.GetTileCoords(new Point(tile.X, tile.Y), tile.Roof);
                         Bitmap drawBitmap = frms[tile.Path].Frames[0];
-                        if (AddToCache(drawBitmap, tile.Path, list, tileCoords, selectionArea, selectable, clicked))
+                        if (AddToCache(drawBitmap, tile.Path, list, tileCoords, selectable, mouseSelection, screenArea))
                             SelectedTiles.Add(tile);
                     }
                 }
@@ -232,7 +241,6 @@ namespace fonline_mapgen
                 foreach (var obj in map.Objects.OrderBy(x => x.MapX + x.MapY * 2))
                 {
                     bool selectable = false;
-
                     // skip specific object types
                     if (obj.MapObjType == MapObjectType.Critter && !DrawFlag(flags, Flags.Critters))
                         continue;
@@ -279,25 +287,14 @@ namespace fonline_mapgen
                         if (DrawFlag(overlayFlags, Flags.Critters))
                         {
                             string text = editorData.overlayCritterFormat;
-                            text = text.Replace("%PID%", obj.ProtoId.ToString());
-
-                            Regex r = new Regex("%P_(.+?)%", RegexOptions.Multiline);
-                            var matches = r.Matches(text);
-                            foreach (Match match in matches)
-                            {
-                                string mStr = match.Groups[0].Value;
-                                mStr = mStr.Replace("%P_", "");
-                                mStr = mStr.Replace("%", "");
-                                string data = "ERROR";
+                            string preprocessed = PreprocessOverlay(text, obj, new Func<string, string>((string mStr) => {
+                                string data = "";
                                 if (obj.Properties.ContainsKey(mStr)) data = obj.Properties[mStr];
                                 if (obj.CritterParams.ContainsKey(mStr)) data = obj.CritterParams[mStr].ToString();
-                                text = text.Replace(match.Value, data);
-                            }
-                            
-
+                                return data;
+                            }));
                             int lines = text.Count(f => f == '\n');
-                            //text = Replace("%SCRIPT_NAME%", obj.CritterParams["ST_SCRIPT_NAME");
-                            CachedOverlayDraws.Add(new OverlayCall(text, coords.X, coords.Y - (40 + (15*(lines-1)))));
+                            CachedOverlayDraws.Add(new OverlayCall(preprocessed, coords.X, coords.Y - (40 + (15 * (lines - 1)))));
                         }
                     }
                     // Scenery or Item
@@ -319,7 +316,7 @@ namespace fonline_mapgen
                             new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(prot.OffsetX, prot.OffsetY));
                         drawBitmap = frm.Frames[0];
                     }
-                    if (AddToCache(drawBitmap, path, CachedSceneryDraws, coords, selectionArea, selectable, clicked))
+                    if (AddToCache(drawBitmap, path, CachedSceneryDraws, coords, selectable, mouseSelection, screenArea))
                         SelectedObjects.Add(obj);
                 }
             }
@@ -342,19 +339,9 @@ namespace fonline_mapgen
                 foreach (var call in CachedRoofTileDraws)
                     gdi.DrawImage(call.Bitmap, call.X, call.Y);
 
-                Font fnt = new Font(FontFamily.GenericSansSerif, 13.0f , FontStyle.Bold);
-                //Pen pn = new Pen(Brushes.Black);
-
                 foreach (var call in CachedOverlayDraws)
                 {
-                    DrawOutlinedText(gdi, call.Text, fnt, Brushes.GreenYellow, Brushes.Black, new PointF(call.X, call.Y));
-                    //gdi.DrawString(call.Text, fnt, Brushes.GreenYellow, );
-
-                    //GraphicsPath p = new GraphicsPath();
-                    //p.AddString(call.Text, FontFamily.GenericSansSerif, (int) FontStyle.Bold, 12.0f, new PointF(call.X, call.Y), new StringFormat());
-                    //gdi.FillPath(Brushes.OrangeRed, p);
-                    //gdi.DrawPath(Pens.Black, p);
-                    
+                    DrawOutlinedText(gdi, call.Text, overlayFont, Brushes.GreenYellow, Brushes.Black, new PointF(call.X, call.Y));
                 }
             }
         }
