@@ -28,10 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnLoadMap = new System.Windows.Forms.Button();
             this.pnlViewPort = new System.Windows.Forms.Panel();
             this.pnlRenderBitmap = new fonline_mapgen.DoubleBufferPanel();
-            this.cmbMaps = new System.Windows.Forms.ComboBox();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.menuFile = new System.Windows.Forms.ToolStripMenuItem();
             this.menuFileOpen = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,16 +71,6 @@
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // btnLoadMap
-            // 
-            this.btnLoadMap.Location = new System.Drawing.Point(538, 25);
-            this.btnLoadMap.Name = "btnLoadMap";
-            this.btnLoadMap.Size = new System.Drawing.Size(78, 25);
-            this.btnLoadMap.TabIndex = 1;
-            this.btnLoadMap.Text = "Load Map";
-            this.btnLoadMap.UseVisualStyleBackColor = true;
-            this.btnLoadMap.Click += new System.EventHandler(this.btnLoadMap_Click);
-            // 
             // pnlViewPort
             // 
             this.pnlViewPort.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -90,9 +78,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlViewPort.AutoScroll = true;
             this.pnlViewPort.Controls.Add(this.pnlRenderBitmap);
-            this.pnlViewPort.Location = new System.Drawing.Point(0, 52);
+            this.pnlViewPort.Location = new System.Drawing.Point(0, 27);
             this.pnlViewPort.Name = "pnlViewPort";
-            this.pnlViewPort.Size = new System.Drawing.Size(1028, 561);
+            this.pnlViewPort.Size = new System.Drawing.Size(1028, 586);
             this.pnlViewPort.TabIndex = 7;
             this.pnlViewPort.Scroll += new System.Windows.Forms.ScrollEventHandler(this.pnlViewPort_Scroll);
             // 
@@ -107,15 +95,6 @@
             this.pnlRenderBitmap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseDown);
             this.pnlRenderBitmap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             this.pnlRenderBitmap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
-            // 
-            // cmbMaps
-            // 
-            this.cmbMaps.DropDownWidth = 600;
-            this.cmbMaps.FormattingEnabled = true;
-            this.cmbMaps.Location = new System.Drawing.Point(15, 25);
-            this.cmbMaps.Name = "cmbMaps";
-            this.cmbMaps.Size = new System.Drawing.Size(517, 21);
-            this.cmbMaps.TabIndex = 10;
             // 
             // menu
             // 
@@ -149,21 +128,21 @@
             // 
             this.menuFileOpen.Name = "menuFileOpen";
             this.menuFileOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuFileOpen.Size = new System.Drawing.Size(152, 22);
+            this.menuFileOpen.Size = new System.Drawing.Size(146, 22);
             this.menuFileOpen.Text = "&Open";
             this.menuFileOpen.Click += new System.EventHandler(this.menuFileOpen_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(143, 6);
             // 
             // menuFileExport
             // 
             this.menuFileExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuFileExportImage});
             this.menuFileExport.Name = "menuFileExport";
-            this.menuFileExport.Size = new System.Drawing.Size(152, 22);
+            this.menuFileExport.Size = new System.Drawing.Size(146, 22);
             this.menuFileExport.Text = "Export...";
             // 
             // menuFileExportImage
@@ -176,12 +155,12 @@
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(143, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -239,14 +218,14 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
             // performanceToolStripMenuItem
             // 
             this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.performanceToolStripMenuItem.Text = "Rendering";
             this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
             // 
@@ -254,7 +233,7 @@
             // 
             this.debugToolStripMenuItem.CheckOnClick = true;
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.debugToolStripMenuItem.Text = "Debug Info";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
@@ -274,7 +253,7 @@
             // 
             this.menuSelectionTiles.CheckOnClick = true;
             this.menuSelectionTiles.Name = "menuSelectionTiles";
-            this.menuSelectionTiles.Size = new System.Drawing.Size(152, 22);
+            this.menuSelectionTiles.Size = new System.Drawing.Size(115, 22);
             this.menuSelectionTiles.Text = "Tiles";
             this.menuSelectionTiles.CheckedChanged += new System.EventHandler(this.menuSelectionTiles_CheckedChanged);
             // 
@@ -282,7 +261,7 @@
             // 
             this.menuSelectionRoofs.CheckOnClick = true;
             this.menuSelectionRoofs.Name = "menuSelectionRoofs";
-            this.menuSelectionRoofs.Size = new System.Drawing.Size(152, 22);
+            this.menuSelectionRoofs.Size = new System.Drawing.Size(115, 22);
             this.menuSelectionRoofs.Text = "Roofs";
             this.menuSelectionRoofs.CheckedChanged += new System.EventHandler(this.menuSelectionRoofs_CheckedChanged);
             // 
@@ -290,7 +269,7 @@
             // 
             this.menuSelectionCritters.CheckOnClick = true;
             this.menuSelectionCritters.Name = "menuSelectionCritters";
-            this.menuSelectionCritters.Size = new System.Drawing.Size(152, 22);
+            this.menuSelectionCritters.Size = new System.Drawing.Size(115, 22);
             this.menuSelectionCritters.Text = "Critters";
             this.menuSelectionCritters.CheckedChanged += new System.EventHandler(this.menuSelectionCritters_CheckedChanged);
             // 
@@ -298,7 +277,7 @@
             // 
             this.menuSelectionItems.CheckOnClick = true;
             this.menuSelectionItems.Name = "menuSelectionItems";
-            this.menuSelectionItems.Size = new System.Drawing.Size(152, 22);
+            this.menuSelectionItems.Size = new System.Drawing.Size(115, 22);
             this.menuSelectionItems.Text = "Items";
             this.menuSelectionItems.CheckedChanged += new System.EventHandler(this.menuSelectionItems_CheckedChanged);
             // 
@@ -308,7 +287,7 @@
             this.menuSelectionScenery.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuSelectionSceneryWalls});
             this.menuSelectionScenery.Name = "menuSelectionScenery";
-            this.menuSelectionScenery.Size = new System.Drawing.Size(152, 22);
+            this.menuSelectionScenery.Size = new System.Drawing.Size(115, 22);
             this.menuSelectionScenery.Text = "Scenery";
             this.menuSelectionScenery.CheckedChanged += new System.EventHandler(this.menuSelectionScenery_CheckedChanged);
             // 
@@ -336,7 +315,7 @@
             // 
             this.menuViewTiles.CheckOnClick = true;
             this.menuViewTiles.Name = "menuViewTiles";
-            this.menuViewTiles.Size = new System.Drawing.Size(152, 22);
+            this.menuViewTiles.Size = new System.Drawing.Size(115, 22);
             this.menuViewTiles.Text = "Tiles";
             this.menuViewTiles.CheckedChanged += new System.EventHandler(this.menuViewTiles_CheckedChanged);
             // 
@@ -344,7 +323,7 @@
             // 
             this.menuViewRoofs.CheckOnClick = true;
             this.menuViewRoofs.Name = "menuViewRoofs";
-            this.menuViewRoofs.Size = new System.Drawing.Size(152, 22);
+            this.menuViewRoofs.Size = new System.Drawing.Size(115, 22);
             this.menuViewRoofs.Text = "Roofs";
             this.menuViewRoofs.CheckedChanged += new System.EventHandler(this.menuViewRoofs_CheckedChanged);
             // 
@@ -352,7 +331,7 @@
             // 
             this.menuViewCritters.CheckOnClick = true;
             this.menuViewCritters.Name = "menuViewCritters";
-            this.menuViewCritters.Size = new System.Drawing.Size(152, 22);
+            this.menuViewCritters.Size = new System.Drawing.Size(115, 22);
             this.menuViewCritters.Text = "Critters";
             this.menuViewCritters.CheckedChanged += new System.EventHandler(this.menuViewCritters_CheckedChanged);
             // 
@@ -360,7 +339,7 @@
             // 
             this.menuViewItems.CheckOnClick = true;
             this.menuViewItems.Name = "menuViewItems";
-            this.menuViewItems.Size = new System.Drawing.Size(152, 22);
+            this.menuViewItems.Size = new System.Drawing.Size(115, 22);
             this.menuViewItems.Text = "Items";
             this.menuViewItems.CheckedChanged += new System.EventHandler(this.menuViewItems_CheckedChanged);
             // 
@@ -370,7 +349,7 @@
             this.menuViewScenery.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuViewSceneryWalls});
             this.menuViewScenery.Name = "menuViewScenery";
-            this.menuViewScenery.Size = new System.Drawing.Size(152, 22);
+            this.menuViewScenery.Size = new System.Drawing.Size(115, 22);
             this.menuViewScenery.Text = "Scenery";
             this.menuViewScenery.CheckedChanged += new System.EventHandler(this.menuViewScenery_CheckedChanged);
             // 
@@ -428,8 +407,6 @@
             this.ClientSize = new System.Drawing.Size(1028, 638);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.pnlViewPort);
-            this.Controls.Add(this.cmbMaps);
-            this.Controls.Add(this.btnLoadMap);
             this.Controls.Add(this.menu);
             this.KeyPreview = true;
             this.MainMenuStrip = this.menu;
@@ -453,10 +430,8 @@
 
         #endregion
 
-        private System.Windows.Forms.Button btnLoadMap;
         private System.Windows.Forms.Panel pnlViewPort;
         private DoubleBufferPanel pnlRenderBitmap;
-        private System.Windows.Forms.ComboBox cmbMaps;
         private System.Windows.Forms.MenuStrip menu;
         private System.Windows.Forms.ToolStripMenuItem stuffToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem headerToolStripMenuItem;

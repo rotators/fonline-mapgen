@@ -21,6 +21,8 @@ namespace fonline_mapgen
 {
     public partial class frmMain : Form
     {
+        public EditorData EditorData = new EditorData(ErrorMsgBox);
+
         public List<String> GraphicsPaths = new List<string>();
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
 
@@ -30,20 +32,10 @@ namespace fonline_mapgen
 
         CritterData critterData = new CritterData();
 
-        List<string> maps = new List<string>();
-        Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
-
         float scaleFactor = 1.0f;
 
         // Selection
-        Point clickedPos = new Point(0,0);
-        Point maxMouseRectPos = new Point();
-        Point mouseRectPos = new Point(0, 0);
-        Pen rectPen = new Pen(Brushes.LightGreen, 5.0f);
-        bool isMouseDown = false;
-        bool selectionClicked = false;
-
-        RectangleF selectionArea = new RectangleF();
+        MouseSelection mouseSelection = new MouseSelection(new Pen(Brushes.Red, 3.0f));
         
         PointF viewPortSize = new PointF();
 
@@ -54,32 +46,14 @@ namespace fonline_mapgen
         frmPerformance frmPerformance;
         frmMapTree frmMapTree;
         frmDebugInfo frmDebugInfo;
+        frmLoadMap frmLoadMap;
 
         string title = "Mapper [ALPHA] - ";
 
-        public MapperMap CurrentMap
+        public static void ErrorMsgBox(string txt)
         {
-            get
-            {
-                if( this.CurrentMapIdx < 0 || this.CurrentMapIdx >= this.Maps.Count )
-                    return (null);
-
-                return (this.Maps[this.CurrentMapIdx]);
-            }
-            private set
-            {
-                int idx = this.Maps.IndexOf( value );
-                if( idx >= 0 )
-                    this.CurrentMapIdx = idx;
-                else
-                    MessageBox.Show( "Can't set CurrentMapIndex" );
-            }
+            MessageBox.Show(txt);
         }
-        private int CurrentMapIdx = -1;
-        private List<MapperMap> Maps = new List<MapperMap>();
-
-        DrawMap.Flags drawFlags;
-        DrawMap.Flags selectFlags;
 
         public frmMain()
         {
@@ -93,12 +67,12 @@ namespace fonline_mapgen
 
         private void Exit()
         {
-            mapperSettings.View.Tiles = menuViewTiles.Checked;
-            mapperSettings.View.Roofs = menuViewRoofs.Checked;
+            mapperSettings.View.Tiles    = menuViewTiles.Checked;
+            mapperSettings.View.Roofs    =  menuViewRoofs.Checked;
             mapperSettings.View.Critters = menuViewCritters.Checked;
-            mapperSettings.View.Items = menuViewItems.Checked;
-            mapperSettings.View.Scenery = menuViewScenery.Checked;
-            mapperSettings.View.Walls = menuViewSceneryWalls.Checked;
+            mapperSettings.View.Items    = menuViewItems.Checked;
+            mapperSettings.View.Scenery  = menuViewScenery.Checked;
+            mapperSettings.View.Walls    = menuViewSceneryWalls.Checked;
 
             SettingsManager.SaveSettings(mapperSettings);
             Environment.Exit(0);
@@ -109,8 +83,8 @@ namespace fonline_mapgen
             MapperMap map = MapperMap.Load( fileName);
             if( map != null )
             {
-                this.Maps.Add( map );
-                this.CurrentMap = map;
+                EditorData.AddMap( map );
+                EditorData.CurrentMap = map;
 
                 this.Text = title + fileName;
 
@@ -318,11 +292,11 @@ namespace fonline_mapgen
             var screenArea = new RectangleF(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height);
             //MessageBox.Show(screenArea.ToString());
 
-            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, 
-                this.selectFlags, new SizeF(scaleFactor, scaleFactor), screenArea, selectionArea, selectionClicked);
+            DrawMap.OnGraphics(g, map, map.HexMap, EditorData.itemsPid, critterData, Frms, EditorData.drawFlags,
+                EditorData.selectFlags, new SizeF(scaleFactor, scaleFactor), screenArea, mouseSelection.selectionArea, mouseSelection.clicked);
 
-            if (isMouseDown)
-                g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+            if (mouseSelection.isDown)
+                g.DrawRectangle(mouseSelection.rectPen, mouseSelection.GetRect());
         }
 
         private void RefreshViewport()
@@ -330,7 +304,7 @@ namespace fonline_mapgen
             if (Frms.Count == 0)
                 return;
 
-            MapperMap map = this.CurrentMap;
+            MapperMap map = EditorData.CurrentMap;
 
             if (map == null)
                 return;
@@ -347,7 +321,7 @@ namespace fonline_mapgen
 
         private void panel1_Paint( object sender, PaintEventArgs e )
         {
-            MapperMap map = this.CurrentMap;
+            MapperMap map = EditorData.CurrentMap;
 
             if (map == null)
                 return;
@@ -372,37 +346,33 @@ namespace fonline_mapgen
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
         {
-            MapperMap map = this.CurrentMap;
+            MapperMap map = EditorData.CurrentMap;
 
             if( map == null )
                 return;
 
-            if (isMouseDown)
+            if (mouseSelection.isDown)
             {
-                mouseRectPos.X = (int)((float)e.X / scaleFactor);
-                mouseRectPos.Y = (int)((float)e.Y / scaleFactor);
+                mouseSelection.mouseRectPos.X = (int)((float)e.X / scaleFactor);
+                mouseSelection.mouseRectPos.Y = (int)((float)e.Y / scaleFactor);
 
-                selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+                mouseSelection.CalculateSelectionArea();
 
                 DrawMap.InvalidateCache();
-
-                //RefreshViewport();
                 int padding = 70;
 
-                if (mouseRectPos.X > maxMouseRectPos.X) maxMouseRectPos.X = mouseRectPos.X;
-                if (mouseRectPos.Y > maxMouseRectPos.Y) maxMouseRectPos.Y = mouseRectPos.Y;
+                mouseSelection.UpdateMaxRect();
 
-                int x1 = clickedPos.X - padding;
-                int y1 = clickedPos.Y - padding;
-                int x2 = maxMouseRectPos.X + padding;
-                int y2 = maxMouseRectPos.Y + padding;
+                int x1 = mouseSelection.clickedPos.X - padding;
+                int y1 = mouseSelection.clickedPos.Y - padding;
+                int x2 = mouseSelection.maxMouseRectPos.X + padding;
+                int y2 = mouseSelection.maxMouseRectPos.Y + padding;
 
                 pnlRenderBitmap.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
             }
 
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
             toolStripStatusHex.Text = string.Format( "Mouse Coords: {0},{1} - Hex: {2},{3}", e.X, e.Y, hex.X, hex.Y );
-            //
 
             if( map.Objects.Count( x => x.MapX == hex.X && x.MapY == hex.Y ) == 0 )
                 toolStripStatusProto.Text = "";
@@ -413,7 +383,7 @@ namespace fonline_mapgen
                       obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery))
                 {
                     ItemProto prot;
-                    if (!itemsPid.TryGetValue(obj.ProtoId, out prot))
+                    if (!EditorData.itemsPid.TryGetValue(obj.ProtoId, out prot))
                         continue;
 
                     toolStripStatusProto.Text = "Proto: " + (obj.ProtoId);
@@ -427,14 +397,9 @@ namespace fonline_mapgen
             }
         }
 
-        private void btnLoadMap_Click( object sender, EventArgs e )
-        {
-            LoadMap( (string)cmbMaps.SelectedItem );
-        }
-
         private void headerToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            MapperMap map = this.CurrentMap;
+            MapperMap map = EditorData.CurrentMap;
 
             if( map == null )
             {
@@ -612,7 +577,7 @@ namespace fonline_mapgen
             }
 
             foreach (var item in items)
-                itemsPid[item.ProtoId] = item;
+                EditorData.itemsPid[item.ProtoId] = item;
 
             if (mapperSettings.Paths.MapsDir != null)
             {
@@ -622,13 +587,12 @@ namespace fonline_mapgen
                     if (frmPaths.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
                         break;
                 }
-                maps = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
-                cmbMaps.Items.AddRange(maps.ToArray());
+                EditorData.mapsFiles = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
+               // cmbMaps.Items.AddRange(EditorData.mapsFiles.ToArray());
+                frmLoadMap = new frmLoadMap(EditorData.mapsFiles, LoadMap);
+                frmLoadMap.Show();
             }
                 
-
-           // this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
-
             if(stream != null) stream.Close();
         }
 
@@ -662,19 +626,12 @@ namespace fonline_mapgen
 
         private void UpdateSelectFlags(object sender, DrawMap.Flags flag)
         {
-            if (((ToolStripMenuItem)sender).Checked)
-                this.selectFlags = this.selectFlags | flag;
-            else
-                this.selectFlags = this.selectFlags & ~flag;
+            EditorData.UpdateSelectFlags(((ToolStripMenuItem)sender).Checked, flag);
         }
 
         private void UpdateDrawFlags( object sender, DrawMap.Flags flag )
         {
-            if( ((ToolStripMenuItem)sender).Checked )
-                this.drawFlags = this.drawFlags | flag;
-            else
-                this.drawFlags = this.drawFlags & ~flag;
-
+            EditorData.UpdateDrawFlags(((ToolStripMenuItem)sender).Checked, flag);
             RefreshViewport();
         }
 
@@ -738,7 +695,7 @@ namespace fonline_mapgen
 
         private void viewMapTreeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (frmMapTree == null || frmMapTree.IsDisposed) frmMapTree = new frmMapTree(CurrentMap);
+            if (frmMapTree == null || frmMapTree.IsDisposed) frmMapTree = new frmMapTree(EditorData.CurrentMap);
             frmMapTree.Show();
             frmMapTree.TopMost = true;
         }
@@ -765,27 +722,27 @@ namespace fonline_mapgen
 
         private void findMapsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            frmFindMaps frmFindMaps = new frmFindMaps(maps, Frms.Keys.ToList<string>());
+            frmFindMaps frmFindMaps = new frmFindMaps(EditorData.mapsFiles, Frms.Keys.ToList<string>());
             frmFindMaps.Show();
         }
 
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
-            if (isMouseDown)
+            if (mouseSelection.isDown)
                 return;
 
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                selectionClicked = false;
-                clickedPos.X = (int)((float)e.X / scaleFactor);
-                clickedPos.Y = (int)((float)e.Y / scaleFactor);
-                isMouseDown = true;
+                mouseSelection.clicked = false;
+                mouseSelection.clickedPos.X = (int)((float)e.X / scaleFactor);
+                mouseSelection.clickedPos.Y = (int)((float)e.Y / scaleFactor);
+                mouseSelection.isDown = true;
 
-                maxMouseRectPos.X = 0;
-                maxMouseRectPos.Y = 0;
+                mouseSelection.maxMouseRectPos.X = 0;
+                mouseSelection.maxMouseRectPos.Y = 0;
 
-                selectionArea.Width = 1;
-                selectionArea.Height = 1;
+                mouseSelection.selectionArea.Width = 1;
+                mouseSelection.selectionArea.Height = 1;
 
                 RefreshViewport();
             }
@@ -795,19 +752,13 @@ namespace fonline_mapgen
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                isMouseDown = false;
-                selectionClicked = false;
-                selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+                mouseSelection.isDown = false;
+                mouseSelection.clicked  = false;
 
-                if (selectionArea.Width <= 0)
-                {
-                    selectionArea.Width = 1;
-                    selectionArea.Height = 1;
-                    selectionClicked = true;
-                }
+                mouseSelection.CalculateSelectionArea();
 
-                mouseRectPos.X = 0;
-                mouseRectPos.Y = 0;
+                mouseSelection.mouseRectPos.X = 0;
+                mouseSelection.mouseRectPos.Y = 0;
 
                 RefreshViewport();
             }
@@ -848,9 +799,9 @@ namespace fonline_mapgen
             if (e.KeyCode == Keys.Delete)
             {
                 foreach (var obj in DrawMap.GetSelectedObjects())
-                    CurrentMap.Objects.Remove(obj);
+                    EditorData.CurrentMap.Objects.Remove(obj);
                 foreach (var tile in DrawMap.GetSelectedTiles())
-                    CurrentMap.Tiles.Remove(tile);
+                    EditorData.CurrentMap.Tiles.Remove(tile);
 
                 RefreshViewport();
             }
@@ -860,5 +811,43 @@ namespace fonline_mapgen
         {
             
         }
+    }
+
+    public class MouseSelection
+    {
+        public MouseSelection(Pen RectanglePen)
+        {
+            this.rectPen = RectanglePen;
+        }
+
+        public void CalculateSelectionArea()
+        {
+            this.selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+            if (this.selectionArea.Width <= 0)
+            {
+                this.selectionArea.Width = 1;
+                this.selectionArea.Height = 1;
+                this.clicked = true;
+            }
+        }
+
+        public Rectangle GetRect()
+        {
+            return new Rectangle(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
+        }
+
+        public void UpdateMaxRect()
+        {
+            if (mouseRectPos.X > maxMouseRectPos.X) maxMouseRectPos.X = mouseRectPos.X;
+            if (mouseRectPos.Y > maxMouseRectPos.Y) maxMouseRectPos.Y = mouseRectPos.Y;
+        }
+
+        public RectangleF selectionArea;
+        public Point clickedPos;
+        public Point maxMouseRectPos;
+        public Point mouseRectPos;
+        public Pen rectPen;
+        public bool isDown;
+        public bool clicked;
     }
 }

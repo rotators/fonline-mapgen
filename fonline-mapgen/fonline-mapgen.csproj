@@ -88,6 +88,12 @@
     <Compile Include="frmFindMaps.Designer.cs">
       <DependentUpon>frmFindMaps.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmLoadMap.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmLoadMap.Designer.cs">
+      <DependentUpon>frmLoadMap.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMapTree.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -137,6 +143,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmHeaderEditor.resx">
       <DependentUpon>frmHeaderEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmLoadMap.resx">
+      <DependentUpon>frmLoadMap.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
