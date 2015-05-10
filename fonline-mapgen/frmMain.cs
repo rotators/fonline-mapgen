@@ -15,7 +15,6 @@ using FOCommon.Graphic;
 using FOCommon.Parsers;
 using FOCommon.Items;
 using System.IO.Compression;
-using SharpGL;
 using System.Drawing.Imaging;
 
 namespace fonline_mapgen
@@ -27,6 +26,7 @@ namespace fonline_mapgen
 
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
         uint[] textures = new uint[1];
+        //Delegate mapLoa
 
         List<ItemProto> items = new List<ItemProto>();
 
@@ -39,12 +39,9 @@ namespace fonline_mapgen
 
         float scaleFactor = 1.0f;
 
-        float glScale = 0.1f;
-
-        bool glMode = true;
-
         // Selection
         Point clickedPos = new Point(0,0);
+        Point maxMouseRectPos = new Point();
         Point mouseRectPos = new Point(0, 0);
         Pen rectPen = new Pen(Brushes.LightGreen, 5.0f);
         bool isMouseDown = false;
@@ -54,6 +51,7 @@ namespace fonline_mapgen
         float glPosY = 0.0f;
 
         RectangleF selectionArea = new RectangleF();
+        
         PointF viewPortSize = new PointF();
 
         MapperSettings mapperSettings = new MapperSettings();
@@ -103,23 +101,6 @@ namespace fonline_mapgen
             toolStripStatus.Text =
             toolStripStatusHex.Text =
             toolStripStatusProto.Text = "";
-
-            openGLControl1.Location = pnlViewPort.Location;
-            openGLControl1.Width = pnlViewPort.Width;
-            openGLControl1.Height = pnlViewPort.Height;
-            openGLControl1.RenderTrigger = RenderTrigger.TimerBased;
-
-            if (glMode)
-            {
-                panel1.Visible = false;
-                pnlViewPort.Visible = false;
-                openGLControl1.Enabled = true;
-            }
-            else
-            {
-                openGLControl1.Enabled = false;
-                openGLControl1.Visible = false;
-            }
         }
 
         private void Form1_Load( object sender, EventArgs e )
@@ -142,7 +123,7 @@ namespace fonline_mapgen
 
         private void LoadMap( string fileName )
         {
-            MapperMap map = MapperMap.Load( fileName, glMode );
+            MapperMap map = MapperMap.Load( fileName);
             if( map != null )
             {
                 this.Maps.Add( map );
@@ -155,16 +136,7 @@ namespace fonline_mapgen
                 viewMapTreeToolStripMenuItem.Enabled = true;
 
                 viewPortSize.X = ((map.GetEdgeCoords(FOHexMap.Direction.Right).X) - (map.GetEdgeCoords(FOHexMap.Direction.Left).X)) + 100.0f;
-                viewPortSize.Y = ((map.GetEdgeCoords(FOHexMap.Direction.Down).Y)  - (map.GetEdgeCoords(FOHexMap.Direction.Up).Y)) + 100.0f;
-
-                if (glMode)
-                {
-                    /*OpenGL gl = openGLControl1.OpenGL;
-                    gl.MatrixMode(OpenGL.GL_PROJECTION);
-                    gl.LoadIdentity();*/
-                    //gl.Viewport(0, 0, (int)viewPortSize.X, (int)viewPortSize.Y);
-                }
-                 
+                viewPortSize.Y = ((map.GetEdgeCoords(FOHexMap.Direction.Down).Y)  - (map.GetEdgeCoords(FOHexMap.Direction.Up).Y)) + 100.0f;                 
 
                 resizeViewport();
                 centerViewport();
@@ -360,39 +332,14 @@ namespace fonline_mapgen
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             }
 
+            var screenArea = new RectangleF(pnlViewPort.HorizontalScroll.Value, pnlViewPort.VerticalScroll.Value, pnlViewPort.Width, pnlViewPort.Height);
+            //MessageBox.Show(screenArea.ToString());
 
-            DrawMap.OnGraphics(g, null, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, 
-                this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
+            DrawMap.OnGraphics(g, map, map.HexMap, itemsPid, critterData, Frms, this.drawFlags, 
+                this.selectFlags, new SizeF(scaleFactor, scaleFactor), screenArea, selectionArea, selectionClicked);
 
             if (isMouseDown)
                 g.DrawRectangle(rectPen, clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
-        }
-
-        private void DrawGL(MapperMap map)
-        {
-            OpenGL gl = openGLControl1.OpenGL;
-
-            //  Load the identity matrix.
-            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT);
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
-            gl.Enable(OpenGL.GL_MULTISAMPLE);
-
-            // Flip since it's bitmaps
-            gl.MatrixMode(OpenGL.GL_TEXTURE);
-            gl.LoadIdentity();
-            gl.Scale(1.0f, -1.0f, 1.0f);
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            gl.PushMatrix();
-
-            gl.Translate(glPosX, glPosY, 0.0f);
-            gl.Scale(glScale, glScale, 0.0f);
-
-            DrawMap.OnGraphics(null, openGLControl1.OpenGL, map, map.HexMap, itemsPid, critterData, Frms,
-                this.drawFlags, this.selectFlags, new SizeF(scaleFactor, scaleFactor), selectionArea, selectionClicked);
-
-
-            gl.PopMatrix();
-            gl.Flush();
         }
 
         private void RefreshViewport()
@@ -406,14 +353,7 @@ namespace fonline_mapgen
                 return;
 
             DrawMap.InvalidateCache();
-            if (glMode)
-            {
-                DrawGL(map);
-            }
-            else 
-            {
-                panel1.Refresh();
-            }
+            panel1.Refresh();
 
             if (frmDebugInfo != null && !frmDebugInfo.IsDisposed)
             {
@@ -428,9 +368,6 @@ namespace fonline_mapgen
 
             if (map == null)
                 return;
-            if (glMode)
-                return;
-
             DrawGDI(e.Graphics, map);
         }
 
@@ -450,20 +387,6 @@ namespace fonline_mapgen
             panel1.Height = (int)(viewPortSize.Y * scaleFactor);
         }
 
-        private void panel1_MouseWheel(object sender, MouseEventArgs e)
-        {
-            //if (e.Delta != 0) scaleFactor += ((float)e.Delta / 10000.0f);
-            if (e.Delta == 0) return;
-
-            if (e.Delta > 0) scaleFactor += 0.03f;
-            else scaleFactor -= 0.10f;
-
-            scaleFactor = Math.Max(scaleFactor, 0.03f);
-
-            resizeViewport();
-            RefreshViewport();
-        }
-
         private void panel1_MouseMove( object sender, MouseEventArgs e )
         {
             MapperMap map = this.CurrentMap;
@@ -479,7 +402,19 @@ namespace fonline_mapgen
                 selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
 
                 DrawMap.InvalidateCache();
-                RefreshViewport();
+
+                //RefreshViewport();
+                int padding = 70;
+
+                if (mouseRectPos.X > maxMouseRectPos.X) maxMouseRectPos.X = mouseRectPos.X;
+                if (mouseRectPos.Y > maxMouseRectPos.Y) maxMouseRectPos.Y = mouseRectPos.Y;
+
+                int x1 = clickedPos.X - padding;
+                int y1 = clickedPos.Y - padding;
+                int x2 = maxMouseRectPos.X + padding;
+                int y2 = maxMouseRectPos.Y + padding;
+
+                panel1.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
             }
 
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
@@ -544,7 +479,6 @@ namespace fonline_mapgen
 
             SettingsManager.Init();
             mapperSettings = SettingsManager.LoadSettings();
-            glMode = mapperSettings.GLMode;
 
             frmPaths = new frmPaths(mapperSettings);
             if (mapperSettings == null)
@@ -710,7 +644,7 @@ namespace fonline_mapgen
             }
                 
 
-            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
+           // this.MouseWheel += new System.Windows.Forms.MouseEventHandler(panel1_MouseWheel);
 
             if(stream != null) stream.Close();
         }
@@ -813,23 +747,10 @@ namespace fonline_mapgen
         {
             if (frmPerformance == null || frmPerformance.IsDisposed) frmPerformance = new frmPerformance(mapperSettings);
             
-            //bool oldMode = glMode;
             frmPerformance.ShowDialog();
-            glMode = mapperSettings.GLMode;
 
-            panel1.Visible = !glMode;
-            pnlViewPort.Visible = !glMode;
-            openGLControl1.Enabled = glMode;
-            openGLControl1.Visible = glMode;
-
-            /*if (mapperSettings.GLMode && oldMode != glMode)
-            {
-
-            }
-            if (!mapperSettings.GLMode && oldMode == glMode)
-            {
-
-            }*/
+            panel1.Visible = true;
+            pnlViewPort.Visible = true;
         }
 
         private void viewMapTreeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -837,20 +758,6 @@ namespace fonline_mapgen
             if (frmMapTree == null || frmMapTree.IsDisposed) frmMapTree = new frmMapTree(CurrentMap);
             frmMapTree.Show();
             frmMapTree.TopMost = true;
-        }
-
-        private void panel1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (isMouseDown)
-                return;
-
-            if (e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                selectionClicked = false;
-                clickedPos.X = (int)((float)e.X / scaleFactor);
-                clickedPos.Y = (int)((float)e.Y / scaleFactor);
-                isMouseDown = true;
-            }
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
@@ -870,7 +777,7 @@ namespace fonline_mapgen
 
         private void pnlViewPort_Scroll(object sender, ScrollEventArgs e)
         {
-            
+            //RefreshViewport();
         }
 
         private void toolsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -882,6 +789,28 @@ namespace fonline_mapgen
         {
             frmFindMaps frmFindMaps = new frmFindMaps(maps, Frms.Keys.ToList<string>());
             frmFindMaps.Show();
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (isMouseDown)
+                return;
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                selectionClicked = false;
+                clickedPos.X = (int)((float)e.X / scaleFactor);
+                clickedPos.Y = (int)((float)e.Y / scaleFactor);
+                isMouseDown = true;
+
+                maxMouseRectPos.X = 0;
+                maxMouseRectPos.Y = 0;
+
+                selectionArea.Width = 1;
+                selectionArea.Height = 1;
+
+                RefreshViewport();
+            }
         }
 
         private void panel1_MouseUp(object sender, MouseEventArgs e)
@@ -949,50 +878,9 @@ namespace fonline_mapgen
             }
         }
 
-
-        private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
-        {
-            OpenGL gl = openGLControl1.OpenGL;
-            gl.ClearColor(0, 0, 0, 0);
-
-            gl.Disable(OpenGL.GL_DEPTH_TEST);
-
-            gl.MatrixMode(OpenGL.GL_PROJECTION);
-            gl.LoadIdentity();
-            gl.Ortho(0.0, 1, 1, 0, -1, 1);
-            gl.Viewport(0, 0, openGLControl1.Width, openGLControl1.Height);
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
-        }
-
-        private void openGLControl1_Resized(object sender, EventArgs e)
-        {
-            //  Get the OpenGL object.
-            OpenGL gl = openGLControl1.OpenGL;
-        }
-
-        private void openGLControl1_OpenGLDraw(object sender, RenderEventArgs args)
-        {
-            if (CurrentMap == null)
-                return;
-
-            DrawGL(CurrentMap);
-        }
-
         private void frmMain_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.W)
-                glPosY -= 0.5f;
-            if (e.KeyCode == Keys.S)
-                glPosY += 0.5f;
-            if (e.KeyCode == Keys.A)
-                glPosX += 0.5f;
-            if (e.KeyCode == Keys.D)
-                glPosX -= 0.5f;
-
-            if (e.KeyCode == Keys.PageUp)
-                glScale += 0.005f;
-            if (e.KeyCode == Keys.PageDown)
-                glScale -= 0.005f;
+            
         }
     }
 }

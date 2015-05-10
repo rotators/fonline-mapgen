@@ -41,16 +41,6 @@
     <Reference Include="NLog">
       <HintPath>lib\NLog\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="SharpGL, Version=2.3.0.1, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\SharpGL\SharpGL.WinForms\SharpGL.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpGL.SceneGraph">
-      <HintPath>lib\SharpGL\SharpGL.WinForms\SharpGL.SceneGraph.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpGL.WinForms">
-      <HintPath>lib\SharpGL\SharpGL.WinForms\SharpGL.WinForms.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />

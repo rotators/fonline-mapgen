@@ -68,11 +68,9 @@
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
-            this.openGLControl1 = new SharpGL.OpenGLControl();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
             this.SuspendLayout();
             // 
             // btnLoadMap
@@ -225,7 +223,7 @@
             // findMapsToolStripMenuItem
             // 
             this.findMapsToolStripMenuItem.Name = "findMapsToolStripMenuItem";
-            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
+            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.findMapsToolStripMenuItem.Text = "Find Maps";
             this.findMapsToolStripMenuItem.Click += new System.EventHandler(this.findMapsToolStripMenuItem_Click);
             // 
@@ -242,14 +240,14 @@
             // pathsToolStripMenuItem
             // 
             this.pathsToolStripMenuItem.Name = "pathsToolStripMenuItem";
-            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.pathsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.pathsToolStripMenuItem.Text = "Paths";
             this.pathsToolStripMenuItem.Click += new System.EventHandler(this.pathsToolStripMenuItem_Click);
             // 
             // performanceToolStripMenuItem
             // 
             this.performanceToolStripMenuItem.Name = "performanceToolStripMenuItem";
-            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.performanceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.performanceToolStripMenuItem.Text = "Rendering";
             this.performanceToolStripMenuItem.Click += new System.EventHandler(this.performanceToolStripMenuItem_Click);
             // 
@@ -257,7 +255,7 @@
             // 
             this.debugToolStripMenuItem.CheckOnClick = true;
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugToolStripMenuItem.Text = "Debug Info";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
@@ -423,31 +421,12 @@
             this.toolStripStatusProto.Size = new System.Drawing.Size(118, 17);
             this.toolStripStatusProto.Text = "toolStripStatusLabel1";
             // 
-            // openGLControl1
-            // 
-            this.openGLControl1.AutoScroll = true;
-            this.openGLControl1.DrawFPS = true;
-            this.openGLControl1.Enabled = false;
-            this.openGLControl1.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.openGLControl1.FrameRate = 300;
-            this.openGLControl1.Location = new System.Drawing.Point(647, 0);
-            this.openGLControl1.Name = "openGLControl1";
-            this.openGLControl1.OpenGLVersion = SharpGL.Version.OpenGLVersion.OpenGL2_1;
-            this.openGLControl1.RenderContextType = SharpGL.RenderContextType.FBO;
-            this.openGLControl1.RenderTrigger = SharpGL.RenderTrigger.TimerBased;
-            this.openGLControl1.Size = new System.Drawing.Size(190, 46);
-            this.openGLControl1.TabIndex = 18;
-            this.openGLControl1.OpenGLInitialized += new System.EventHandler(this.openGLControl1_OpenGLInitialized);
-            this.openGLControl1.OpenGLDraw += new SharpGL.RenderEventHandler(this.openGLControl1_OpenGLDraw);
-            this.openGLControl1.Resized += new System.EventHandler(this.openGLControl1_Resized);
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1028, 638);
-            this.Controls.Add(this.openGLControl1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.pnlViewPort);
             this.Controls.Add(this.cmbMaps);
@@ -469,7 +448,6 @@
             this.menu.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -517,7 +495,6 @@
         private System.Windows.Forms.ToolStripMenuItem menuSelectionItems;
         private System.Windows.Forms.ToolStripMenuItem menuSelectionScenery;
         private System.Windows.Forms.ToolStripMenuItem menuSelectionSceneryWalls;
-        private SharpGL.OpenGLControl openGLControl1;
     }
 }
 

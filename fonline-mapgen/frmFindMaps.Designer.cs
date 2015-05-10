@@ -54,6 +54,7 @@
             this.lstResults.Name = "lstResults";
             this.lstResults.Size = new System.Drawing.Size(459, 186);
             this.lstResults.TabIndex = 1;
+            this.lstResults.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lstResults_MouseDoubleClick);
             // 
             // label1
             // 

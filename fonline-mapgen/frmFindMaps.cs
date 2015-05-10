@@ -61,8 +61,6 @@ namespace fonline_mapgen
                         break;
                 }
                 sr.Close();
-
-
                 // TODO: Add support for objects.
                 //foreach (var obj in mmap.Objects)
             }
@@ -77,6 +75,11 @@ namespace fonline_mapgen
         {
             lstResults.Items.AddRange(results.ToArray());
             lblSearching.Text = "Search completed.";
+        }
+
+        private void lstResults_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // lstResults.SelectedItem
         }
     }
 }

@@ -41,22 +41,22 @@ namespace fonline_mapgen
 
             foreach (var obj in map.Objects)
             {
-                string objType = "Unknown";
+                //string objType = "Unknown";
                 TreeNode parent = objectsNode;
                 
                 if (obj.MapObjType == FOCommon.Maps.MapObjectType.Critter)
                 {
-                    objType = "Critter";
+                    //objType = "Critter";
                     parent = crNode;
                 }
                 if (obj.MapObjType == FOCommon.Maps.MapObjectType.Item)             
                 {
-                    objType = "Item";
+                    //objType = "Item";
                     parent = itNode;
                 }
                 if (obj.MapObjType == FOCommon.Maps.MapObjectType.Scenery)
                 {
-                    objType = "Scenery";
+                    //objType = "Scenery";
                     parent = scNode;
                 }
 

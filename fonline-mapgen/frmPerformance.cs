@@ -39,7 +39,6 @@ namespace fonline_mapgen
         {
             this.settings.Performance.FastRendering = (cmbRendering.SelectedIndex == 0);
             this.settings.Performance.CacheResources = chkCache.Checked;
-            this.settings.GLMode = cmbRenderer.Text == "OpenGL";
             this.Close();
         }
     }
