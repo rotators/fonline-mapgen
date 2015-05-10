@@ -61,11 +61,14 @@
             this.menuViewItems = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewScenery = new System.Windows.Forms.ToolStripMenuItem();
             this.menuViewSceneryWalls = new System.Windows.Forms.ToolStripMenuItem();
+            this.windowsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadMapsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapDialog = new System.Windows.Forms.OpenFileDialog();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusHex = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusProto = new System.Windows.Forms.ToolStripStatusLabel();
+            this.resourceLoader = new System.ComponentModel.BackgroundWorker();
             this.pnlViewPort.SuspendLayout();
             this.menu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -105,7 +108,8 @@
             this.toolsToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.selectionToolStripMenuItem,
-            this.menuView});
+            this.menuView,
+            this.windowsToolStripMenuItem});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
             this.menu.Size = new System.Drawing.Size(1028, 24);
@@ -177,7 +181,7 @@
             // 
             this.headerToolStripMenuItem.Enabled = false;
             this.headerToolStripMenuItem.Name = "headerToolStripMenuItem";
-            this.headerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.headerToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
             this.headerToolStripMenuItem.Text = "Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
@@ -186,7 +190,7 @@
             this.viewMapTreeToolStripMenuItem.CheckOnClick = true;
             this.viewMapTreeToolStripMenuItem.Enabled = false;
             this.viewMapTreeToolStripMenuItem.Name = "viewMapTreeToolStripMenuItem";
-            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.viewMapTreeToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
             this.viewMapTreeToolStripMenuItem.Text = "View Tree";
             this.viewMapTreeToolStripMenuItem.Click += new System.EventHandler(this.viewMapTreeToolStripMenuItem_Click);
             // 
@@ -201,7 +205,7 @@
             // findMapsToolStripMenuItem
             // 
             this.findMapsToolStripMenuItem.Name = "findMapsToolStripMenuItem";
-            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.findMapsToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.findMapsToolStripMenuItem.Text = "Find Maps";
             this.findMapsToolStripMenuItem.Click += new System.EventHandler(this.findMapsToolStripMenuItem_Click);
             // 
@@ -361,6 +365,20 @@
             this.menuViewSceneryWalls.Text = "Walls";
             this.menuViewSceneryWalls.CheckedChanged += new System.EventHandler(this.menuViewSceneryWalls_CheckedChanged);
             // 
+            // windowsToolStripMenuItem
+            // 
+            this.windowsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadMapsToolStripMenuItem});
+            this.windowsToolStripMenuItem.Name = "windowsToolStripMenuItem";
+            this.windowsToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
+            this.windowsToolStripMenuItem.Text = "Windows";
+            // 
+            // loadMapsToolStripMenuItem
+            // 
+            this.loadMapsToolStripMenuItem.Name = "loadMapsToolStripMenuItem";
+            this.loadMapsToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.loadMapsToolStripMenuItem.Text = "Load Maps";
+            // 
             // openMapDialog
             // 
             this.openMapDialog.DefaultExt = "fomap";
@@ -399,6 +417,10 @@
             this.toolStripStatusProto.Size = new System.Drawing.Size(118, 17);
             this.toolStripStatusProto.Text = "toolStripStatusLabel1";
             // 
+            // resourceLoader
+            // 
+            this.resourceLoader.DoWork += new System.ComponentModel.DoWorkEventHandler(this.resourceLoader_DoWork);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -415,6 +437,7 @@
             this.Text = "Mapper";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
+            this.Load += new System.EventHandler(this.frmMain_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.frmMain_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmMain_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.frmMain_KeyUp);
@@ -468,6 +491,9 @@
         private System.Windows.Forms.ToolStripMenuItem menuSelectionItems;
         private System.Windows.Forms.ToolStripMenuItem menuSelectionScenery;
         private System.Windows.Forms.ToolStripMenuItem menuSelectionSceneryWalls;
+        private System.Windows.Forms.ToolStripMenuItem windowsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadMapsToolStripMenuItem;
+        private System.ComponentModel.BackgroundWorker resourceLoader;
     }
 }
 

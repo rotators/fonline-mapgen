@@ -83,7 +83,9 @@ namespace fonline_mapgen
         {
             openFileDialog1.Multiselect = true;
             openFileDialog1.Filter = "FOnline DAT|*.dat|FOnline ZIP|*.zip";
-            openFileDialog1.ShowDialog();
+            if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+                return;
+
             foreach (var file in openFileDialog1.FileNames)
                 if (!lstDataFiles.Items.Contains(file))
                 {

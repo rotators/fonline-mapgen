@@ -47,6 +47,7 @@ namespace fonline_mapgen
         frmMapTree frmMapTree;
         frmDebugInfo frmDebugInfo;
         frmLoadMap frmLoadMap;
+        frmLoading frmLoading;
 
         string title = "Mapper [ALPHA] - ";
 
@@ -63,6 +64,7 @@ namespace fonline_mapgen
             toolStripStatus.Text =
             toolStripStatusHex.Text =
             toolStripStatusProto.Text = "";
+            
         }
 
         private void Exit()
@@ -138,9 +140,17 @@ namespace fonline_mapgen
                     if (file == null) continue;
                     files.Add(file);
                 }
+            }
+
+            this.BeginInvoke((MethodInvoker)delegate { 
+                frmLoading.SetNextFile(Path.GetFileName(DatPath));
+                frmLoading.SetResourceNum(files.Count);
+            });
 
                 foreach( DATFile file in files )
                 {
+                    this.BeginInvoke((MethodInvoker)delegate { frmLoading.SetNextResource(file.FileName); });
+
                     string ext = Path.GetExtension( file.FileName ).ToLower();
                     if( !(ext == ".frm" || ext == ".png") )
                         continue;
@@ -164,12 +174,7 @@ namespace fonline_mapgen
                         Bitmap bitmap = (Bitmap)tc.ConvertFrom( data );
                     }
                 }
-
-                files.Clear();
-            }
-
             loadedDat.Close();
-
             return true;
         }
 
@@ -230,6 +235,8 @@ namespace fonline_mapgen
             foreach (var path in this.GraphicsPaths)
                 patternToCheck.Add(path);
 
+            var filesToLoad = new List<ZipStorer.ZipFileEntry>();
+
             var entries = zip.ReadCentralDir();
             foreach (var entry in entries)
             {
@@ -245,13 +252,35 @@ namespace fonline_mapgen
                     if( !(ext == ".frm" || ext == ".png") )
                         continue;
 
-                    byte[] bytes;
+                    filesToLoad.Add(entry);
+                }
+            }
 
+            this.BeginInvoke((MethodInvoker)delegate
+            {
+                frmLoading.SetNextFile(Path.GetFileName(ZipPath));
+                frmLoading.SetResourceNum(filesToLoad.Count);
+            });
+
+            foreach(var entry in filesToLoad)
+            {
+                    string filename = entry.FilenameInZip.ToLower().Replace('/', '\\');
+                    string ext = Path.GetExtension(filename).ToLower();
+
+                    this.BeginInvoke((MethodInvoker)delegate
+                    {
+                        frmLoading.SetNextResource(filename);
+                    });
+
+                    byte[] bytes;
                     using (MemoryStream stream = new MemoryStream())
                     {
                         zip.ExtractFile(entry, stream);
                         bytes = stream.ToArray();
                     }
+
+
+
                     if (ext == ".frm")
                     {
                         var frm = FalloutFRMLoader.LoadFRM(bytes, Transparency);
@@ -266,8 +295,6 @@ namespace fonline_mapgen
                         Frms[filename].Frames.Add(bitmap);
                         Frms[filename].FileName = entry.FilenameInZip;
                     }
-
-                }
             }
             return true;
         }
@@ -416,15 +443,6 @@ namespace fonline_mapgen
 
         private void LoadResources()
         {
-            GraphicsPaths.Add("art\\tiles");
-            GraphicsPaths.Add("art\\misc");
-            GraphicsPaths.Add("art\\walls");
-            GraphicsPaths.Add("art\\door");
-            GraphicsPaths.Add("art\\scenery");
-
-            Stream stream;
-            BinaryFormatter formatter = new BinaryFormatter();
-
             SettingsManager.Init();
             mapperSettings = SettingsManager.LoadSettings();
 
@@ -452,148 +470,7 @@ namespace fonline_mapgen
             menuViewScenery.Checked = mapperSettings.View.Scenery;
             menuViewSceneryWalls.Checked = mapperSettings.View.Walls;
 
-            stream = null;
-
-            if (File.Exists("./critters.dat"))
-            {
-                stream = File.OpenRead("./critters.dat");
-                critterData = (CritterData)formatter.Deserialize(stream);
-                stream.Close();
-            }
-            else
-            {
-                foreach (string file in Directory.GetFiles(mapperSettings.Paths.CritterProtos))
-                {
-                    int pid = 0;
-                    int crType = 0;
-                    bool parse = false;
-                    foreach (var line in File.ReadAllLines(file))
-                    {
-                        if (line == "[Critter proto]")
-                            if (parse)
-                                critterData.crProtos[pid] = crType;
-                        parse = true;
-                        if (!parse) continue;
-                        if (line.StartsWith("Pid="))
-                            pid = int.Parse(line.Split('=')[1]);
-                        if (line.StartsWith("ST_BASE_CRTYPE="))
-                            crType = int.Parse(line.Split('=')[1]);
-                    }
-                }
-
-                char[] delim = { '\t', ' ' };
-                foreach (var line in File.ReadAllLines(mapperSettings.Paths.CritterTypes))
-                {
-                    if (!line.StartsWith("@")) continue;
-                    var toks = line.Split(delim, StringSplitOptions.RemoveEmptyEntries);
-                    critterData.crTypeGraphic[int.Parse(toks[1])] = toks[2];
-                }
-                if (mapperSettings.Performance.CacheResources)
-                {
-                    stream = File.Create("./critters.dat");
-                    formatter.Serialize(stream, critterData);
-                }
-            }
-
-            if (File.Exists("./items.dat"))
-            {
-                stream = File.OpenRead("./items.dat");
-                items = (List<ItemProto>)formatter.Deserialize(stream);
-                stream.Close();
-            }
-            else
-            {
-                MSGParser FOObj = new MSGParser(mapperSettings.Paths.FOOBJ);
-                FOObj.Parse();
-
-                string itemslst = mapperSettings.Paths.ItemProtos + "\\items.lst";
-
-                if (!File.Exists(itemslst))
-                {
-                    MessageBox.Show("No " + itemslst + " , unable to load item protos.", "No items.lst", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else
-                {
-                    foreach (string file in File.ReadAllLines(itemslst))
-                    {
-                        protoParser.LoadProtosFromFile(mapperSettings.Paths.ItemProtos + file, "1.0", FOObj, items, null);
-                    }
-                }
-                if (mapperSettings.Performance.CacheResources)
-                {
-                    stream = File.Create("./items.dat");
-                    formatter.Serialize(stream, items);
-                }
-            }
-
-            if (File.Exists("./graphics.dat"))
-            {
-                stream = File.OpenRead("./graphics.dat");
-                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize(stream);
-                stream.Close();
-            }
-            else
-            {
-                if (mapperSettings.Paths.DataFiles == null || mapperSettings.Paths.DataFiles.Count == 0)
-                {
-                    MessageBox.Show("No datafiles specified, unable to load graphics!");
-                    frmPaths.ShowDialog();
-                }
-
-                if (mapperSettings.Paths.DataFiles != null || mapperSettings.Paths.DataFiles.Count != 0)
-                {
-
-                    List<string> crFiles = new List<string>();
-                    foreach (var crType in critterData.crTypeGraphic.Values)
-                    {
-                        crFiles.Add("art\\critters\\" + crType.ToUpper() + "AA.FRM"); // Idle anim
-                        crFiles.Add("art\\critters\\" + crType.ToLower() + "aa.frm");
-                    }
-
-                    foreach (string dataFile in mapperSettings.Paths.DataFiles)
-                    {
-                        string ext = Path.GetExtension(dataFile).ToLower();
-                        if (ext != ".dat" && ext != ".zip")
-                        {
-                            MessageBox.Show("Unknown datafile extension : " + dataFile);
-                            continue;
-                        }
-                        if (ext == ".dat")
-                            LoadDat(dataFile, crFiles, transparency);
-                        else
-                            LoadZip(dataFile, crFiles, transparency);
-                    }
-                    foreach (string dataDir in mapperSettings.Paths.DataDirs)
-                    {
-                        LoadDir(dataDir, crFiles, transparency);
-                    }
-
-                    if (mapperSettings.Performance.CacheResources)
-                    {
-                        stream = File.Create("./graphics.dat");
-                        formatter.Serialize(stream, Frms);
-                    }
-                }
-            }
-
-            foreach (var item in items)
-                EditorData.itemsPid[item.ProtoId] = item;
-
-            if (mapperSettings.Paths.MapsDir != null)
-            {
-                while(!Directory.Exists(mapperSettings.Paths.MapsDir))
-                {
-                    MessageBox.Show("Maps path: " + mapperSettings.Paths.MapsDir + " not found. ", "Maps path not found.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    if (frmPaths.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
-                        break;
-                }
-                EditorData.mapsFiles = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
-               // cmbMaps.Items.AddRange(EditorData.mapsFiles.ToArray());
-                frmLoadMap = new frmLoadMap(EditorData.mapsFiles, LoadMap);
-                frmLoadMap.Show();
-            }
-                
-            if(stream != null) stream.Close();
+            resourceLoader.RunWorkerAsync();
         }
 
         private void frmMain_Paint( object sender, PaintEventArgs e )
@@ -810,6 +687,203 @@ namespace fonline_mapgen
         private void frmMain_KeyDown(object sender, KeyEventArgs e)
         {
             
+        }
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void resourceLoader_DoWork(object sender, DoWorkEventArgs e)
+        {
+            GraphicsPaths.Add("art\\misc");
+            GraphicsPaths.Add("art\\items");
+            GraphicsPaths.Add("art\\tiles");
+            GraphicsPaths.Add("art\\misc");
+            GraphicsPaths.Add("art\\walls");
+            GraphicsPaths.Add("art\\door");
+            GraphicsPaths.Add("art\\scenery");
+
+            Stream stream;
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            stream = null;
+
+            this.BeginInvoke((MethodInvoker)delegate
+            {
+                frmLoading = new frmLoading();
+                frmLoading.ShowDialog();
+
+                int count = mapperSettings.Paths.DataFiles.Count;
+
+                if (!File.Exists("./critters.dat")) count++;
+                if (!File.Exists("./items.dat")) count++;
+
+                frmLoading.SetFilesNum(count);
+            });
+
+
+            if (File.Exists("./critters.dat"))
+            {
+                stream = File.OpenRead("./critters.dat");
+                critterData = (CritterData)formatter.Deserialize(stream);
+                stream.Close();
+            }
+            else
+            {
+                List<string> crFiles = new List<string>(Directory.GetFiles(mapperSettings.Paths.CritterProtos));
+
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    frmLoading.SetNextFile(mapperSettings.Paths.CritterProtos);
+                    frmLoading.SetResourceNum(crFiles.Count);
+                });
+
+                foreach (string file in crFiles)
+                {
+                    this.BeginInvoke((MethodInvoker)delegate
+                    {
+                        frmLoading.SetNextResource(file);
+                    });
+
+                    int pid = 0;
+                    int crType = 0;
+                    bool parse = false;
+                    foreach (var line in File.ReadAllLines(file))
+                    {
+                        if (line == "[Critter proto]")
+                            if (parse)
+                                critterData.crProtos[pid] = crType;
+                        parse = true;
+                        if (!parse) continue;
+                        if (line.StartsWith("Pid="))
+                            pid = int.Parse(line.Split('=')[1]);
+                        if (line.StartsWith("ST_BASE_CRTYPE="))
+                            crType = int.Parse(line.Split('=')[1]);
+                    }
+                }
+
+                char[] delim = { '\t', ' ' };
+                foreach (var line in File.ReadAllLines(mapperSettings.Paths.CritterTypes))
+                {
+                    if (!line.StartsWith("@")) continue;
+                    var toks = line.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+                    critterData.crTypeGraphic[int.Parse(toks[1])] = toks[2];
+                }
+                if (mapperSettings.Performance.CacheResources)
+                {
+                    stream = File.Create("./critters.dat");
+                    formatter.Serialize(stream, critterData);
+                }
+            }
+
+            if (File.Exists("./items.dat"))
+            {
+                stream = File.OpenRead("./items.dat");
+                items = (List<ItemProto>)formatter.Deserialize(stream);
+                stream.Close();
+            }
+            else
+            {
+                MSGParser FOObj = new MSGParser(mapperSettings.Paths.FOOBJ);
+                FOObj.Parse();
+
+                string itemslst = mapperSettings.Paths.ItemProtos + "\\items.lst";
+
+                if (!File.Exists(itemslst))
+                {
+                    MessageBox.Show("No " + itemslst + " , unable to load item protos.", "No items.lst", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    List<string> protFiles = new List<string>(File.ReadAllLines(itemslst));
+
+                    this.BeginInvoke((MethodInvoker)delegate
+                    {
+                        frmLoading.SetNextFile(itemslst);
+                        frmLoading.SetResourceNum(protFiles.Count);
+                    });
+
+                    foreach (string file in protFiles)
+                    {
+                        this.BeginInvoke((MethodInvoker)delegate { frmLoading.SetNextResource(file); });
+                        protoParser.LoadProtosFromFile(mapperSettings.Paths.ItemProtos + file, "1.0", FOObj, items, null);
+                    }
+                }
+                if (mapperSettings.Performance.CacheResources)
+                {
+                    stream = File.Create("./items.dat");
+                    formatter.Serialize(stream, items);
+                }
+            }
+
+            foreach (var item in items)
+                EditorData.itemsPid[item.ProtoId] = item;
+
+            if (File.Exists("./graphics.dat"))
+            {
+                stream = File.OpenRead("./graphics.dat");
+                Frms = (Dictionary<String, FalloutFRM>)formatter.Deserialize(stream);
+                stream.Close();
+            }
+            else
+            {
+                if (mapperSettings.Paths.DataFiles == null || mapperSettings.Paths.DataFiles.Count == 0)
+                {
+                    MessageBox.Show("No datafiles specified, unable to load graphics!");
+                    frmPaths.ShowDialog();
+                }
+
+                if (mapperSettings.Paths.DataFiles != null || mapperSettings.Paths.DataFiles.Count != 0)
+                {
+
+                    List<string> crFiles = new List<string>();
+                    foreach (var crType in critterData.crTypeGraphic.Values)
+                    {
+                        crFiles.Add("art\\critters\\" + crType.ToUpper() + "AA.FRM"); // Idle anim
+                        crFiles.Add("art\\critters\\" + crType.ToLower() + "aa.frm");
+                    }
+
+                    foreach (string dataFile in mapperSettings.Paths.DataFiles)
+                    {
+                        string ext = Path.GetExtension(dataFile).ToLower();
+                        if (ext != ".dat" && ext != ".zip")
+                        {
+                            MessageBox.Show("Unknown datafile extension : " + dataFile);
+                            continue;
+                        }
+                        if (ext == ".dat")
+                            LoadDat(dataFile, crFiles, transparency);
+                        else
+                            LoadZip(dataFile, crFiles, transparency);
+                    }
+
+                    if (mapperSettings.Performance.CacheResources)
+                    {
+                        stream = File.Create("./graphics.dat");
+                        formatter.Serialize(stream, Frms);
+                    }
+                }
+            }
+
+            if (mapperSettings.Paths.MapsDir != null)
+            {
+                while (!Directory.Exists(mapperSettings.Paths.MapsDir))
+                {
+                    MessageBox.Show("Maps path: " + mapperSettings.Paths.MapsDir + " not found. ", "Maps path not found.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (frmPaths.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+                        break;
+                }
+                EditorData.mapsFiles = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    frmLoadMap = new frmLoadMap(EditorData.mapsFiles, LoadMap);
+                    frmLoadMap.Show();
+                    frmLoading.Hide();
+                });
+            }
+
+            if (stream != null) stream.Close();
         }
     }
 
