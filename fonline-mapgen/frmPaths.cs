@@ -13,7 +13,7 @@ namespace fonline_mapgen
     {
         MapperSettings settings;
 
-        bool addedData;
+        //bool addedData = false;
 
         public frmPaths(MapperSettings settings)
         {
@@ -88,7 +88,7 @@ namespace fonline_mapgen
                 if (!lstDataFiles.Items.Contains(file))
                 {
                     lstDataFiles.Items.Add(file);
-                    addedData = true;
+                    //this.addedData = true;
                 }
         }
 
@@ -160,7 +160,7 @@ namespace fonline_mapgen
             if(lstDataDirs.Items.Contains(folderBrowserDialog1.SelectedPath))
                 return;
             lstDataDirs.Items.Add(folderBrowserDialog1.SelectedPath);
-            addedData = true;
+           // this.addedData = true;
         }
 
         private void btnUpFile_Click(object sender, EventArgs e)

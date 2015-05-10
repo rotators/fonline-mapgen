@@ -22,11 +22,7 @@ namespace fonline_mapgen
     public partial class frmMain : Form
     {
         public List<String> GraphicsPaths = new List<string>();
-        //public Dictionary<String, Bitmap> Bitmaps = new Dictionary<string, Bitmap>();
-
         public Dictionary<String, FalloutFRM> Frms = new Dictionary<string, FalloutFRM>();
-        uint[] textures = new uint[1];
-        //Delegate mapLoa
 
         List<ItemProto> items = new List<ItemProto>();
 
@@ -47,17 +43,11 @@ namespace fonline_mapgen
         bool isMouseDown = false;
         bool selectionClicked = false;
 
-        float glPosX = 0.0f;
-        float glPosY = 0.0f;
-
         RectangleF selectionArea = new RectangleF();
         
         PointF viewPortSize = new PointF();
 
         MapperSettings mapperSettings = new MapperSettings();
-
-        //FOCommon.Parsers.FOMapParser parser;
-
         ItemProtoParser protoParser = new ItemProtoParser();
 
         frmPaths frmPaths;
@@ -66,7 +56,6 @@ namespace fonline_mapgen
         frmDebugInfo frmDebugInfo;
 
         string title = "Mapper [ALPHA] - ";
-
 
         public MapperMap CurrentMap
         {
@@ -88,7 +77,6 @@ namespace fonline_mapgen
         }
         private int CurrentMapIdx = -1;
         private List<MapperMap> Maps = new List<MapperMap>();
-        //TabPage TabTemplate;
 
         DrawMap.Flags drawFlags;
         DrawMap.Flags selectFlags;
@@ -101,11 +89,6 @@ namespace fonline_mapgen
             toolStripStatus.Text =
             toolStripStatusHex.Text =
             toolStripStatusProto.Text = "";
-        }
-
-        private void Form1_Load( object sender, EventArgs e )
-        {
-            
         }
 
         private void Exit()
@@ -353,7 +336,7 @@ namespace fonline_mapgen
                 return;
 
             DrawMap.InvalidateCache();
-            panel1.Refresh();
+            pnlRenderBitmap.Refresh();
 
             if (frmDebugInfo != null && !frmDebugInfo.IsDisposed)
             {
@@ -383,8 +366,8 @@ namespace fonline_mapgen
 
         private void resizeViewport()
         {
-            panel1.Width = (int)(viewPortSize.X * scaleFactor);
-            panel1.Height = (int)(viewPortSize.Y * scaleFactor);
+            pnlRenderBitmap.Width = (int)(viewPortSize.X * scaleFactor);
+            pnlRenderBitmap.Height = (int)(viewPortSize.Y * scaleFactor);
         }
 
         private void panel1_MouseMove( object sender, MouseEventArgs e )
@@ -414,7 +397,7 @@ namespace fonline_mapgen
                 int x2 = maxMouseRectPos.X + padding;
                 int y2 = maxMouseRectPos.Y + padding;
 
-                panel1.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
+                pnlRenderBitmap.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
             }
 
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
@@ -671,8 +654,8 @@ namespace fonline_mapgen
             SaveFileDialog save = new SaveFileDialog();
             if( save.ShowDialog( this ) == DialogResult.OK )
             {
-                Bitmap bmp = new Bitmap( panel1.ClientRectangle.Width, panel1.ClientRectangle.Height );
-                panel1.DrawToBitmap( bmp, panel1.ClientRectangle );
+                Bitmap bmp = new Bitmap( pnlRenderBitmap.ClientRectangle.Width, pnlRenderBitmap.ClientRectangle.Height );
+                pnlRenderBitmap.DrawToBitmap( bmp, pnlRenderBitmap.ClientRectangle );
                 bmp.Save( save.FileName );
             }
         }
@@ -749,7 +732,7 @@ namespace fonline_mapgen
             
             frmPerformance.ShowDialog();
 
-            panel1.Visible = true;
+            pnlRenderBitmap.Visible = true;
             pnlViewPort.Visible = true;
         }
 
@@ -778,11 +761,6 @@ namespace fonline_mapgen
         private void pnlViewPort_Scroll(object sender, ScrollEventArgs e)
         {
             //RefreshViewport();
-        }
-
-        private void toolsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void findMapsToolStripMenuItem_Click(object sender, EventArgs e)

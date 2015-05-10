@@ -87,9 +87,6 @@ namespace fonline_mapgen
 
         private static CurrentClick currentClick = null;
 
-        private static bool glList = false;
-        private static uint glListIndex = 0;
-
         public enum Flags
         {
             Tiles = 0x01,
@@ -108,14 +105,12 @@ namespace fonline_mapgen
         public static void InvalidateCache()
         {
             cachedCalls = false;
-            glList = false;
         }
 
         public static int GetNumCachedObjects()
         {
             return CachedSceneryDraws.Count + CachedTileDraws.Count + CachedRoofTileDraws.Count;
         }
-
 
         public static List<MapObject> GetSelectedObjects()
         {
