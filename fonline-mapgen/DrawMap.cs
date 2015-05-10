@@ -14,6 +14,7 @@ using FOCommon.Parsers;
 using System.Runtime.InteropServices;
 using System;
 using System.Drawing.Imaging;
+using System.Text.RegularExpressions;
 
 namespace fonline_mapgen
 {
@@ -28,6 +29,20 @@ namespace fonline_mapgen
         {
             this.Bitmap = Bitmap;
             this.Path = Path;
+            this.X = X;
+            this.Y = Y;
+        }
+    }
+
+    public class OverlayCall
+    {
+        public string Text;
+        public float X;
+        public float Y;
+        
+        public OverlayCall(string Text, float X, float Y)
+        {
+            this.Text = Text;
             this.X = X;
             this.Y = Y;
         }
@@ -76,6 +91,7 @@ namespace fonline_mapgen
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
         private static List<DrawCall> CachedRoofTileDraws = new List<DrawCall>();
+        private static List<OverlayCall> CachedOverlayDraws = new List<OverlayCall>();
         private static List<List<DrawCall>> CachedDrawsLists = new List<List<DrawCall>>();
 
         private static Dictionary<int, ItemProto> itemsPids = new Dictionary<int, ItemProto>();
@@ -158,14 +174,20 @@ namespace fonline_mapgen
         }
 
         public static void OnGraphics( Graphics gdi, FOMap map, FOHexMap hexMap, Dictionary<int, ItemProto> itemsPid, CritterData critterData,
-            Dictionary<string, FalloutFRM> frms, Flags flags, Flags selectFlags, SizeF scale, RectangleF screenArea, RectangleF selectionArea, bool clicked)
+            Dictionary<string, FalloutFRM> frms, EditorData editorData, SizeF scale, RectangleF screenArea, RectangleF selectionArea, bool clicked)
         {
+
+            Flags flags = editorData.drawFlags;
+            Flags selectFlags = editorData.selectFlags;
+            Flags overlayFlags = editorData.overlayFlags;
+
             if (!cachedCalls)
             {
                 CachedSceneryDraws  = new List<DrawCall>();
                 CachedTileDraws     = new List<DrawCall>();
                 CachedRoofTileDraws = new List<DrawCall>();
                 CachedDrawsLists    = new List<List<DrawCall>>();
+                CachedOverlayDraws  = new List<OverlayCall>();
                 CachedDrawsLists.Add(CachedTileDraws);
                 CachedDrawsLists.Add(CachedSceneryDraws);
                 CachedDrawsLists.Add(CachedRoofTileDraws);
@@ -253,6 +275,30 @@ namespace fonline_mapgen
 
                         coords = hexMap.GetObjectCoords(new Point(obj.MapX, obj.MapY), frm.Frames[0].Size, new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(0, 0));
                         drawBitmap = frm.GetAnimFrameByDir(dir, 1);
+
+                        if (DrawFlag(overlayFlags, Flags.Critters))
+                        {
+                            string text = editorData.overlayCritterFormat;
+                            text = text.Replace("%PID%", obj.ProtoId.ToString());
+
+                            Regex r = new Regex("%P_(.+?)%", RegexOptions.Multiline);
+                            var matches = r.Matches(text);
+                            foreach (Match match in matches)
+                            {
+                                string mStr = match.Groups[0].Value;
+                                mStr = mStr.Replace("%P_", "");
+                                mStr = mStr.Replace("%", "");
+                                string data = "ERROR";
+                                if (obj.Properties.ContainsKey(mStr)) data = obj.Properties[mStr];
+                                if (obj.CritterParams.ContainsKey(mStr)) data = obj.CritterParams[mStr].ToString();
+                                text = text.Replace(match.Value, data);
+                            }
+                            
+
+                            int lines = text.Count(f => f == '\n');
+                            //text = Replace("%SCRIPT_NAME%", obj.CritterParams["ST_SCRIPT_NAME");
+                            CachedOverlayDraws.Add(new OverlayCall(text, coords.X, coords.Y - (40 + (15*(lines-1)))));
+                        }
                     }
                     // Scenery or Item
                     else
@@ -295,6 +341,21 @@ namespace fonline_mapgen
                     gdi.DrawImage(call.Bitmap, call.X, call.Y);
                 foreach (var call in CachedRoofTileDraws)
                     gdi.DrawImage(call.Bitmap, call.X, call.Y);
+
+                Font fnt = new Font(FontFamily.GenericSansSerif, 13.0f , FontStyle.Bold);
+                //Pen pn = new Pen(Brushes.Black);
+
+                foreach (var call in CachedOverlayDraws)
+                {
+                    DrawOutlinedText(gdi, call.Text, fnt, Brushes.GreenYellow, Brushes.Black, new PointF(call.X, call.Y));
+                    //gdi.DrawString(call.Text, fnt, Brushes.GreenYellow, );
+
+                    //GraphicsPath p = new GraphicsPath();
+                    //p.AddString(call.Text, FontFamily.GenericSansSerif, (int) FontStyle.Bold, 12.0f, new PointF(call.X, call.Y), new StringFormat());
+                    //gdi.FillPath(Brushes.OrangeRed, p);
+                    //gdi.DrawPath(Pens.Black, p);
+                    
+                }
             }
         }
 
@@ -351,6 +412,16 @@ namespace fonline_mapgen
             // Cache
             CachedOpaque[original.GetHashCode()] = bmp;
             return bmp;
+        }
+
+        private static void DrawOutlinedText(Graphics g, string Text, Font tfont, Brush Fill, Brush Outline, PointF p)
+        {
+
+            g.DrawString(Text, tfont, Outline, p.X - 1, p.Y - 1);
+            g.DrawString(Text, tfont, Outline, p.X - 1, p.Y + 1);
+            g.DrawString(Text, tfont, Outline, p.X + 1, p.Y - 1);
+            g.DrawString(Text, tfont, Outline, p.X + 1, p.Y + 1);
+            g.DrawString(Text, tfont, Fill, p.X, p.Y);
         }
 
         private static bool InsideSelection(RectangleF selectArea, RectangleF rect)

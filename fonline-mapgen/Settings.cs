@@ -44,6 +44,13 @@ public class UISettings
     public int Width { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
+    public OverlaySettings Overlay { get; set; }
+}
+
+public class OverlaySettings
+{
+    public string CritterFormat { get; set; }
+    public string SceneryFormat { get; set; }
 }
 
 public class PerformanceSettings

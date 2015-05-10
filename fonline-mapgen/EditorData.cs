@@ -18,6 +18,8 @@ namespace fonline_mapgen
         
         public List<string> mapsFiles = new List<string>(); // List of all maps
         public Dictionary<int, ItemProto> itemsPid = new Dictionary<int, ItemProto>();
+        public string overlayCritterFormat = "PID=%PID% [%P_ScriptName%@%P_FuncName%]\nBag=%P_ST_BAG_ID%";
+        public string overlaySceneryFmt;
 
         public void AddMap(MapperMap Map)
         {
@@ -43,25 +45,34 @@ namespace fonline_mapgen
             }
         }
 
-        public void UpdateSelectFlags(bool enable, DrawMap.Flags flag)
+        private DrawMap.Flags UpdateFlag(bool enable, DrawMap.Flags flag, DrawMap.Flags newFlag )
         {
             if (enable)
-                this.selectFlags = this.selectFlags | flag;
+                flag = flag | newFlag;
             else
-                this.selectFlags = this.selectFlags & ~flag;
+                flag = flag & ~newFlag;
+            return flag;
+        }
+
+        public void UpdateOverlayFlags(bool enable, DrawMap.Flags flag)
+        {
+            overlayFlags = UpdateFlag(enable, overlayFlags, flag);
+        }
+
+        public void UpdateSelectFlags(bool enable, DrawMap.Flags flag)
+        {
+            selectFlags = UpdateFlag(enable, selectFlags, flag);
         }
 
         public void UpdateDrawFlags(bool enable, DrawMap.Flags flag)
         {
-            if (enable)
-                this.drawFlags = this.drawFlags | flag;
-            else
-                this.drawFlags = this.drawFlags & ~flag;
+            drawFlags = UpdateFlag(enable, drawFlags, flag);
         }
 
         private int CurrentMapIdx = -1;
         private List<MapperMap> Maps = new List<MapperMap>();
 
+        public DrawMap.Flags overlayFlags;
         public DrawMap.Flags drawFlags;
         public DrawMap.Flags selectFlags;
     }

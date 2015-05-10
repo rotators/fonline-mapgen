@@ -106,6 +106,12 @@
     <Compile Include="frmMapTree.Designer.cs">
       <DependentUpon>frmMapTree.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmOverlay.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmOverlay.Designer.cs">
+      <DependentUpon>frmOverlay.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmPaths.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -161,6 +167,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmMapTree.resx">
       <DependentUpon>frmMapTree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmOverlay.resx">
+      <DependentUpon>frmOverlay.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmPaths.resx">
       <DependentUpon>frmPaths.cs</DependentUpon>
