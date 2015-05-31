@@ -151,7 +151,7 @@ namespace fonline_mapgen
                     byte[] data = file.GetData();
                     if (data == null)
                     {
-                        WriteLog("Erroring opening " + file.FileName + ": " + file.ErrorMsg);
+                        WriteLog("Error opening " + file.FileName + ": " + file.ErrorMsg);
                         continue;
                     }
 
