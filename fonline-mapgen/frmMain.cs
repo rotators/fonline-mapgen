@@ -90,7 +90,7 @@ namespace fonline_mapgen
                 if (EditorData.CurrentMap != null)
                 {
                     //map.Selection.AddRange(EditorData.CurrentMap.Selection.Clone());
-                    if (frmLayerInfo.Visible)
+                    if (frmLayerInfo != null && frmLayerInfo.Visible)
                         showSelectionBuffer(map);
                 }
 
