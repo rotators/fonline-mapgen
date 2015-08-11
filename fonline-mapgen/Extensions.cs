@@ -1,11 +1,17 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace fonline_mapgen
 {
     internal static class ExtensionMethods
     {
-
+        public static IList<T> Clone<T>(this IList<T> listToClone) where T : ICloneable
+        {
+            return listToClone.Select(item => (T)item.Clone()).ToList();
+        }
 
         public static void MoveUp(this ListBox lst)
         {

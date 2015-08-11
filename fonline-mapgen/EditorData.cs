@@ -8,6 +8,14 @@ namespace fonline_mapgen
 {
     public class EditorData
     {
+
+        private int CurrentMapIdx = -1;
+        private List<MapperMap> Maps = new List<MapperMap>();
+
+        public DrawMap.Flags overlayFlags;
+        public DrawMap.Flags drawFlags;
+        public DrawMap.Flags selectFlags;
+
         public EditorData(ErrorMsg msgDelegate)
         {
             this.CallErrorMsg = msgDelegate;
@@ -69,12 +77,5 @@ namespace fonline_mapgen
         {
             drawFlags = UpdateFlag(enable, drawFlags, flag);
         }
-
-        private int CurrentMapIdx = -1;
-        private List<MapperMap> Maps = new List<MapperMap>();
-
-        public DrawMap.Flags overlayFlags;
-        public DrawMap.Flags drawFlags;
-        public DrawMap.Flags selectFlags;
     }
 }
