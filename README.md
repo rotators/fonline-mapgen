@@ -12,7 +12,7 @@ Loading almost all maps work fine with correct rendering of tiles, objects and c
 Editing needs a lot of work.
 
 
-Compatible with FOnline 2238 SDK (https://github.com/rotators/fo2238), but not latest map format in the official SDK (https://xp-dev.com/sc/76003/413/).
+Compatible with FOnline 2238 SDK (https://github.com/rotators/fo2238), but not latest map format in the official SDK (https://xp-dev.com/sc/76003/HEAD/).
 
 ### Features
 
