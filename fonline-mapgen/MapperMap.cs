@@ -9,6 +9,7 @@ using FOCommon.Parsers;
 using FOCommon.Maps;
 using FOCommon.Items;
 using FOCommon.Graphic;
+using System.ComponentModel;
 
 namespace fonline_mapgen
 {
@@ -16,6 +17,26 @@ namespace fonline_mapgen
     {
         public string Name;
         public FOHexMap HexMap { get; private set; }
+
+        /// <summary>
+        /// Map parser to load and save map
+        /// </summary>
+        public static FOMapParser parser;
+
+        /// <summary>
+        /// Instance of this class
+        /// </summary>
+        public static MapperMap instance;
+
+        /// <summary>
+        /// Selection buffer
+        /// </summary>
+        public List<Selection> Selection = new List<Selection>();
+
+        /// <summary>
+        /// Current map selection
+        /// </summary>
+        public Selection MapSelection = new Selection();
 
         internal MapperMap(FOMap map)
         {
@@ -33,6 +54,32 @@ namespace fonline_mapgen
             this.Header.WorkHexX = this.Header.WorkHexY = (ushort)(this.Header.WorkHexY / 2);
 
             this.InitHexMap();
+        }
+
+        public void MapSelect(List<Tile> tiles, List<MapObject> objects)
+        {
+            MapSelection.Objects.Clear();
+            MapSelection.Tiles.Clear();
+            MapSelection.Objects.AddRange(objects);
+            MapSelection.Tiles.AddRange(tiles);
+        }
+
+        /// <summary>
+        /// Remove selection from map
+        /// </summary>
+        /// <param name="selection"></param>
+        public void RemoveSelection(Selection selection)
+        {
+            foreach (var obj in selection.Objects)
+	        {
+                this.Objects.Remove(obj);
+	        }
+            foreach (var obj in selection.Tiles)
+            {
+                this.Tiles.Remove(obj);
+            }
+
+            Selection.Remove(selection);
         }
 
         public PointF GetEdgeCoords(FOHexMap.Direction dir)
@@ -67,11 +114,22 @@ namespace fonline_mapgen
 
         public static MapperMap Load( string fileName)
         {
-            FOMapParser parser = new FOMapParser( fileName );
-            if( parser.Parse() )
-                return (new MapperMap( parser.Map ));
+            parser = new FOMapParser( fileName );
+            if (parser.Parse())
+            {
+                instance = new MapperMap(parser.Map);
+                return instance;
+            }
 
             return (null);
+        }
+
+        /// <summary>
+        /// Save map
+        /// </summary>
+        public void Save()
+        {
+            parser.Save();
         }
     }
 }

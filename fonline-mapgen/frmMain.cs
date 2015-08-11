@@ -16,6 +16,8 @@ using FOCommon.Parsers;
 using FOCommon.Items;
 using System.IO.Compression;
 using System.Drawing.Imaging;
+using PropertyEditor;
+using Utilities;
 
 namespace fonline_mapgen
 {
@@ -46,9 +48,13 @@ namespace fonline_mapgen
         frmLoadMap frmLoadMap;
         frmLoading frmLoading;
         frmOverlay frmOverlay;
+        frmLayerInfo frmLayerInfo;
 
-        const string title = "Mapper [ALPHA] - ";
-        Color transparency = Color.FromArgb(11, 0, 11);
+        // Copy buffer
+        List<Selection> copyBuffer = new List<Selection>();
+
+        const string title = "Mapper [BETA] - ";
+        Color transparency = Color.FromArgb(11, 0, 11); 
 
         public static void ErrorMsgBox(string txt)
         {
@@ -79,6 +85,15 @@ namespace fonline_mapgen
             if( map != null )
             {
                 EditorData.AddMap( map );
+
+                // Preserve selection reference
+                if (EditorData.CurrentMap != null)
+                {
+                    //map.Selection.AddRange(EditorData.CurrentMap.Selection.Clone());
+                    if (frmLayerInfo.Visible)
+                        showSelectionBuffer(map);
+                }
+
                 EditorData.CurrentMap = map;
 
                 this.Text = title + fileName;
@@ -336,6 +351,8 @@ namespace fonline_mapgen
                 frmDebugInfo.setText("Objects rendered: " + DrawMap.GetNumCachedObjects());
                 frmDebugInfo.setText("Objects selected: " + (DrawMap.GetSelectedObjects().Count + DrawMap.GetSelectedTiles().Count));
             }
+
+            refreshSelectionForm(map);
         }
 
         private void centerViewport()
@@ -401,7 +418,6 @@ namespace fonline_mapgen
 
                 mouseSelection.CalculateSelectionArea();
 
-
                 int padding = 70;
 
                 mouseSelection.UpdateMaxRect();
@@ -413,6 +429,33 @@ namespace fonline_mapgen
 
                 DrawMap.InvalidateCache();
                 pnlRenderBitmap.Invalidate(new Rectangle(x1, y1, x2 - x1, y2 - y1));
+            }
+
+            if (mouseSelection.isRightClickDown)
+            {
+                if (EditorData.CurrentMap.Selection.Count > 0)
+                {
+                    dynamic offset = EditorData.CurrentMap.Selection.First().GetOffset(currentMouseHex.X, currentMouseHex.Y);
+
+                    var X = offset.X;
+                    var Y = offset.Y;
+
+                    foreach (var obj in EditorData.CurrentMap.Selection)
+                    {
+
+                        obj.MoveObject(X, Y);
+                    }
+                } 
+                else if (EditorData.CurrentMap.MapSelection.hasAny())
+                {
+                    dynamic offset = EditorData.CurrentMap.MapSelection.GetOffset(currentMouseHex.X, currentMouseHex.Y);
+
+                    int X = offset.X;
+                    int Y = offset.Y;
+
+                    EditorData.CurrentMap.MapSelection.MoveObject(X, Y);
+                }
+                RefreshViewport();
             }
 
             var hex = map.HexMap.GetHex(new PointF(e.X / scaleFactor, e.Y / scaleFactor + 6.0f));
@@ -626,6 +669,10 @@ namespace fonline_mapgen
                 mouseSelection.Click(new Point((int)((float)e.X / scaleFactor), (int)((float)e.Y / scaleFactor)));
                 RefreshViewport();
             }
+            else if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                mouseSelection.isRightClickDown = true;
+            }
         }
 
         private void pnlRenderBitmap_MouseUp(object sender, MouseEventArgs e)
@@ -633,7 +680,12 @@ namespace fonline_mapgen
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
                 mouseSelection.MouseUp();
+                EditorData.CurrentMap.MapSelect(DrawMap.GetSelectedTiles(), DrawMap.GetSelectedObjects());
                 RefreshViewport();
+            }
+            else if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                mouseSelection.isRightClickDown = false;
             }
         }
 
@@ -681,6 +733,102 @@ namespace fonline_mapgen
                 foreach (var tile in DrawMap.GetSelectedTiles())
                     EditorData.CurrentMap.Tiles.Remove(tile);
                 RefreshViewport();
+            }
+            else if (e.Control && e.KeyCode == Keys.C)
+            {
+                Selection selected = new Selection();
+
+                selected.Objects.AddRange(DrawMap.GetSelectedObjects().Clone().Select(a => { a.colorOverlay = 40; return a; }));
+                selected.Tiles.AddRange(DrawMap.GetSelectedTiles().Clone().Select(a => { a.colorOverlay = 40; return a; }));
+
+                EditorData.CurrentMap.Selection.Add(selected);
+
+                RefreshViewport();
+            }
+            else if (e.Control && e.KeyCode == Keys.B) // Clear last selection buffer
+            {
+                if (EditorData.CurrentMap.Selection.Count > 0)
+                    EditorData.CurrentMap.Selection.Remove(EditorData.CurrentMap.Selection.Last());
+                RefreshViewport();
+            }
+            else if (e.Control && e.KeyCode == Keys.V) // Paste buffer
+            {
+                addSelectionsToCurrentMap();
+            }
+            else if (e.Control && e.KeyCode == Keys.S)
+            {
+                EditorData.CurrentMap.Save();
+            }
+            else if (e.KeyCode == Keys.Down)
+            {
+                EditorData.CurrentMap.MapSelection.MoveObject(0, 1);
+                RefreshViewport();
+            }
+            else if (e.KeyCode == Keys.Up)
+            {
+                EditorData.CurrentMap.MapSelection.MoveObject(0, -1);
+                RefreshViewport();
+            }
+            else if (e.KeyCode == Keys.Right)
+            {
+                EditorData.CurrentMap.MapSelection.MoveObject(-1, 0);
+                RefreshViewport();
+            }
+            else if (e.KeyCode == Keys.Left)
+            {
+                EditorData.CurrentMap.MapSelection.MoveObject(1, 0);
+                RefreshViewport();
+            }
+        }
+
+        /// <summary>
+        /// Add selections at the current map
+        /// </summary>
+        private void addSelectionsToCurrentMap()
+        {
+            foreach (var obj in EditorData.CurrentMap.Selection)
+            {
+                if (!obj.Added)
+                {
+                    EditorData.CurrentMap.Objects.AddRange(obj.Objects);
+                    EditorData.CurrentMap.Tiles.AddRange(obj.Tiles);
+                    obj.Added = true;
+                }
+
+                refreshSelectionForm(EditorData.CurrentMap);
+            }
+            RefreshViewport();
+        }
+
+        /// <summary>
+        /// Refresh selection form
+        /// </summary>
+        /// <param name="map"></param>
+        private void refreshSelectionForm(MapperMap map)
+        {
+            if (frmLayerInfo != null)
+            {
+                int count = 0;
+
+                frmLayerInfo.copyBuffer = copyBuffer;
+                frmLayerInfo.currentMap = EditorData.CurrentMap;
+
+                frmLayerInfo.lstBuffer.Items.Clear();
+                frmLayerInfo.lstMainBuffer.Items.Clear();
+
+                foreach (var selection in map.Selection)
+                {
+                    ListViewItem listItem = new ListViewItem("Selection " + count++);
+                    listItem.Tag = selection;
+                    frmLayerInfo.lstBuffer.Items.Add(listItem);
+                }
+
+                foreach (var selection in copyBuffer)
+                {
+                    ListViewItem listItem = new ListViewItem("MainSelection " + count++);
+                    listItem.Tag = selection;
+                    frmLayerInfo.lstMainBuffer.Items.Add(listItem);
+                }
             }
         }
 
@@ -856,22 +1004,7 @@ namespace fonline_mapgen
                 }
             }
 
-            if (mapperSettings.Paths.MapsDir != null)
-            {
-                while (!Directory.Exists(mapperSettings.Paths.MapsDir))
-                {
-                    MessageBox.Show("Maps path: " + mapperSettings.Paths.MapsDir + " not found. ", "Maps path not found.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    if (frmPaths.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
-                        break;
-                }
-                EditorData.mapsFiles = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
-                this.BeginInvoke((MethodInvoker)delegate
-                {
-                    frmLoadMap = new frmLoadMap(EditorData.mapsFiles, LoadMap);
-                    frmLoadMap.Show();
-                    frmLoading.Hide();
-                });
-            }
+            showLoadMaps();
 
             if (stream != null) stream.Close();
         }
@@ -897,67 +1030,61 @@ namespace fonline_mapgen
         {
 
         }
-    }
 
-    public class MouseSelection
-    {
-        public MouseSelection(Pen RectanglePen)
+        private void layersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.rectPen = RectanglePen;
+            showSelectionBuffer(EditorData.CurrentMap);
         }
 
-        public void CalculateSelectionArea()
+        /// <summary>
+        /// Show select buffer
+        /// </summary>
+        /// <param name="map"></param>
+        private void showSelectionBuffer(MapperMap map)
         {
-            this.selectionArea = new RectangleF(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
-            if (this.selectionArea.Width <= 0)
+            if (frmLayerInfo != null)
+                frmLayerInfo.Close();
+
+            frmLayerInfo = new frmLayerInfo();           
+            frmLayerInfo.refresh = this.RefreshViewport;
+            frmLayerInfo.updateCopyBufferToMap = this.addSelectionsToCurrentMap;
+
+            refreshSelectionForm(map);
+           
+            frmLayerInfo.Show();
+        }
+
+        /// <summary>
+        /// Show laod maps
+        /// </summary>
+        private void showLoadMaps()
+        {
+            if (mapperSettings.Paths.MapsDir != null)
             {
-                this.selectionArea.Width = 1;
-                this.selectionArea.Height = 1;
-                this.clicked = true;
+                while (!Directory.Exists(mapperSettings.Paths.MapsDir))
+                {
+                    MessageBox.Show("Maps path: " + mapperSettings.Paths.MapsDir + " not found. ", "Maps path not found.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (frmPaths.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+                        break;
+                }
+                EditorData.mapsFiles = Directory.GetFiles(mapperSettings.Paths.MapsDir, "*.fomap").ToList<string>();
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    frmLoadMap = new frmLoadMap(EditorData.mapsFiles, LoadMap);
+                    frmLoadMap.Show();
+                    frmLoading.Hide();
+                });
             }
         }
 
-        public void Click(Point point)
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.clicked = false;
-            this.clickedPos = point;
-            this.isDown = true;
-
-            this.maxMouseRectPos.X = 0;
-            this.maxMouseRectPos.Y = 0;
-
-            this.selectionArea.Width = 1;
-            this.selectionArea.Height = 1;
+            EditorData.CurrentMap.Save();
         }
 
-        public void MouseUp()
+        private void loadMapsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.isDown = false;
-            this.clicked = false;
-
-            this.CalculateSelectionArea();
-
-            this.mouseRectPos.X = 0;
-            this.mouseRectPos.Y = 0;
-        }
-
-        public Rectangle GetRect()
-        {
-            return new Rectangle(clickedPos.X, clickedPos.Y, mouseRectPos.X - clickedPos.X, mouseRectPos.Y - clickedPos.Y);
-        }
-
-        public void UpdateMaxRect()
-        {
-            if (mouseRectPos.X > maxMouseRectPos.X) maxMouseRectPos.X = mouseRectPos.X;
-            if (mouseRectPos.Y > maxMouseRectPos.Y) maxMouseRectPos.Y = mouseRectPos.Y;
-        }
-
-        public RectangleF selectionArea;
-        public Point clickedPos;
-        public Point maxMouseRectPos;
-        public Point mouseRectPos;
-        public Pen rectPen;
-        public bool isDown;
-        public bool clicked;
+            showLoadMaps();
+        }       
     }
 }

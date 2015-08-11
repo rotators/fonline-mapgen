@@ -7,6 +7,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 
+using Utilities;
+
 using FOCommon.Graphic;
 using FOCommon.Items;
 using FOCommon.Maps;
@@ -75,6 +77,7 @@ namespace fonline_mapgen
 
         //private static Dictionary<string, Bitmap> CachedBitmap = new Dictionary<string, Bitmap>();
         private static Dictionary<int, Bitmap> CachedOpaque = new Dictionary<int, Bitmap>();
+        private static Dictionary<int, Bitmap> CachedOverlay = new Dictionary<int, Bitmap>();
 
         private static List<DrawCall> CachedSceneryDraws = new List<DrawCall>();
         private static List<DrawCall> CachedTileDraws = new List<DrawCall>();
@@ -86,6 +89,8 @@ namespace fonline_mapgen
 
         private static List<MapObject> SelectedObjects = new List<MapObject>();
         private static List<Tile> SelectedTiles = new List<Tile>();
+
+        private static List<MapObject> CopyObjects = new List<MapObject>();
 
         private static CurrentClick currentClick = null;
         private static Font overlayFont = new Font(FontFamily.GenericSansSerif, 13.0f, FontStyle.Bold);
@@ -126,10 +131,15 @@ namespace fonline_mapgen
         }
 
         private static bool AddToCache(Bitmap drawBitmap, string path, List<DrawCall> cacheList, 
-            PointF coords, bool selectable, MouseSelection mouseSelection, RectangleF screenArea)
+            PointF coords, bool selectable, MouseSelection mouseSelection, RectangleF screenArea, int colorOverlay = 0)
         {
             if (mouseSelection.isDown && !screenArea.Contains(coords))
                 return false;
+
+            if (colorOverlay != 0)
+            {
+                drawBitmap = GreenFilter(drawBitmap);
+            }
 
             var normalDraw = new DrawCall(drawBitmap, path, coords.X, coords.Y);
             if (selectable && InsideSelection(mouseSelection.selectionArea, new RectangleF(coords.X, coords.Y, drawBitmap.Width, drawBitmap.Height)))
@@ -233,7 +243,7 @@ namespace fonline_mapgen
                         }
                         var tileCoords = hexMap.GetTileCoords(new Point(tile.X, tile.Y), tile.Roof);
                         Bitmap drawBitmap = frms[tile.Path].Frames[0];
-                        if (AddToCache(drawBitmap, tile.Path, list, tileCoords, selectable, mouseSelection, screenArea))
+                        if (AddToCache(drawBitmap, tile.Path, list, tileCoords, selectable, mouseSelection, screenArea, tile.colorOverlay))
                             SelectedTiles.Add(tile);
                     }
                 }
@@ -316,7 +326,8 @@ namespace fonline_mapgen
                             new Point(frm.PixelShift.X, frm.PixelShift.Y), new Point(prot.OffsetX, prot.OffsetY));
                         drawBitmap = frm.Frames[0];
                     }
-                    if (AddToCache(drawBitmap, path, CachedSceneryDraws, coords, selectable, mouseSelection, screenArea))
+
+                    if (AddToCache(drawBitmap, path, CachedSceneryDraws, coords, selectable, mouseSelection, screenArea, obj.colorOverlay))
                         SelectedObjects.Add(obj);
                 }
             }
@@ -399,6 +410,28 @@ namespace fonline_mapgen
             // Cache
             CachedOpaque[original.GetHashCode()] = bmp;
             return bmp;
+        }
+
+        /// <summary>
+        /// Return green filter for specific image
+        /// </summary>
+        /// <param name="Image"></param>
+        /// <returns></returns>
+        public static Bitmap GreenFilter(Bitmap Image)
+        {
+            if (CachedOverlay.ContainsKey(Image.GetHashCode())) return CachedOverlay[Image.GetHashCode()];
+
+            ColorMatrixBitmap TempMatrix = new ColorMatrixBitmap();
+            TempMatrix.Matrix = new float[][]{
+                       new float[] {0, 0, 0, 0, 0},
+                       new float[] {0, 1, 0, 0, 0},
+                       new float[] {0, 0, 0, 0, 0},
+                       new float[] {0, 0, 0, 1, 0},
+                       new float[] {0, 0, 0, 0, 1}
+                   };
+             var bmp = TempMatrix.Apply(Image);
+             CachedOverlay[Image.GetHashCode()] = bmp;
+             return bmp;
         }
 
         private static void DrawOutlinedText(Graphics g, string Text, Font tfont, Brush Fill, Brush Outline, PointF p)
